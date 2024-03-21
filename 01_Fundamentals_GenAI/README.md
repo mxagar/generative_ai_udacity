@@ -16,6 +16,31 @@ No guarantees.
 
 Overview of Contents:
 
+- [Udacity Generative AI Nanodegree: Generative AI Fundamentals](#udacity-generative-ai-nanodegree-generative-ai-fundamentals)
+  - [1. Introduction to Generative AI](#1-introduction-to-generative-ai)
+  - [2. Deep Learning Fundamentals](#2-deep-learning-fundamentals)
+  - [3. Adapting Foundation Models](#3-adapting-foundation-models)
+  - [4. Project: Applying Lightweight Fine-Tuning to a Foundation Model](#4-project-applying-lightweight-fine-tuning-to-a-foundation-model)
+
+
+## 1. Introduction to Generative AI
+
+
+
+## 2. Deep Learning Fundamentals
+
+TBD.
+
+:construction:
+
+## 3. Adapting Foundation Models
+
+TBD.
+
+:construction:
+
+## 4. Project: Applying Lightweight Fine-Tuning to a Foundation Model
+
 TBD.
 
 :construction:

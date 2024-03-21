@@ -16,6 +16,46 @@ No guarantees.
 
 Overview of Contents:
 
+- [Udacity Generative AI Nanodegree: Large Language Models (LLMs) \& Text Generation](#udacity-generative-ai-nanodegree-large-language-models-llms--text-generation)
+  - [1. Introduction LLMs](#1-introduction-llms)
+  - [2. NLP Fundamentals](#2-nlp-fundamentals)
+  - [3. Transformers and Attention Mechanism](#3-transformers-and-attention-mechanism)
+  - [4. Retrieval Augmented Generation](#4-retrieval-augmented-generation)
+  - [5. Build Custom Datasets for LLMs](#5-build-custom-datasets-for-llms)
+  - [6. Project: Build Your Own Custom Chatbot](#6-project-build-your-own-custom-chatbot)
+
+## 1. Introduction LLMs
+
+TBD.
+
+:construction:
+
+## 2. NLP Fundamentals
+
+TBD.
+
+:construction:
+
+## 3. Transformers and Attention Mechanism
+
+TBD.
+
+:construction:
+
+## 4. Retrieval Augmented Generation
+
+TBD.
+
+:construction:
+
+## 5. Build Custom Datasets for LLMs
+
+TBD.
+
+:construction:
+
+## 6. Project: Build Your Own Custom Chatbot
+
 TBD.
 
 :construction:

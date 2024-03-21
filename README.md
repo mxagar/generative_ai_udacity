@@ -11,10 +11,10 @@ The Nanodegree asssumes basic data analysis skills with data science python libr
 
 Additionally, it is necessary to submit and pass some projects to get the certification:
 
-- Project 1: TBD.
-- Project 2: TBD.
-- Project 3: TBD.
-- Project 4: TBD.
+- Project 1: Apply Lightweight Fine-Tuning to a Foundation Model - TBD.
+- Project 2: Build Your Own Custom Chatbot - TBD.
+- Project 3: AI Photo Editing with Inpainting - TBD.
+- Project 4: Personalized Real Estate Agent - TBD.
 
 A regular python environment with the usual data science packages should suffice (i.e., scikit-learn, pandas, matplotlib, etc.); any special/additional packages and their installation commands are introduced in the guides. A recipe to set up a [conda](https://docs.conda.io/en/latest/) environment with my current packages is the following:
 
