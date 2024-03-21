@@ -24,5 +24,11 @@ conda activate ds
 pip install -r requirements.txt
 ```
 
+<!--
+Finally, check these additional related courses:
+
+- [Udacity Course on Small Datasets and Synthetic Data](https://www.udacity.com/course/small-data--cd12528)
+-->
+
 Mikel Sagardia, 2024.  
 No guarantees.
