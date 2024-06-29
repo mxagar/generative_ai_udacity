@@ -46,6 +46,11 @@ conda activate ds
 pip install -r requirements.txt
 ```
 
+## Interesting Links
+
+- [microsoft/generative-ai-for-beginners](https://github.com/microsoft/generative-ai-for-beginners)
+- ...
+
 ## Credits
 
 Many of the contents in this repository were created following the [Udacity Generative AI Nanodegree](https://www.udacity.com/course/generative-ai--nd608).
