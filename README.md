@@ -8,7 +8,7 @@ The Nanodegree asssumes basic data analysis skills with data science python libr
     - Foundation Models
     - Fine-Tuning
 2. Large Language Models (LLMs) & Text Generation: [`02_LLMs`](./02_LLMs/README.md).
-    - LLMs and Transformers
+    - Transformers and LLMs
     - Retrieval Augmented Generation (RAG) Chatbots
 3. Computer Vision and Generative AI: [`03_ComputerVision`](./03_ComputerVision/README.md).
     - Generative Adversarial Networks (GANs)
@@ -16,7 +16,7 @@ The Nanodegree asssumes basic data analysis skills with data science python libr
     - Diffusion Models
 4. Building Generative AI Solutions: [`04_BuildingSolutions`](./04_BuildingSolutions/README.md).
     - Vector Databases
-    - Agents and LangChain
+    - LangChain and Agents
 
 Additionally, it is necessary to submit and pass some projects to get the certification:
 
