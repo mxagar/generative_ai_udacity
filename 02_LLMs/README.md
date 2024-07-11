@@ -23,6 +23,7 @@ Overview of Contents:
   - [4. Retrieval Augmented Generation](#4-retrieval-augmented-generation)
   - [5. Build Custom Datasets for LLMs](#5-build-custom-datasets-for-llms)
   - [6. Project: Build Your Own Custom Chatbot](#6-project-build-your-own-custom-chatbot)
+  - [Interesting Links](#interesting-links)
 
 ## 1. Introduction LLMs
 
@@ -59,3 +60,8 @@ TBD.
 TBD.
 
 :construction:
+
+## Interesting Links
+
+- [aws-samples/aws-genai-llm-chatbot](https://github.com/aws-samples/aws-genai-llm-chatbot)
+- [Azure-Samples/azure-search-openai-demo](https://github.com/Azure-Samples/azure-search-openai-demo/)
