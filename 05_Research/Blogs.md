@@ -1,4 +1,4 @@
-# Interesting Articles
+# Generative AI and Machine Learning Blogs
 
 ## Blog Posts by Leoni Monigatti
 
@@ -86,8 +86,4 @@
 
 [https://eugeneyan.com/start-here/](https://eugeneyan.com/start-here/)
 
-## Latent Space Podcast
 
-TBD.
-
-:construction:
