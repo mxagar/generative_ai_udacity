@@ -86,6 +86,8 @@
 
 ## Blog Posts by Elastic
 
+[ElasticSearch - SearchLabs - Blog](https://www.elastic.co/search-labs/blog)
+
 - [How to choose a vector database, by Elastic Platform Team](https://www.elastic.co/blog/how-to-choose-a-vector-database)
 - [How Orca leverages Search AI to help users gain visibility, achieve compliance, and prioritize risks, by Shai Alon](https://www.elastic.co/blog/orca-search-ai)
 - [Deep learning vs. machine learning: Understanding the differences, by Elastic Platform Team (08 July 2024)](https://www.elastic.co/blog/deep-learning-vs-machine-learning)
