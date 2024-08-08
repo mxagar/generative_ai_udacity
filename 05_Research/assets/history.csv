@@ -1,6 +1,6 @@
 ﻿Name,Date,Link,Authors,Title,Hide,New,Type,Parameters,Summary
 LSTM,1997-11-01,http://www.bioinf.jku.at/publications/older/2604.pdf,,,1,0,Autoregressive / Transformer,,
-VAE,2013-12-20,https://arxiv.org/abs/1312.6114,,,0,0,Variational Autoencoder,,
+VAE,2013-12-20,https://arxiv.org/abs/1312.6114,"Diederik P Kingma, Max Welling","Auto-Encoding Variational Bayes",0,0,Variational Autoencoder,,
 Encoder Decoder,2014-06-03,https://arxiv.org/abs/1406.1078,"Kyunghyun Cho, Bart van Merrienboer, Caglar Gulcehre, Dzmitry Bahdanau, Fethi Bougares, Holger Schwenk, Yoshua Bengio",Learning Phrase Representations using RNN Encoder-Decoder for Statistical Machine Translation,1,0,Autoregressive / Transformer,,
 GAN,2014-06-10,https://arxiv.org/abs/1406.2661,,,0,0,Generative Adversarial Network,,
 Attention,2014-09-01,https://arxiv.org/abs/1409.0473,"Dzmitry Bahdanau, Kyunghyun Cho, Yoshua Bengio",Neural Machine Translation by Jointly Learning to Align and Translate,1,0,General,,
