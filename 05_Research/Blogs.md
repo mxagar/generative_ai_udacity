@@ -1,5 +1,51 @@
 # Generative AI and Machine Learning Blogs
 
+## Blog Posts by Leoni Monigatti & Related/Referenced
+
+- [Building Retrieval-Augmented Generation Systems, by Leonie Monigatti (2024-04-24)](https://medium.com/@iamleonie/building-retrieval-augmented-generation-systems-be587f42aedb)
+
+    - Guide for RAG topics
+      - RAG Paradigms
+        - Naive RAG
+        - Advanced RAG
+        - Modular RAG
+      - Orchestration Frameworks
+      - RAG Evaluation
+    - [Paper: Retrieval-Augmented Generation for Large Language Models: A Survey (Gao et al., 2024)](http://arxiv.org/pdf/2312.10997)
+    - [Paper: Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (Lewis et al., 2020)](https://arxiv.org/abs/2005.11401)
+
+- [Retrieval-Augmented Generation (RAG): From Theory to LangChain Implementation, by Leonie Monigatti (2023-11-14)](https://towardsdatascience.com/retrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2)
+
+- [RAG vs Finetuning — Which Is the Best Tool to Boost Your LLM Application? By Heiko Hotz (2023-08-24)](https://towardsdatascience.com/rag-vs-finetuning-which-is-the-best-tool-to-boost-your-llm-application-94654b1eaba7)
+
+    - In a nutshell:
+      - RAG is optimal for external and changing data sources; additionally, it minimizes hallucinations.
+      - Fine-tuning is optimal when the behavior and style (vocabulary) need to be captured (e.g., poetic/literary contexts, medicine, etc.).
+      - In some cases, both external data and style are very important, then, we need to do both: fine-tune and use a RAG.
+    - Other criteria:
+      - Are hallucinations to be avoided at all costs? Then, RAG is better.
+      - Training data (labeled, structured) available? If so, fine-tuning is possible.
+      - Is data mostly changing? If so, RAG is better.
+      - Is interpretability required? If so, then RAG is better.
+    - We should consider each use case and ask those questions carefully
+    - Typical use-cases:
+      - Summarization (usually fine-tuning recommended)
+      - QA system for organizational knowledge (usually RAG recommended)
+      - Customer Support Automation (usually fine-tuning + RAG recommended)
+    - Other aspects to consider
+      - Scalability
+      - Latency
+      - Maintenance
+      - Robustness and reliability
+      - Integration with existing systems
+      - User Experience
+      - Cost
+      - Complexity
+
+- [Retrieval-Augmented Generation Reading List, by Leonie Monigatti](https://medium.com/@iamleonie/list/retrievalaugmented-generation-652a960f44ff)
+
+
+<!--
 ## Blog Posts by Leoni Monigatti
 
 - [The Challenges of Retrieving and Evaluating Relevant Context for RAG (2024-06-10, Leoni Monigatti)](https://towardsdatascience.com/the-challenges-of-retrieving-and-evaluating-relevant-context-for-rag-e362f6eaed34)
@@ -15,6 +61,7 @@
 - [Explaining Vector Databases in 3 Levels of Difficulty (2023-07-04, Leonie Monigatti)]()
 - [Everything You Need to Know About the Binary Search Algorithm (2022-09-27, Leonie Monigatti)](https://medium.com/towards-data-science/everything-you-need-to-know-about-the-binary-search-algorithm-6bc4f9a3127d)
 
+-->
 
 <!--
 - [The Kaggle Blueprints: Unlocking Winning Approaches to Data Science Competitions (2023-03-01, Leonie Monigatti)]()
