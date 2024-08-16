@@ -6,7 +6,7 @@
 
     - Guide for RAG topics
       - RAG Paradigms
-        - Naive RAG
+        - Naive RAG (see below)
         - Advanced RAG
         - Modular RAG
       - Orchestration Frameworks
@@ -14,7 +14,10 @@
     - [Paper: Retrieval-Augmented Generation for Large Language Models: A Survey (Gao et al., 2024)](http://arxiv.org/pdf/2312.10997)
     - [Paper: Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (Lewis et al., 2020)](https://arxiv.org/abs/2005.11401)
 
-- [Retrieval-Augmented Generation (RAG): From Theory to LangChain Implementation, by Leonie Monigatti (2023-11-14)](https://towardsdatascience.com/retrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2)
+- [Retrieval-Augmented Generation (RAG): From Theory to LangChain Implementation, by Leonie Monigatti (2023-11-14)](https://towardsdatascience.com/retrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2): **Naive RAG**.
+
+    ![Naive RAG, by Leoni Monigatti](./assets/rag_naive_monigatti.jpeg)
+    - ...
 
 - [RAG vs Finetuning — Which Is the Best Tool to Boost Your LLM Application? By Heiko Hotz (2023-08-24)](https://towardsdatascience.com/rag-vs-finetuning-which-is-the-best-tool-to-boost-your-llm-application-94654b1eaba7)
 
@@ -42,8 +45,17 @@
       - Cost
       - Complexity
 
+- [Advanced Retrieval-Augmented Generation: From Theory to LlamaIndex Implementation, by Leoni Monigatti (2024-02-19)](https://towardsdatascience.com/advanced-retrieval-augmented-generation-from-theory-to-llamaindex-implementation-4de1464a9930): **Advanced RAG**
+
+- [A Guide on 12 Tuning Strategies for Production-Ready RAG Applications, by Leonie Monigatti (2023-12-06)](https://towardsdatascience.com/a-guide-on-12-tuning-strategies-for-production-ready-rag-applications-7ca646833439)
+
+- [Evaluating RAG Applications with RAGAs, by Leonie Monigatti (2023-12-13)](https://towardsdatascience.com/evaluating-rag-applications-with-ragas-81d67b0ee31a)
+
+- [The Challenges of Retrieving and Evaluating Relevant Context for RAG, by Leonie Monigatti (2024-06-10)](https://towardsdatascience.com/the-challenges-of-retrieving-and-evaluating-relevant-context-for-rag-e362f6eaed34)
+
 - [Retrieval-Augmented Generation Reading List, by Leonie Monigatti](https://medium.com/@iamleonie/list/retrievalaugmented-generation-652a960f44ff)
 
+    - All posts related to RAG are compiled here.
 
 <!--
 ## Blog Posts by Leoni Monigatti
