@@ -1,5 +1,12 @@
 # Generative AI and Machine Learning Blogs
 
+Table of contents:
+
+- [Generative AI and Machine Learning Blogs](#generative-ai-and-machine-learning-blogs)
+  - [Blog Posts by Leoni Monigatti \& Related/Referenced](#blog-posts-by-leoni-monigatti--relatedreferenced)
+  - [Blog Posts by Sebastian Raschka](#blog-posts-by-sebastian-raschka)
+  - [Blog Posts by Elastic](#blog-posts-by-elastic)
+
 ## Blog Posts by Leoni Monigatti & Related/Referenced
 
 - [Building Retrieval-Augmented Generation Systems, by Leonie Monigatti (2024-04-24)](https://medium.com/@iamleonie/building-retrieval-augmented-generation-systems-be587f42aedb)

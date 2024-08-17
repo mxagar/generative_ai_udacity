@@ -45,3 +45,14 @@ For more details on the book, you can visit my fork with notes: [mxagar/generati
 
 [DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter](https://arxiv.org/abs/1910.01108)
 
+## RAG (Lewis, 2020)
+
+[Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (Lewis et al., 2020)](https://arxiv.org/abs/2005.11401)
+
+Add it to CSV.
+
+## RAG Survey (Gao, 2024)
+
+[Retrieval-Augmented Generation for Large Language Models: A Survey (Gao et al., 2024)](http://arxiv.org/pdf/2312.10997)
+ 
+Add it to CSV.
