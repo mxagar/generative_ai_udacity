@@ -33,6 +33,22 @@ Table of contents:
       - [**Model Calibration: Correlation of Log Probability with Truth; Confidence Intervals on How Sure the Model Is**](#model-calibration-correlation-of-log-probability-with-truth-confidence-intervals-on-how-sure-the-model-is)
       - [**Robustness in Prompting: 10 Variations of the Same Prompt Should Yield Similar Answers**](#robustness-in-prompting-10-variations-of-the-same-prompt-should-yield-similar-answers)
       - [**Factuality and Psychofancy: Avoid Echo Chambers, Some Things Are Facts**](#factuality-and-psychofancy-avoid-echo-chambers-some-things-are-facts)
+    - [Jerry Liu from LlamaIndex - RAG Is A Hack](#jerry-liu-from-llamaindex---rag-is-a-hack)
+      - [**RecSys (Recommendation Systems)**](#recsys-recommendation-systems)
+      - [**Multimodal Models, CLIP**](#multimodal-models-clip)
+      - [**RAG Risks:**](#rag-risks)
+      - [**Current Context Window Sizes and Trends:**](#current-context-window-sizes-and-trends)
+      - [**When Should We Use RAG Compared to Fine-Tuning?**](#when-should-we-use-rag-compared-to-fine-tuning)
+      - [**How Much Does the LLM "Know" and How Much Comes from Retrieval?**](#how-much-does-the-llm-know-and-how-much-comes-from-retrieval)
+      - [**LLMOps vs MLOps**](#llmops-vs-mlops)
+      - [**Ablation Studies: What Are These?**](#ablation-studies-what-are-these)
+      - [**Hyperparameter Optimization for RAGs: Which Hyperparameters?**](#hyperparameter-optimization-for-rags-which-hyperparameters)
+      - [**How Can Retrieval Be Improved?**](#how-can-retrieval-be-improved)
+      - [**SEC Insights: Full Stack LLM-Based Chatbot Which is a Template**](#sec-insights-full-stack-llm-based-chatbot-which-is-a-template)
+      - [**Vector DBs: Structured (SQL) vs. Unstructured (Semantic) Data Querying**](#vector-dbs-structured-sql-vs-unstructured-semantic-data-querying)
+      - [**RAG Evaluation: Component-Wise vs. End-to-End**](#rag-evaluation-component-wise-vs-end-to-end)
+      - [**Agents as Reasoning Primitives**](#agents-as-reasoning-primitives)
+      - [**The Role of Metadata for Improved Retrieval**](#the-role-of-metadata-for-improved-retrieval)
 
 
 ## Latent Space Podcast
@@ -147,3 +163,71 @@ Here’s a summary of what Clémentine Fourrier discusses regarding the specifie
    - **Ensuring Model Objectivity:** Clémentine emphasizes the need for models to maintain factual accuracy and avoid reinforcing users' incorrect beliefs (psychofancy). It is crucial that models assertively present factual information, especially on topics where there is a clear, objective truth, to prevent the creation of echo chambers and misinformation. 
 
 
+### Jerry Liu from LlamaIndex - RAG Is A Hack
+
+[Jerry Liu from LlamaIndex - RAG Is A Hack](https://www.latent.space/p/llamaindex)
+
+OCT 05, 2023
+
+#### **RecSys (Recommendation Systems)**
+   - **Experience at Quora:** Jerry Liu shares that his work at Quora involved recommendation systems (RecSys), particularly focusing on ranking based on user preferences. The algorithms were primarily driven by embeddings, where user and item embeddings were trained to maximize their similarity, thereby improving recommendation quality. This work was largely about optimizing user engagement metrics like time spent on the site.
+   - **Relation to RAG:** Although not directly related to RAG (Retrieval Augmented Generation), his experience in RecSys at Quora provided foundational knowledge in information retrieval, which is a key component in the development of LlamaIndex and other LLM applications.
+
+#### **Multimodal Models, CLIP**
+   - **Initial Interest in Multimodal Models:** Jerry Liu mentions that before focusing on text-based systems like LlamaIndex, he had a strong interest in multimodal data, including video data. He initially considered starting a project in this domain before shifting his focus to text.
+   - **CLIP and Multimodal Models:** Liu acknowledges the powerful properties of multimodal models like CLIP, which combine different types of data, such as text and images, into joint embeddings. He notes that while text became the primary focus for LlamaIndex, he recognizes the potential of multimodal models and how they can offer "mathematically nicer properties" by combining multiple embeddings. However, he emphasizes that text provides a modular and universal interface, which makes it particularly well-suited for the kind of applications LlamaIndex targets.
+
+#### **RAG Risks:**
+   - **Risks if Context Windows Get Bigger:** Jerry Liu discusses the potential risk to RAG (Retrieval Augmented Generation) systems if context windows in language models become significantly larger. If models could handle much larger context windows, the need for complex retrieval mechanisms like RAG could diminish. However, he points out that even with larger context windows, the efficiency of RAG remains relevant, particularly in dealing with very large datasets (e.g., gigabytes to petabytes). He emphasizes that simply dumping vast amounts of data into a model’s context window would be inefficient due to network transfer costs and the sheer volume of information.
+
+   - **Risks if Companies Build Orchestration Frameworks:** Another potential risk to RAG is the development of comprehensive orchestration frameworks by large companies, which could integrate retrieval and fine-tuning directly into their models. This could reduce the necessity for third-party tools like LlamaIndex. Liu acknowledges this possibility but argues that there will always be room for RAG-like systems that offer flexibility, transparency, and modularity, especially for specific use cases where fine-grained control over data retrieval is important.
+
+   - **Risks if Fine-Tuning Gets Much Better/Easier:** Liu recognizes that if fine-tuning becomes significantly easier and more efficient, it could diminish the need for RAG. Fine-tuning allows models to internalize knowledge directly, potentially reducing the reliance on external retrieval mechanisms. However, he also notes that RAG offers advantages in terms of transparency, access control, and ease of use, which fine-tuning cannot fully replicate. As a result, he believes RAG will continue to be valuable, especially in scenarios where transparency and specific document sourcing are important.
+
+#### **Current Context Window Sizes and Trends:**
+   - **Context Window Sizes:** Jerry Liu discusses the current standard context window sizes, mentioning that modern models typically operate with context windows of around 2,000 to 4,000 tokens. He explains that this range is generally sufficient for most retrieval and synthesis tasks, allowing for granular context while still fitting within the model’s processing capabilities.
+
+   - **Trends in Expanding Context Windows:** Liu acknowledges the trend towards expanding context windows, with some models now supporting up to 100,000 tokens. He suggests that while this expansion allows for more detailed and extensive context to be considered in a single model pass, there are still practical limitations. For example, larger context windows do not completely eliminate the need for retrieval mechanisms like RAG, especially when dealing with extremely large datasets or when specific, relevant information needs to be retrieved efficiently.
+
+#### **When Should We Use RAG Compared to Fine-Tuning?**
+   - **Use Cases for RAG:** Jerry Liu suggests that RAG (Retrieval Augmented Generation) is particularly useful when you need transparency, modularity, and control over the data used in LLM outputs. RAG is beneficial for scenarios where you need to access and retrieve specific documents or data sources dynamically, without embedding all the knowledge into the model itself. It's also a good choice when fine-tuning is too expensive or complex.
+   - **When to Consider Fine-Tuning:** Fine-tuning, on the other hand, is better when you need the model to internalize knowledge, especially when you’re dealing with smaller, more specific datasets where performance improvements can be significant. Fine-tuning may also be more appropriate as it becomes easier and more efficient, potentially reducing the reliance on RAG for some use cases.
+
+#### **How Much Does the LLM "Know" and How Much Comes from Retrieval?**
+   - **Balance Between Internal Knowledge and Retrieval:** Liu explains that in a RAG system, the LLM has a base of internalized knowledge from its training data, but the most up-to-date or specific information often comes from the retrieval mechanism. The retrieval system augments the model by pulling in relevant, context-specific information that the model might not "know" inherently or recall accurately from its training data.
+
+#### **LLMOps vs MLOps**
+   - **Differences Between LLMOps and MLOps:** LLMOps (Large Language Model Operations) focuses on the operationalization of LLMs, including aspects like prompt engineering, retrieval optimization, and managing the interaction between LLMs and external data sources. MLOps (Machine Learning Operations), on the other hand, deals with the broader operational concerns of machine learning models, such as deployment, monitoring, and maintaining model performance over time. Liu emphasizes that while there are similarities, LLMOps requires specific considerations due to the unique nature of LLMs.
+
+#### **Ablation Studies: What Are These?**
+   - **Definition and Purpose:** Ablation studies involve systematically removing or altering parts of a model or system to understand the impact of each component on overall performance. In the context of RAG, this could involve changing or removing specific retrieval strategies, components of the RAG pipeline, or even certain hyperparameters to see how each influences the final output.
+
+#### **Hyperparameter Optimization for RAGs: Which Hyperparameters?**
+   - **Key Hyperparameters in RAG:** Liu mentions several hyperparameters that can be optimized in RAG systems, including the size of retrieval chunks, the similarity threshold for retrieval, and the type of retriever used (e.g., vector-based vs. keyword-based). Hyperparameter optimization in RAG is critical to balance performance and accuracy, especially when dealing with large-scale data or complex queries.
+
+#### **How Can Retrieval Be Improved?**
+   - **Hierarchical Data:** Retrieval can be enhanced by structuring data hierarchically, allowing the system to drill down into more specific nodes of information as needed.
+   - **Hybrid Retrieval:** Combining different retrieval methods, such as vector-based and keyword-based retrieval, can improve accuracy and relevance.
+   - **Auto Retrieval:** Automating the retrieval process can make the system more efficient by dynamically adjusting the retrieval strategy based on the query.
+   - **Query Transformation:** Transforming the query before retrieval can help align it better with the available data, improving the chances of retrieving the most relevant information.
+   - **Chain of Thought Agent:** Creating an agent that retrieves different aspects of a query step by step allows for more complex, multi-part answers by building on retrieved information iteratively.
+
+#### **SEC Insights: Full Stack LLM-Based Chatbot Which is a Template**
+   - **Overview of SEC Insights:** SEC Insights is a full-stack, LLM-based chatbot template that leverages LlamaIndex for retrieval and querying. It’s designed to demonstrate how to build a complete chatbot application using LLMs, including data ingestion, retrieval, and response generation. The template is meant to be a starting point for developers looking to create similar applications in different domains.
+
+#### **Vector DBs: Structured (SQL) vs. Unstructured (Semantic) Data Querying**
+   - **Comparison of Querying Methods:** Liu discusses the differences between structured (SQL-based) and unstructured (semantic) data querying. Structured querying involves precise, predefined queries on tabular data, while unstructured querying allows for more flexible, semantic searches across diverse data types. In RAG systems, both methods can be important, depending on the use case.
+   - **PGVector and Deviate:** PGVector and Deviate are tools that enable semantic querying within databases, allowing for more nuanced and contextually relevant searches.
+   - **Role of Metadata:** Metadata plays a crucial role in improving retrieval by providing additional context and filtering capabilities, making searches more accurate and relevant.
+   - **Graph Representations:** Using graph representations can further enhance retrieval by capturing relationships between different pieces of data, enabling more complex queries and richer responses.
+
+#### **RAG Evaluation: Component-Wise vs. End-to-End**
+   - **Component-Wise Evaluation:** Evaluating each component of a RAG system separately allows for a detailed understanding of how each part contributes to the overall performance.
+   - **End-to-End Evaluation:** Conversely, end-to-end evaluation assesses the entire RAG pipeline as a whole, which is important for understanding the user experience and final output quality.
+   - **Challenges with GPT-4 as Judge:** Liu mentions that using GPT-4 as a judge for evaluations can be unreliable due to inherent biases and limitations. He suggests that retrieval benchmarks are critical for more accurate assessment, and synthetic datasets can be useful in standardizing these evaluations.
+
+#### **Agents as Reasoning Primitives**
+   - **Role of Agents:** Liu discusses how agents can be used as reasoning primitives in RAG systems, enabling more complex decision-making and multi-step reasoning processes. Agents can interact with multiple tools or data sources, retrieve and process information step by step, and synthesize more sophisticated outputs.
+
+#### **The Role of Metadata for Improved Retrieval**
+   - **Importance of Metadata:** Metadata is essential for enhancing retrieval by adding layers of context and filtering capabilities. It allows the system to narrow down search results more effectively, improving both the speed and accuracy of the retrieval process. Metadata can include information like document type, author, date, or even semantic tags that provide deeper insight into the content.
