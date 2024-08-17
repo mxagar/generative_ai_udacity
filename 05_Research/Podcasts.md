@@ -217,7 +217,7 @@ OCT 05, 2023
 
 #### **Vector DBs: Structured (SQL) vs. Unstructured (Semantic) Data Querying**
    - **Comparison of Querying Methods:** Liu discusses the differences between structured (SQL-based) and unstructured (semantic) data querying. Structured querying involves precise, predefined queries on tabular data, while unstructured querying allows for more flexible, semantic searches across diverse data types. In RAG systems, both methods can be important, depending on the use case.
-   - **PGVector and Deviate:** PGVector and Deviate are tools that enable semantic querying within databases, allowing for more nuanced and contextually relevant searches.
+   - **PGVector and Weviate:** PGVector and Weviate are tools that enable semantic querying within databases, allowing for more nuanced and contextually relevant searches.
    - **Role of Metadata:** Metadata plays a crucial role in improving retrieval by providing additional context and filtering capabilities, making searches more accurate and relevant.
    - **Graph Representations:** Using graph representations can further enhance retrieval by capturing relationships between different pieces of data, enabling more complex queries and richer responses.
 
