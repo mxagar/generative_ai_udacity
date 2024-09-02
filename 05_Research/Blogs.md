@@ -24,7 +24,7 @@ Table of contents:
 - [Retrieval-Augmented Generation (RAG): From Theory to LangChain Implementation, by Leonie Monigatti (2023-11-14)](https://towardsdatascience.com/retrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2): **Naive RAG**.
 
     ![Naive RAG, by Leoni Monigatti](./assets/rag_naive_monigatti.jpeg)
-    - ...
+    - [ ] **Implement it!**
 
 - [RAG vs Finetuning — Which Is the Best Tool to Boost Your LLM Application? By Heiko Hotz (2023-08-24)](https://towardsdatascience.com/rag-vs-finetuning-which-is-the-best-tool-to-boost-your-llm-application-94654b1eaba7)
 
@@ -53,6 +53,8 @@ Table of contents:
       - Complexity
 
 - [Advanced Retrieval-Augmented Generation: From Theory to LlamaIndex Implementation, by Leoni Monigatti (2024-02-19)](https://towardsdatascience.com/advanced-retrieval-augmented-generation-from-theory-to-llamaindex-implementation-4de1464a9930): **Advanced RAG**
+
+    - [ ] **Implement it!**
 
 - [A Guide on 12 Tuning Strategies for Production-Ready RAG Applications, by Leonie Monigatti (2023-12-06)](https://towardsdatascience.com/a-guide-on-12-tuning-strategies-for-production-ready-rag-applications-7ca646833439)
 
