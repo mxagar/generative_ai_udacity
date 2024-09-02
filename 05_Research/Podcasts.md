@@ -7,6 +7,8 @@ Table of contents:
     - [Thomas Scialom from Meta/FAIR - Llama 2, 3 \& 4: Synthetic Data, RLHF, Agents on the path to Open Source AGI](#thomas-scialom-from-metafair---llama-2-3--4-synthetic-data-rlhf-agents-on-the-path-to-open-source-agi)
     - [Clémentine Fourier from HuggingFace - Benchmarks 201: Why Leaderboards \> Arenas \>\> LLM-as-Judge](#clémentine-fourier-from-huggingface---benchmarks-201-why-leaderboards--arenas--llm-as-judge)
     - [Jerry Liu from LlamaIndex - RAG Is A Hack](#jerry-liu-from-llamaindex---rag-is-a-hack)
+    - [How AI is eating Finance — with Mike Conover of Brightwave](#how-ai-is-eating-finance--with-mike-conover-of-brightwave)
+    - [Other Episodes](#other-episodes)
 
 
 ## Latent Space Podcast
@@ -187,3 +189,75 @@ OCT 05, 2023
 **The Role of Metadata for Improved Retrieval**
 - **Importance of Metadata:** Metadata is essential for enhancing retrieval by adding layers of context and filtering capabilities. It allows the system to narrow down search results more effectively, improving both the speed and accuracy of the retrieval process. Metadata can include information like document type, author, date, or even semantic tags that provide deeper insight into the content.
 
+### How AI is eating Finance — with Mike Conover of Brightwave
+
+[How AI is eating Finance — with Mike Conover of Brightwave](https://www.latent.space/p/brightwave)
+
+Jun 11, 2024
+
+Mike Conover used to work for Databricks.
+
+**Organizations are Like Autonomous Systems**
+- **Systemic Behavior:** Mike Conover discusses how organizations behave similarly to autonomous systems. Just like autonomous systems, organizations operate based on interactions among their components, which are often opaque to the individuals within them. By analyzing digital trace data from human interactions with technology, it is possible to observe and model the structure and behavior of these systems, much like using a microscope to examine the underlying structure of an organism.
+
+**Models Can Capture the Behavior of Autonomous Systems, the Structure of the Economy, and the Market**
+- **Modeling Economic Structures:** Conover explains that large language models (LLMs) and other AI models can encapsulate the behavior of autonomous systems, such as organizations and markets. These models can represent complex structures like the economy and financial markets, providing insights into how collective human decisions shape these systems over time. This capability allows for the prediction and understanding of market dynamics, which are not always visible at a local, individual level.
+
+**Their Product: Brightwave—A Chatbot Specific for Finance**
+- **Financial Analysis Capabilities:** Brightwave is a specialized chatbot designed for finance professionals. It is capable of conducting deep financial analyses, generating insights on company valuations, market trends, and economic factors. The product is particularly strong in providing actionable insights rather than just summarizing information.
+- **Domain Expertise and Chunking Strategies:** Brightwave employs domain experts to develop chunking strategies for processing financial documents. This ensures that the most relevant and critical information is retrieved and analyzed effectively.
+
+**Factuality is an Issue in Chatbots and RAG Systems. Possible Solutions:**
+- **Comparative Analysis and Voting:** One approach to improving factuality is to generate answers using different models and compare the results. If discrepancies are found, these can be resolved by allowing a "voting" mechanism among the models.
+- **LLM Supervision:** LLMs can be used to cross-check and verify the answers provided by other models. This is similar to entailment verification, where the system assesses whether the generated content is supported by the underlying data sources.
+- **Code Interpreters:** For quantitative and coding tasks, code interpreters can be employed to execute generated code and verify its accuracy, thereby ensuring the correctness of computational outputs.
+
+**They Observe User Behavior to Improve Their Provided Results, Similar to Netflix**
+- **Context-Aware Prompting:** Brightwave uses context-aware prompting that takes into account the user’s behavior, setting, and history to tailor the responses more effectively. This approach helps in providing more relevant and accurate outputs.
+- **Metadata Propagation:** The system also propagates metadata throughout its operations, ensuring that context and relevance are maintained across multiple retrievals and responses.
+
+**LLM Supervision is Used, but Human Evaluation is the Reference**
+- **Human Judgment as the Gold Standard:** While LLMs are supervised to provide consistent and accurate outputs, human evaluation remains the ultimate reference for quality. This is because many nuanced aspects of financial analysis cannot yet be fully automated and require expert human judgment.
+
+**Selecting RAG vs. LLM Fine-Tuning**
+- **RAG for Dynamic and Temporal Data:** Brightwave frequently updates its data quarterly, making RAG (Retrieval Augmented Generation) more suitable for their needs as it can incorporate the latest external information dynamically. This is particularly important for maintaining factuality and relevance in rapidly changing financial contexts.
+- **State Machine Analogy:** Conover compares the chatbot interaction to a finite state machine, where the system transitions between states based on user queries. If certain states (or behaviors) are frequently used and prove to be important, they might consider fine-tuning the model to better handle these specific scenarios.
+
+**Financial Data and Confidentiality**
+- **Regulatory Environment:** Brightwave operates in a highly regulated environment, which provides assurance to their clients regarding confidentiality. Sensitive and proprietary information, especially data that generates alpha, is kept secure and not disclosed publicly.
+- **Trust in Handling Sensitive Data:** Their approach to data privacy and security is informed by Conover's and his co-founder’s extensive experience in regulated financial environments, ensuring that confidential information is handled with the utmost care.
+
+**Knowledge Graphs vs. Semantic Search**
+- **Combining Structured and Unstructured Data:** Conover emphasizes the potential of combining knowledge graphs with semantic search. Knowledge graphs allow for the structured extraction of relationships and entities from large bodies of text, which can then be used to enhance semantic search capabilities. This combination can lead to more powerful and accurate retrieval systems in finance.
+
+**Anthropomorphization is Often Used, But They Believe Good Quality Reasoning Can Be Achieved Without It**
+- **Avoiding Anthropomorphization:** While anthropomorphization can make AI interactions more relatable, Conover argues that it’s possible to achieve high-quality reasoning and output from chatbots without resorting to anthropomorphic techniques. The focus should be on the substance of the reasoning rather than on making the AI seem human-like.
+
+**Partner-and-Thought Modality**
+- **Collaborative Reasoning:** Brightwave is designed to act as a partner in thought for finance professionals. This means that the AI assists in reasoning and decision-making processes, helping users explore different ideas and perspectives rather than just providing direct answers.
+
+**Their RAG Systems Retrieve Information from Tabular Data**
+- **Structured Data Retrieval:** Brightwave’s RAG systems are capable of retrieving and processing information from tabular data, which is crucial in the finance industry where numerical data and statistics are key. This ability allows the system to generate precise and contextually relevant financial analyses.
+
+**How is the Future Going to Be? Are People Still Going to Make Spreadsheets?**
+- **AI-Assisted Spreadsheets:** Conover believes that while spreadsheets will likely continue to be used, AI tools like chatbots and agents will increasingly assist in creating, analyzing, and correcting them. These tools will help users ensure the accuracy and relevance of their data and insights.
+
+**Are We Going to Have AI Hedge Funds?**
+- **Challenges with Power-Law Distributions:** Conover points out that venture capital and hedge funds operate in domains characterized by power-law distributions, which are challenging for machine learning models that tend to perform better in bell-curve distributions. This makes it difficult for AI to fully take over these areas, although LLMs can be valuable for idea generation and identifying second-order effects (e.g., the implications of a major industry trend).
+
+**Open Source Models are Converging with Closed-Sourced Ones**
+- **Convergence in Capabilities:** There is a growing convergence between open-source and closed-source models, with open-source models catching up in terms of capabilities. This trend suggests that the competitive gap between the two may continue to narrow over time.
+
+**The Half-Life of a Model is Much Shorter Than the Half-Life of a Dataset**
+- **Rapid Model Obsolescence:** Conover notes that while models can become outdated quickly due to the fast pace of AI advancements, datasets tend to retain their value over a longer period. This highlights the importance of high-quality data as a foundational asset, even as models continue to evolve rapidly.
+
+
+### Other Episodes
+
+- [RLHF 201 - with Nathan Lambert of AI2 and Interconnects](https://www.latent.space/p/rlhf-201)
+- [The End of Finetuning — with Jeremy Howard of Fast.ai](https://www.latent.space/p/fastai)
+- [The Point of LangChain — with Harrison Chase of LangChain](https://www.latent.space/p/langchain)
+- [AI Fundamentals: Datasets 101](https://www.latent.space/p/datasets-101)
+- [MPT-7B and The Beginning of Context=Infinity — with Jonathan Frankle and Abhinav Venigalla of MosaicML](https://www.latent.space/p/mosaic-mpt-7b)
+- [AI-powered Search for the Enterprise — with Deedy Das of Glean](https://www.latent.space/p/deedy-das)
+- [AI Fundamentals: Benchmarks 101](https://www.latent.space/p/benchmarks-101)
