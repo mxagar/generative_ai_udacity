@@ -16,3 +16,4 @@
   - Azure Document Intelligence
   - [Facebook Nougat](https://facebookresearch.github.io/nougat/)
   - [PDF-Extract-Kit](https://github.com/opendatalab/PDF-Extract-Kit)
+- [Kotaemon: An open-source RAG-based tool for chatting with your documents](https://cinnamon.github.io/kotaemon/)
