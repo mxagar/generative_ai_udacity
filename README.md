@@ -27,9 +27,11 @@ Additionally, it is necessary to submit and pass some projects to get the certif
 
 Finally, also check some of my personal guides on related tools:
 
-- [HuggingFace](https://github.com/mxagar/tool_guides/tree/master/hugging_face)
-- [LangChain](https://github.com/mxagar/tool_guides/tree/master/langchain)
-- [LLM Tools](https://github.com/mxagar/tool_guides/tree/master/llms)
+- [HuggingFace: `mxagar/tool_guides/hugging_face`](https://github.com/mxagar/tool_guides/tree/master/hugging_face)
+- [LangChain: `mxagar/tool_guides/langchain`](https://github.com/mxagar/tool_guides/tree/master/langchain)
+- [LLM Tools: `tool_guides/llms`](https://github.com/mxagar/tool_guides/tree/master/llms)
+- [Deep Learning Methods for CV and NLP: `mxagar/computer_vision_udacity/CVND_Advanced_CV_and_DL.md`](https://github.com/mxagar/computer_vision_udacity/blob/main/03_Advanced_CV_and_DL/CVND_Advanced_CV_and_DL.md)
+- [Deep Learning Methods for NLP: `mxagar/deep_learning_udacity/DLND_RNNs.md`](https://github.com/mxagar/deep_learning_udacity/blob/main/04_RNN/DLND_RNNs.md)
 
 <!--
 Finally, check these additional related courses:
