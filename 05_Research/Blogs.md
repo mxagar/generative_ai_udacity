@@ -5,6 +5,7 @@ Table of contents:
 - [Generative AI and Machine Learning Blogs](#generative-ai-and-machine-learning-blogs)
   - [Blog Posts by Leoni Monigatti \& Related/Referenced](#blog-posts-by-leoni-monigatti--relatedreferenced)
   - [Blog Posts by Sebastian Raschka](#blog-posts-by-sebastian-raschka)
+  - [Blog Posts by Philipp Schmid](#blog-posts-by-philipp-schmid)
   - [Blog Posts by Elastic](#blog-posts-by-elastic)
 
 ## Blog Posts by Leoni Monigatti & Related/Referenced
@@ -151,6 +152,10 @@ Table of contents:
 - [Transformers, Fast and Slow: New Developments in Language Processing (2022-11-10, Sebastian Raschka)](https://magazine.sebastianraschka.com/p/ahead-of-ai-2-transformers-fast-and)
 - [A Diffusion of Innovations: Recent Developments in Generative Learning (2022-11-04, Sebastian Raschka)](https://magazine.sebastianraschka.com/p/ahead-of-ai-1-a-diffusion-of-innovations)
 -->
+
+## Blog Posts by Philipp Schmid
+
+[https://www.philschmid.de/](https://www.philschmid.de/)
 
 ## Blog Posts by Elastic
 
