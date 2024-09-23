@@ -188,6 +188,7 @@ Table of contents:
 - [Understanding AI search algorithms, by Elastic Platform Team (21 February 2024)](https://www.elastic.co/blog/understanding-ai-search-algorithms)
 - [Choosing an LLM: The 2024 getting started guide to open-source LLMs, by Elastic Platform Team (12 February 2024)](https://www.elastic.co/blog/open-source-llms-guide)
 
+
 <!--
 - [UK government: Reduce cyber risk by modernising legacy IT, by Syed Rafice](https://www.elastic.co/blog/uk-government-reduce-legacy-it-streamline-budget)
 - [Elastic and Google Cloud: Enhancing security analytics from data ingestion to incident response, by Valerio Arvizzigno](https://www.elastic.co/blog/elastic-google-cloud-security-data-ingestion-incident-response)
