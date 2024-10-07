@@ -6,7 +6,7 @@ Table of contents:
   - [Blog Posts by Leoni Monigatti \& Related/Referenced](#blog-posts-by-leoni-monigatti--relatedreferenced)
   - [Blog Posts by Sebastian Raschka](#blog-posts-by-sebastian-raschka)
   - [Blog Posts by Philipp Schmid](#blog-posts-by-philipp-schmid)
-  - [Blog Posts by Elastic](#blog-posts-by-elastic)
+  - [Lost+Found](#lostfound)
 
 ## Blog Posts by Leoni Monigatti & Related/Referenced
 
@@ -83,9 +83,6 @@ Table of contents:
 - [Explaining Vector Databases in 3 Levels of Difficulty (2023-07-04, Leonie Monigatti)]()
 - [Everything You Need to Know About the Binary Search Algorithm (2022-09-27, Leonie Monigatti)](https://medium.com/towards-data-science/everything-you-need-to-know-about-the-binary-search-algorithm-6bc4f9a3127d)
 
--->
-
-<!--
 - [The Kaggle Blueprints: Unlocking Winning Approaches to Data Science Competitions (2023-03-01, Leonie Monigatti)]()
 - [The Challenges of Retrieving and Evaluating Relevant Context for RAG (2023-06-10, Leonie Monigatti)]()
 - [Shifting Tides: The Competitive Edge of Open Source LLMs over Closed Source LLMs (2023-04-29, Leonie Monigatti)]()
@@ -157,74 +154,8 @@ Table of contents:
 
 [https://www.philschmid.de/](https://www.philschmid.de/)
 
-## Blog Posts by Elastic
+## Lost+Found
 
-[ElasticSearch - SearchLabs - Blog](https://www.elastic.co/search-labs/blog)
-
-- [How to choose a vector database, by Elastic Platform Team](https://www.elastic.co/blog/how-to-choose-a-vector-database)
-- [How Orca leverages Search AI to help users gain visibility, achieve compliance, and prioritize risks, by Shai Alon](https://www.elastic.co/blog/orca-search-ai)
-- [Deep learning vs. machine learning: Understanding the differences, by Elastic Platform Team (08 July 2024)](https://www.elastic.co/blog/deep-learning-vs-machine-learning)
-- [15 generative AI use cases for the enterprise, by Elastic Platform Team (27 June 2024)](https://www.elastic.co/blog/portfolio/15-generative-AI-use-cases-enterprise)
-- [GenAI for customer support — Part 1: Building our proof of concept, by Elastic Platform Team (27 June 2024)](https://www.elastic.co/blog/genai-customer-support-building-proof-of-concept)
-- [How does combining search with AI solve enterprise data problems?, by Elastic Platform Team (25 June 2024)](https://www.elastic.co/blog/how-does-search-solve-data-problems)
-- [Unpacking the US Senate’s new AI Roadmap, by Elastic Platform Team (16 May 2024)](https://www.elastic.co/blog/united-states-senate-ai-roadmap)
-- [Elastic's RAG-based AI Assistant: Analyze application issues with LLMs and private GitHub issues, by Elastic Platform Team (08 May 2024)](https://www.elastic.co/blog/elastic-rag-ai-assistant-application-issues-llm-github)
-- [Elastic integrates Anthropic's Claude 3 models to enhance AI-driven security analytics, by Elastic Platform Team (08 May 2024)](https://www.elastic.co/blog/ai-security-analytics-integrating-anthropic-claude)
-- [Built-in protections for Elastic AI Assistant, by Elastic Platform Team (06 May 2024)](https://www.elastic.co/blog/combating-llm-threat-techniques-with-elastic-ai-assistant)
-- [The benefits of utilizing locally hosted models with Elastic AI Assistant, by Elastic Platform Team (03 May 2024)](https://www.elastic.co/blog/ai-assistant-locally-hosted-models)
-- [Getting started with the Elastic AI Assistant for Observability and Amazon Bedrock, by Elastic Platform Team (03 May 2024)](https://www.elastic.co/blog/elastic-ai-assistant-observability-amazon-bedrock)
-- [Understanding the approximate nearest neighbor (ANN) algorithm, by Elastic Platform Team (26 April 2024)](https://www.elastic.co/blog/understanding-ann)
-- [NLP vs. LLMs: Understanding the differences, by Elastic Platform Team (15 April 2024)](https://www.elastic.co/blog/nlp-vs-llms)
-- [Vector database vs. graph database: Understanding the differences, by Elastic Platform Team (11 April 2024)](https://www.elastic.co/blog/vector-database-vs-graph-database)
-- [Getting started with the Elastic AI Assistant for Observability and Microsoft Azure OpenAI, by Elastic Platform Team (04 April 2024)](https://www.elastic.co/blog/elastic-ai-assistant-observability-microsoft-azure-openai)
-- [Machine learning vs. AI: Understanding the differences, by Elastic Platform Team (07 March 2024)](https://www.elastic.co/blog/ml-vs-ai)
-- [Emerging trends in observability: GAI, AIOps, tools consolidation, and OpenTelemetry, by Elastic Platform Team (06 March 2024)](https://www.elastic.co/blog/observability-gai-aiops-tools-consolidation-opentelemetry)
-- [Elastic part of a select group with AWS Generative AI Competency, by Elastic Platform Team (06 March 2024)](https://www.elastic.co/blog/elastic-aws-generative-ai-competency)
-- [How to make a chatbot: Dos and don'ts for developers in an AI-driven world, by Elastic Platform Team (05 March 2024)](https://www.elastic.co/blog/how-to-make-a-chatbot)
-- [How to create a search engine, by Elastic Platform Team (29 February 2024)](https://www.elastic.co/blog/how-to-create-a-search-engine)
-- [Fraud in financial services: Leaning on generative AI to protect a rapidly expanding attack surface, by Elastic Platform Team (28 February 2024)](https://www.elastic.co/blog/financial-services-fraud-generative-ai-attack-surface)
-- [LangChain tutorial: A guide to building LLM-powered applications, by Elastic Platform Team (21 February 2024)](https://www.elastic.co/blog/langchain-tutorial)
-- [5 AI search trends impacting developers in 2024, by Elastic Platform Team (21 February 2024)](https://www.elastic.co/blog/ai-search-trends-developers)
-- [Understanding AI search algorithms, by Elastic Platform Team (21 February 2024)](https://www.elastic.co/blog/understanding-ai-search-algorithms)
-- [Choosing an LLM: The 2024 getting started guide to open-source LLMs, by Elastic Platform Team (12 February 2024)](https://www.elastic.co/blog/open-source-llms-guide)
-
-
-<!--
-- [UK government: Reduce cyber risk by modernising legacy IT, by Syed Rafice](https://www.elastic.co/blog/uk-government-reduce-legacy-it-streamline-budget)
-- [Elastic and Google Cloud: Enhancing security analytics from data ingestion to incident response, by Valerio Arvizzigno](https://www.elastic.co/blog/elastic-google-cloud-security-data-ingestion-incident-response)
-- [Elastic wins 2024 Microsoft US Partner of the Year, by Elastic Platform Team (26 June 2024)](https://www.elastic.co/blog/elastic-wins-2024-microsoft-us-partner-of-the-year)
-- [Expedient innovates with Elastic Observability to deliver better management, monitoring, and more to customers, by Elastic Platform Team (26 June 2024)](https://www.elastic.co/blog/expedient-elastic-observability)
-- [How can unifying observability and security strengthen your business?, by Elastic Platform Team (25 June 2024)](https://www.elastic.co/blog/observability-security-strengthen-business)
-- [Elastic Observability 8.14: New feature for SLO, AI Assistant, and .NET for Universal Profiling, by Elastic Platform Team (26 June 2024)](https://www.elastic.co/blog/whats-new-elastic-observability-8-14-0)
-- [Elastic Search 8.14: Faster and more cost-effective vector search, improved relevance with retrievers and reranking, by Elastic Platform Team](https://www.elastic.co/blog/whats-new-elastic-search-8-14-0)
-- [Elastic Platform 8.14: ES|QL GA, encryption at rest, and vector search optimizations, by Elastic Platform Team (05 June 2024)](https://www.elastic.co/blog/whats-new-elasticsearch-platform-8-14-0)
-- [Elastic Observability 8.14: New feature for SLO, AI Assistant, and .NET for Universal Profiling, by Elastic Platform Team (05 June 2024)](https://www.elastic.co/blog/whats-new-elastic-observability-8-14-0)
-- [NEW in Elastic 8.14: Attack Discovery, GA of ES|QL, and AI Assistant features, by Elastic Platform Team (05 June 2024)](https://www.elastic.co/blog/whats-new-elastic-8-14-0)
-- [Elastic 8.14: GA of Elasticsearch Query Language (ES|QL) for simplified analysis, by Elastic Platform Team (05 June 2024)](https://www.elastic.co/blog/whats-new-elasticsearch-query-language-8-14-0)
-- [Why customer service matters for government — and how AI will help, by Elastic Platform Team (16 May 2024)](https://www.elastic.co/blog/customer-service-government-ai)
-- [Announcing Search AI Lake and Elastic Cloud Serverless to scale low latency search, by Elastic Platform Team (15 May 2024)](https://www.elastic.co/blog/search-ai-lake-elastic-cloud-serverless)
-- [Elasticsearch accelerates building AI search apps on serverless, by Elastic Platform Team (15 May 2024)](https://www.elastic.co/blog/elasticsearch-serverless-preview)
-- [Elastic changes the SIEM game with AI-driven security analytics, by Elastic Platform Team (06 May 2024)](https://www.elastic.co/blog/ai-driven-security-analytics)
-- [Elastic and AWS deliver on AI-driven security analytics, by Elastic Platform Team (06 May 2024)](https://www.elastic.co/blog/elastic-aws-deliver-ai-driven-security-analytics)
-- [Elastic Security Labs releases guidance to avoid LLM risks and abuses, by Elastic Platform Team (06 May 2024)](https://www.elastic.co/blog/address-llm-adoption-security-risks)
-- [Elastic Security evolves into the first and only AI-driven security analytics solution, by Elastic Platform Team (03 May 2024)](https://www.elastic.co/blog/elastic-security-ai-security-analytics-solution)
-- [Navigating the web of Scattered Spider: Defending financial institutions from cybercriminal networks, by Elastic Platform Team (03 May 2024)](https://www.elastic.co/blog/scattered-spider-cybercriminal-networks)
-- [Tracing history: The generative AI revolution in SIEM, by Elastic Platform Team (09 April 2024)](https://www.elastic.co/blog/generative-ai-revolution-in-siem)
-- [Elastic wins Google Cloud Partner of the Year for the fourth time, by Elastic Platform Team (08 April 2024)](https://www.elastic.co/blog/elastic-wins-google-cloud-partner-of-the-year)
-- [The Elastic AI Assistant for Observability escapes Kibana!, by Elastic Platform Team (08 April 2024)](https://www.elastic.co/blog/elastic-ai-assistant-observability-escapes-kibana)
-- [Accelerating generative AI experiences, by Elastic Platform Team (02 April 2024)](https://www.elastic.co/blog/elastic-generative-ai-experiences)
-- [Elastic 8.13: GA of Amazon Bedrock in the Elastic AI Assistant for Observability, by Elastic Platform Team (02 April 2024)](https://www.elastic.co/blog/whats-new-elastic-8-13-0)
-- [The state of generative AI: Our global survey of over 3,000 tech leaders, by Elastic Platform Team (26 March 2024)](https://www.elastic.co/blog/generative-ai-adoption-survey)
-- [Elasticsearch and Kibana 8.13: Simplified kNN and improved query parallelization, by Elastic Platform Team (26 March 2024)](https://www.elastic.co/blog/whats-new-elasticsearch-kibana-8-13)
-- [Elastic Search 8.13: Simplifying embedding and ranking for developers, by Elastic Platform Team (26 March 2024)](https://www.elastic.co/blog/whats-new-elastic-8-13-0)
-- [Maximize IT efficiency leveraging alert management with Elastic AI Assistant for Observability, by Elastic Platform Team (26 March 2024)](https://www.elastic.co/blog/it-efficiency-alert-management-elastic-ai-assistant-observability)
-- [Simplify stream processing for generative AI applications with Confluent Cloud for Apache Flink® and Elasticsearch®, by Elastic Platform Team (26 March 2024)](https://www.elastic.co/blog/generative-ai-applications-confluent-cloud-apache-flink-elasticsearch)
-- [Analyzing OpenTelemetry apps with Elastic AI Assistant and APM, by Elastic Platform Team (21 March 2024)](https://www.elastic.co/blog/analyzing-opentelemetry-apps-elastic-ai-assistant-apm)
-- [Elastic Observability 8.13: GA of AI Assistant support for AWS Bedrock and enhancements for AI Assistant and SLO, by Elastic Platform Team (04 March 2024)](https://www.elastic.co/blog/whats-new-elastic-observability-8-13-0)
-- [Build better Service Level Objectives (SLOs) from logs and metrics, by Elastic Platform Team (21 February 2024)](https://www.elastic.co/blog/service-level-objectives-slos-logs-metrics)
-- [Bridging IT intelligence and business KPIs with AI: The elephant in the room, by Elastic Platform Team (21 February 2024)](https://www.elastic.co/blog/it-intelligence-business-kpis-elephant-in-the-room)
-- [Migrating from self-managed Elastic Stack to Elastic Cloud using snapshot and restore with Azure Blob Storage, by Elastic Platform Team (21 February 2024)](https://www.elastic.co/blog/elastic-stack-elastic-cloud-migration-snapshot-restore-azure-blob-storage)
-- [How Elastic AI Assistant for Security and Amazon Bedrock can empower security analysts for enhanced performance, by Elastic Platform Team (08 February 2024)](https://www.elastic.co/blog/elastic-ai-assistant-amazon-bedrock-security-analysts)
-- [Multilingual search using language identification in Elasticsearch, by Elastic Platform Team (12 February 2020)](https://www.elastic.co/blog/multilingual-search-using-language-identification-in-elasticsearch)
-
--->
+- Rubens Zimbres on Medium: [Use LLMs to Turn CSVs into Knowledge Graphs: A Case in Healthcare](https://medium.com/@rubenszimbres/use-llms-to-turn-csvs-into-knowledge-graphs-a-case-in-healthcare-158d3ee0afde)
+- HuggingFace Blog on ColPali: [ColPali: Efficient Document Retrieval with Vision Language Models](https://huggingface.co/blog/manu/colpali)
+- Lak Lakshmanan on Medium: [How to Choose the Architecture for Your GenAI Application](https://medium.com/towards-data-science/how-to-choose-the-architecture-for-your-genai-application-6053e862c457)
