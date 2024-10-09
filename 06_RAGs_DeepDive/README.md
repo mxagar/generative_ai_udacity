@@ -17,3 +17,4 @@
   - [Facebook Nougat](https://facebookresearch.github.io/nougat/)
   - [PDF-Extract-Kit](https://github.com/opendatalab/PDF-Extract-Kit)
 - [Kotaemon: An open-source RAG-based tool for chatting with your documents](https://cinnamon.github.io/kotaemon/)
+- [12 RAG Pain Points and Proposed Solutions](https://medium.com/towards-data-science/12-rag-pain-points-and-proposed-solutions-43709939a28c#31f8)
