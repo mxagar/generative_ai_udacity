@@ -1,0 +1,3 @@
+[submodule "06_RAGs_DeepDive/01_RAG_from_Scratch/notebooks/rag-from-scratch"]
+	path = 06_RAGs_DeepDive/01_RAG_from_Scratch/notebooks/rag-from-scratch
+	url = https://github.com/langchain-ai/rag-from-scratch.git
