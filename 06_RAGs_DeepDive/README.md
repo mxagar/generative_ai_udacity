@@ -7,10 +7,16 @@ The subfolder is organized in projects, each of them contained in their folders.
 Table of contents:
 
 - [Retrieval-Augmented Generation](#retrieval-augmented-generation)
+  - [Other of My Basic Resources (Start There)](#other-of-my-basic-resources-start-there)
   - [RAG from Scratch - LangChain and Freecodecamp](#rag-from-scratch---langchain-and-freecodecamp)
   - [RAG Deployment on AWS](#rag-deployment-on-aws)
   - [RAGAS Tutorial](#ragas-tutorial)
   - [Interesting Links](#interesting-links)
+
+## Other of My Basic Resources (Start There)
+
+- Guides on LangChain: [tool_guides/langchain](https://github.com/mxagar/tool_guides/tree/master/langchain)
+- Guide on HuggingFace: [tool_guides/hugging_face](https://github.com/mxagar/tool_guides/tree/master/hugging_face)
 
 ## RAG from Scratch - LangChain and Freecodecamp
 
