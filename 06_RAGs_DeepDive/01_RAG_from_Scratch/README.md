@@ -14,6 +14,7 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
     - [All Environment Variables](#all-environment-variables)
     - [Original LangChain Repository](#original-langchain-repository)
   - [Part 1: Introduction](#part-1-introduction)
+  - [Part 2: Indexing Overview](#part-2-indexing-overview)
 
 ## Setup
 
@@ -200,3 +201,7 @@ rag_chain = (
 # Question
 rag_chain.invoke("What is Task Decomposition?")
 ```
+
+## Part 2: Indexing Overview
+
+
