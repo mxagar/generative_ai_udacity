@@ -1,5 +1,38 @@
 # Retrieval-Augmented Generation
 
+This subfolder contains material related to chatbots based on Retrieval-Augmented Generation (RAG).
+
+The subfolder is organized in projects, each of them contained in their folders.
+
+Table of contents:
+
+- [Retrieval-Augmented Generation](#retrieval-augmented-generation)
+  - [RAG from Scratch - LangChain and Freecodecamp](#rag-from-scratch---langchain-and-freecodecamp)
+  - [RAG Deployment on AWS](#rag-deployment-on-aws)
+  - [RAGAS Tutorial](#ragas-tutorial)
+  - [Interesting Links](#interesting-links)
+
+## RAG from Scratch - LangChain and Freecodecamp
+
+Folder: [`01_RAG_from_Scratch/`](./01_RAG_from_Scratch/)
+
+Sources:
+
+- [RAG from Scratch by Langchain (Github)](https://github.com/langchain-ai/rag-from-scratch)
+- [RAG from Scratch by Langchain (Youtube & Freecodecamp)](https://www.youtube.com/watch?v=sVcwVQRHIc8)
+
+## RAG Deployment on AWS
+
+:construction:
+
+TBD.
+
+## RAGAS Tutorial
+
+:construction:
+
+TBD.
+
 ## Interesting Links
 
 - [RAG from Scratch 1](https://github.com/langchain-ai/rag-from-scratch)
