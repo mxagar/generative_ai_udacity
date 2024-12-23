@@ -15,10 +15,13 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
     - [Original LangChain Repository](#original-langchain-repository)
   - [Part 1: Introduction](#part-1-introduction)
     - [Code Walkthrough](#code-walkthrough)
-  - [Part 2: Indexing Overview](#part-2-indexing-overview)
+  - [Part 2: Indexing](#part-2-indexing)
     - [Code Walkthrough](#code-walkthrough-1)
     - [Interesting Links](#interesting-links)
   - [Part 3: Retrieval](#part-3-retrieval)
+    - [Code Walkthrough](#code-walkthrough-2)
+  - [Part 4: Generation](#part-4-generation)
+    - [Code Walkthrough](#code-walkthrough-3)
   - [Extra: LangSmith](#extra-langsmith)
     - [Setup](#setup-1)
     - [Tracing](#tracing)
@@ -217,7 +220,7 @@ rag_chain = (
 rag_chain.invoke("What is Task Decomposition?")
 ```
 
-## Part 2: Indexing Overview
+## Part 2: Indexing
 
 Resources:
 
@@ -247,7 +250,14 @@ No matter which indexing/search approach we take, we usually need to **split our
 
 ### Code Walkthrough
 
-Very simple RAG example shown in [`RAG_Scratch_Part_02.ipynb`](./notebooks/RAG_Scratch_Part_02.ipynb)
+A simple indexing example shown in [`RAG_Scratch_Part_02.ipynb`](./notebooks/RAG_Scratch_Part_02.ipynb):
+
+- Tokens/word is measured with tiktoken.
+- OpenAI Embeddings are used.
+- Cosine similarity is used to measure how similar two vectors are.
+- A web is loaded as the document.
+- Recursive splitting is done based on the number of characters.
+- The Chroma vectorstore takes the splits as well as the embedder.
 
 ```python
 from dotenv import load_dotenv
@@ -344,7 +354,76 @@ Resources:
   - Original: [`rag_from_scratch_1_to_4.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_1_to_4.ipynb)
   - Mine: [`RAG_Scratch_Part_03.ipynb`](./notebooks/RAG_Scratch_Part_03.ipynb)
 
+If we are working with embedding vectors to represent split documents, vectorstores are used to index and store those document vectors as well as search in them. Note that text of similar meaning will have vectors pointing in the similar direction. Search leverages that notion: we basically narrow down the document vectors close to the query embedding vector. That task is carried out by the vectorstore itself.
 
+![Retrieval Powered by Embeddings](./assets/retrieval_embeddings.png)
+
+Very powerful search method: [FAISS: Hierarchical Navigable Small Worlds (HNSW)](https://www.pinecone.io/learn/series/faiss/hnsw/)
+
+LangChain has many integrations to run the introduced basic steps: index and retrieve.
+
+![langChain RAG Integrations](./assets/langchain_rag_integrations.png)
+
+### Code Walkthrough
+
+```python
+from dotenv import load_dotenv
+
+load_dotenv(override=True, dotenv_path="../.env")
+
+# Load blog document
+import bs4
+from langchain_community.document_loaders import WebBaseLoader
+
+loader = WebBaseLoader(
+    web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
+    bs_kwargs=dict(
+        parse_only=bs4.SoupStrainer(
+            class_=("post-content", "post-title", "post-header")
+        )
+    ),
+)
+blog_docs = loader.load()
+
+# Split
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+    chunk_size=300, 
+    chunk_overlap=50)
+
+splits = text_splitter.split_documents(blog_docs)
+
+# Index
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
+vectorstore = Chroma.from_documents(documents=splits, 
+                                    embedding=OpenAIEmbeddings())
+
+
+# Define retriever: k-NN serach with k=1
+retriever = vectorstore.as_retriever(search_kwargs={"k": 1})
+
+# Retrieve
+docs = retriever.get_relevant_documents("What is Task Decomposition?")
+```
+
+When we run this, we should see in the LangSmith Web UI that there's a new object: `VectorStoreRetriever`. The object contains the metrics, the query and the retrieved document.
+
+## Part 4: Generation
+
+Resources:
+
+- Video: [RAG from Scratch: Part 4](https://www.youtube.com/watch?v=Vw52xyyFsB8&list=PLfaIDFEXuae2LXbO1_PKyVJiQ23ZztA0x&index=4)
+- Notebooks:
+  - Original: [`rag_from_scratch_1_to_4.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_1_to_4.ipynb)
+  - Mine: [`RAG_Scratch_Part_04.ipynb`](./notebooks/RAG_Scratch_Part_04.ipynb)
+
+### Code Walkthrough
+
+```python
+
+```
 
 ## Extra: LangSmith
 
@@ -396,7 +475,7 @@ In the Web UI of the traced project we can see:
 - Inputs (queries) and outputs (answer), as well as prompts
 - etc.
 
-In the web UI, if we open the traced project, we see a `RunableSequence` object, which builds a run-tree; in that tree, for each step we have all the inputs and output. The last element is often an LLM, e.g., `ChatOpenAI`; before it, in an LLM application (e.g., RAG), several steps are carried out in a chain.
+In the web UI, if we open the traced project, we see a `RunnableSequence` object, which builds a run-tree; in that tree, for each step we have all the inputs and output. The last element is often an LLM, e.g., `ChatOpenAI`; before it, in an LLM application (e.g., RAG), several steps are carried out in a chain.
 
 We can also set tracing in **any arbitrary python code** by using the decorator `@traceable`:
 
