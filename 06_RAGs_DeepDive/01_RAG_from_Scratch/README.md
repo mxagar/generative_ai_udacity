@@ -14,7 +14,11 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
     - [All Environment Variables](#all-environment-variables)
     - [Original LangChain Repository](#original-langchain-repository)
   - [Part 1: Introduction](#part-1-introduction)
+    - [Code Walkthrough](#code-walkthrough)
   - [Part 2: Indexing Overview](#part-2-indexing-overview)
+    - [Code Walkthrough](#code-walkthrough-1)
+    - [Interesting Links](#interesting-links)
+  - [Part 3: Retrieval](#part-3-retrieval)
   - [Extra: LangSmith](#extra-langsmith)
     - [Setup](#setup-1)
     - [Tracing](#tracing)
@@ -137,7 +141,9 @@ However, there are more advanced RAG systems that go beyond those 3 components; 
 
 This tutorial builds up from basics to advanced.
 
-Very simple RAG example shown in []`RAG_Scratch_Part_01.ipynb`](./notebooks/RAG_Scratch_Part_01.ipynb)
+### Code Walkthrough
+
+Very simple RAG example shown in [`RAG_Scratch_Part_01.ipynb`](./notebooks/RAG_Scratch_Part_01.ipynb)
 
 - A basic RAG is built, where a blog is vectorized and used to build a chatbot.
 - The `hub` does not work if the EU endpoint is used, i.e., pulling the template fails; thus, I ended up using the US API.
@@ -212,6 +218,133 @@ rag_chain.invoke("What is Task Decomposition?")
 ```
 
 ## Part 2: Indexing Overview
+
+Resources:
+
+- Video: [RAG from Scratch: Part 2](https://www.youtube.com/watch?v=bjb_EMsTDKI&list=PLfaIDFEXuae2LXbO1_PKyVJiQ23ZztA0x&index=2)
+- Notebooks: 
+  - Original: [`rag_from_scratch_1_to_4.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_1_to_4.ipynb)
+  - Mine: [`RAG_Scratch_Part_02.ipynb`](./notebooks/RAG_Scratch_Part_02.ipynb)
+
+Given a question, we want the Retriever to select documents which are context relevant to formulate the answer; to that end, the Indexer needs to prepare the documents for efficient and relevant search.
+
+That search for relevant documents is done usually by comparing some numerical representations; there are mainly two types of approaches:
+
+- Sparse, Bag-of-Words, TD-IDF / BM25 
+- Dense, Embeddings, Cosine Similarity / kNN & Co.
+
+![Indexing representations](./assets/indexing_representations.png)
+
+No matter which indexing/search approach we take, we usually need to **split our documents** into chunks; that's because we don't have infinite context space to input them later. That splitting can be done according to several criteria:
+
+- By number of characters
+- By sections
+- By semantic meaning
+- By delimiters
+- etc.
+
+![Splitting](./assets/splitting.png)
+
+### Code Walkthrough
+
+Very simple RAG example shown in [`RAG_Scratch_Part_02.ipynb`](./notebooks/RAG_Scratch_Part_02.ipynb)
+
+```python
+from dotenv import load_dotenv
+
+load_dotenv(override=True, dotenv_path="../.env")
+
+# Documents
+question = "What kinds of pets do I like?"
+document = "My favorite pet is a cat."
+
+## Measure number of tokens/word
+# https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
+# https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
+import tiktoken
+
+def num_tokens_from_string(string: str, encoding_name: str) -> int:
+    """Returns the number of tokens in a text string."""
+    encoding = tiktoken.get_encoding(encoding_name)
+    num_tokens = len(encoding.encode(string))
+    return num_tokens
+
+num_tokens_from_string(question, "cl100k_base")
+
+## Embed text (question & document)
+# https://python.langchain.com/docs/integrations/text_embedding/openai/
+from langchain_openai import OpenAIEmbeddings
+
+embd = OpenAIEmbeddings()
+query_result = embd.embed_query(question)
+document_result = embd.embed_query(document)
+len(query_result)
+
+# Cosine similarity is reccomended (1 indicates identical) for OpenAI embeddings.
+import numpy as np
+
+def cosine_similarity(vec1, vec2):
+    dot_product = np.dot(vec1, vec2)
+    norm_vec1 = np.linalg.norm(vec1)
+    norm_vec2 = np.linalg.norm(vec2)
+    return dot_product / (norm_vec1 * norm_vec2)
+
+similarity = cosine_similarity(query_result, document_result)
+print("Cosine Similarity:", similarity)
+
+# Load blog document
+import bs4
+from langchain_community.document_loaders import WebBaseLoader
+
+loader = WebBaseLoader(
+    web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
+    bs_kwargs=dict(
+        parse_only=bs4.SoupStrainer(
+            class_=("post-content", "post-title", "post-header")
+        )
+    ),
+)
+blog_docs = loader.load()
+
+# Split
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+    chunk_size=300, 
+    chunk_overlap=50)
+
+splits = text_splitter.split_documents(blog_docs)
+
+# Index splitted documents
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
+
+vectorstore = Chroma.from_documents(documents=splits, 
+                                    embedding=OpenAIEmbeddings())
+
+retriever = vectorstore.as_retriever()
+```
+
+### Interesting Links
+
+- [https://chunkviz.up.railway.app](https://chunkviz.up.railway.app)
+- [Count tokens](https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb) considering [~4 char / token](https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them)
+- [Text embedding models](https://python.langchain.com/docs/integrations/text_embedding/openai)
+- [Cosine similarity](https://platform.openai.com/docs/guides/embeddings/frequently-asked-questions) is recommended (1 indicates identical) for OpenAI embeddings.
+- [Document Loaders](https://python.langchain.com/docs/integrations/document_loaders/)
+- [Splitter](https://python.langchain.com/docs/modules/data_connection/document_transformers/recursive_text_splitter)
+- [Vectorstores](https://python.langchain.com/docs/integrations/vectorstores/)
+
+## Part 3: Retrieval
+
+Resources:
+
+- Video: [RAG from Scratch: Part 3](https://www.youtube.com/watch?v=LxNVgdIz9sU&list=PLfaIDFEXuae2LXbO1_PKyVJiQ23ZztA0x&index=3)
+- Notebooks: 
+  - Original: [`rag_from_scratch_1_to_4.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_1_to_4.ipynb)
+  - Mine: [`RAG_Scratch_Part_03.ipynb`](./notebooks/RAG_Scratch_Part_03.ipynb)
+
+
 
 ## Extra: LangSmith
 
