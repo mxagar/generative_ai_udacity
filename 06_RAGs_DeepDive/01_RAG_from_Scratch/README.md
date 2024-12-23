@@ -15,6 +15,11 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
     - [Original LangChain Repository](#original-langchain-repository)
   - [Part 1: Introduction](#part-1-introduction)
   - [Part 2: Indexing Overview](#part-2-indexing-overview)
+  - [Extra: LangSmith](#extra-langsmith)
+    - [Setup](#setup-1)
+    - [Tracing](#tracing)
+    - [Playground](#playground)
+    - [Others](#others)
 
 ## Setup
 
@@ -58,6 +63,8 @@ We should create a a free developer account at **LangSmith**; there are two poss
 I created both accounts, but the EU one seems to have issues when some hub repositories are accessed, so I ended up using the US one.
 
 Once we have the LangSmith US account, we set a new project (e.g., `rag-from-scratch`) and get the environment variables to access it.
+
+See the section [LangSmith](#langsmith) for more information on the tool.
 
 Additionally, we need an [OpenAI Platform Account](https://platform.openai.com/) and a project API key from it.
 
@@ -115,6 +122,8 @@ We have three basic RAG stages/components:
 2. Retrieval: Given a query, the relevant documents are obtained
 3. Generation: An answer is formulated by the LLN given the query and the retrieved documents
 
+![RAG Basic](./assets/rag_simple.png)
+
 However, there are more advanced RAG systems that go beyond those 3 components; they include:
 
 - Query transformation
@@ -132,7 +141,7 @@ Very simple RAG example shown in []`RAG_Scratch_Part_01.ipynb`](./notebooks/RAG_
 
 - A basic RAG is built, where a blog is vectorized and used to build a chatbot.
 - The `hub` does not work if the EU endpoint is used, i.e., pulling the template fails; thus, I ended up using the US API.
-- LangSmith: This is some kind of tracking tool, with a nice UI: [LangSmith](https://smith.langchain.com); it's similar to MLflow, but built for LLMs and LangChain-related operations.
+- LangSmith: This is some kind of tracking tool, with a nice UI: [LangSmith](https://smith.langchain.com); it's similar to MLflow, but built for LLMs and LangChain-related operations. See Section [Extra: LangSmith](#extra-langsmith).
 
 ![LangSmith UI](./assets/langsmith_ui_1.png)
 
@@ -176,7 +185,7 @@ retriever = vectorstore.as_retriever()
 #### RETRIEVAL and GENERATION ####
 
 # Prompt
-prompt = hub.pull("rlm/rag-prompt") # This is not working anymore...
+prompt = hub.pull("rlm/rag-prompt") # This requires the US endpoint...
 # Alternative:
 #prompt = PromptTemplate(
 #    input_variables=["context", "question"],
@@ -204,4 +213,79 @@ rag_chain.invoke("What is Task Decomposition?")
 
 ## Part 2: Indexing Overview
 
+## Extra: LangSmith
 
+LangSmith: Observability and evaluation for LLM applications.
+
+![LangSmith UI](./assets/langsmith_ui_2.png)
+
+Brief description of components:
+
+- Projects: collections of traces or logs from our application.
+- ...
+
+### Setup
+
+Create a free developer account; there are two possible endpoints:
+
+- [LangSmith (EU)](https://eu.smith.langchain.com/)
+- **[LangSmith (US)](https://smith.langchain.com)**: use this one.
+
+We define a new project (e.g., `rag-from-scratch`) and create a `LANGCHAIN_API_KEY` (if not prompted, in the settings).
+Then, we set all those variables to `.env`:
+
+```bash
+# Obtained from LangSmith
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_ENDPOINT="https://eu.api.smith.langchain.com"
+LANGCHAIN_API_KEY="xxx"
+LANGCHAIN_PROJECT="xxx" # Free choice, then a project appears in the LangSmith Web UI
+```
+
+### Tracing
+
+Source: [Getting Started with LangSmith (1/7): Tracing](https://www.youtube.com/watch?v=Hab2CV_0hpQ)
+
+When we run our project using LangChain, even though there is no reference to LangSmith in the code, if the environment variables are correctly set, we see that a project appears in the [LangSmith Web UI](https://smith.langchain.com):
+
+![LangSmith UI](./assets/langsmith_ui_1.png)
+
+However, we can also explicitly make sure that everything is traced by running
+
+```python
+from langsmith import utils
+utils.tracing_is_enables()
+```
+
+In the Web UI of the traced project we can see:
+
+- Telemetry information
+- Inputs (queries) and outputs (answer), as well as prompts
+- etc.
+
+In the web UI, if we open the traced project, we see a `RunableSequence` object, which builds a run-tree; in that tree, for each step we have all the inputs and output. The last element is often an LLM, e.g., `ChatOpenAI`; before it, in an LLM application (e.g., RAG), several steps are carried out in a chain.
+
+We can also set tracing in **any arbitrary python code** by using the decorator `@traceable`:
+
+```python
+from langsmith import traceable
+
+# The decorated function will have a step in RunableSequence
+@traceable(run_type="retriever") # there are several types
+def retrieve_from_db(question):
+    pass
+```
+
+### Playground
+
+Source: [Getting Started with LangSmith (2/7): Playground](https://www.youtube.com/watch?v=suJU1VYzy50)
+
+
+### Others
+
+
+[Getting Started with LangSmith (3/7): X]()
+[Getting Started with LangSmith (4/7): X]()
+[Getting Started with LangSmith (5/7): X]()
+[Getting Started with LangSmith (6/7): X]()
+[Getting Started with LangSmith (7/7): X]()
