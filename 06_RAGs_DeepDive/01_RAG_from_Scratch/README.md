@@ -22,6 +22,17 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
     - [Code Walkthrough](#code-walkthrough-2)
   - [Part 4: Generation](#part-4-generation)
     - [Code Walkthrough](#code-walkthrough-3)
+  - [Part 5: Query Translation - Multi-Query Approach](#part-5-query-translation---multi-query-approach)
+    - [Code Walkthrough](#code-walkthrough-4)
+  - [Part 6: X](#part-6-x)
+  - [Part 7: X](#part-7-x)
+  - [Part 8: X](#part-8-x)
+  - [Part 9: X](#part-9-x)
+  - [Part 10: X](#part-10-x)
+  - [Part 11: X](#part-11-x)
+  - [Part 12: X](#part-12-x)
+  - [Part 13: X](#part-13-x)
+  - [Part 14: X](#part-14-x)
   - [Extra: LangSmith](#extra-langsmith)
     - [Setup](#setup-1)
     - [Tracing](#tracing)
@@ -521,6 +532,54 @@ rag_chain = (
 # RunnablePassthrough: This is a special Runnable that passes the input to the next Runnable unchanged
 rag_chain.invoke("What is Task Decomposition?")
 ```
+
+## Part 5: Query Translation - Multi-Query Approach
+
+Resources:
+
+- Video: [RAG from Scratch: Part 5](https://www.youtube.com/watch?v=JChPi0CRnDY&list=PLfaIDFEXuae2LXbO1_PKyVJiQ23ZztA0x&index=5)
+- Notebooks:
+  - Original: [`rag_from_scratch_5_to_9.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_5_to_9.ipynb)
+  - Mine: [`RAG_Scratch_Part_05.ipynb`](./notebooks/RAG_Scratch_Part_05.ipynb)
+
+If the query is poorly written, the retriever is going to perform badly; thus, we want to have the best query possible to get all the relevant documents.
+
+There are several approaches to improve the query:
+
+- Rewrite to be a more general question
+- Rewrite to be a more concrete question
+- Generate different perspectives of the query, i.e., multiple queries
+- etc.
+
+![Query Translation Overview](./assets/query_translation_overview.png)
+
+In the **multi-query approach**, given a query `Q`, we generate some new queries `Q1, Q2, Q3,...`. The intuition is that using different subqueries the nuances are going to be better captured, and we're going to increase the chances to point to the best documents by the retriever. Thus, we generate new queries, and for each of them, we retrieve in parallel more candidate documents.
+
+![Multi-Query](./assets/multi_query.png)
+
+### Code Walkthrough
+
+```python
+
+```
+
+## Part 6: X
+
+## Part 7: X
+
+## Part 8: X
+
+## Part 9: X
+
+## Part 10: X
+
+## Part 11: X
+
+## Part 12: X
+
+## Part 13: X
+
+## Part 14: X
 
 ## Extra: LangSmith
 
