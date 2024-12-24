@@ -26,6 +26,7 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
     - [Setup](#setup-1)
     - [Tracing](#tracing)
     - [Playground](#playground)
+    - [Prompts](#prompts)
     - [Others](#others)
 
 ## Setup
@@ -97,6 +98,11 @@ The original LangChain repository is added as a submodule:
 # Add and initialize the LanChain repo as a submodule
 cd .../generative_ai_udacity
 git submodule add https://github.com/langchain-ai/rag-from-scratch.git 06_RAGs_DeepDive/01_RAG_from_Scratch/notebooks/rag-from-scratch
+git submodule init
+git submodule update
+
+# Add also the LangSmith Onboarding repo
+git submodule add https://github.com/nhuang-lc/langsmith-onboarding.git 06_RAGs_DeepDive/01_RAG_from_Scratch/notebooks/langsmith-onboarding
 git submodule init
 git submodule update
 
@@ -572,11 +578,37 @@ def retrieve_from_db(question):
 
 Source: [Getting Started with LangSmith (2/7): Playground](https://www.youtube.com/watch?v=suJU1VYzy50)
 
+![Playground](./assets/playground.png)
+
+Select a traced project:
+
+- Open a run object (e.g., `RunnableSequence`) 
+- Click on the chat/LLM entity within it (e.g., `ChatOpenAI`)
+- Click on the `Playground` button (up-right)
+- Playground opens, where we see, and can change:
+  - The **model provided** and the model itself
+  - The **model settings** of the LLM
+  - The used **prompt**
+  - The obtained **answer and the metrics**
+
+In the Playground, we can tune the parameters and the prompt, and iterate to see how the answers differ.
+
+If we are using a paywalled provider, we are requested to enter their API key.
+
+We can also change the output type:
+
+- We can add more **messages**
+- Ask to trigger a **tool**
+- Ask to comply to a given **output schema**
+
+### Prompts
+
+Source: [Getting Started with LangSmith (3/7): Prompts](https://www.youtube.com/watch?v=OJUR7Aa5atM)
+
 
 ### Others
 
 
-[Getting Started with LangSmith (3/7): X]()
 [Getting Started with LangSmith (4/7): X]()
 [Getting Started with LangSmith (5/7): X]()
 [Getting Started with LangSmith (6/7): X]()
