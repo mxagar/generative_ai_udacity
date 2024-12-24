@@ -479,12 +479,13 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 
 # Prompt
+# Note that we define variables in {}
+# Their values will by defined later, even at run time
 template = """Answer the question based only on the following context:
 {context}
 
 Question: {question}
 """
-
 prompt = ChatPromptTemplate.from_template(template)
 
 # LLM
@@ -493,15 +494,23 @@ llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
 # Chain
 chain = prompt | llm
 
-# Run
+# Run: A chain can be run by executing its invoke() method
+# where we pass a dict which contains the the values of the variables we have used.
+# In this case, the prompt has the variables context and question
 chain.invoke({"context":docs, "question":"What is Task Decomposition?"})
 
+## -- More Sophisticated RAG Chain
+
 from langchain import hub
+# We can pull specific prompts that are known to work well in certain scenarios
 prompt_hub_rag = hub.pull("rlm/rag-prompt")
 
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 
+# This is a more complex chain that uses the RAG architecture
+# The retriever is used to retrieve relevant documents
+# and it is passed as the context!
 rag_chain = (
     {"context": retriever, "question": RunnablePassthrough()}
     | prompt
@@ -509,6 +518,7 @@ rag_chain = (
     | StrOutputParser()
 )
 
+# RunnablePassthrough: This is a special Runnable that passes the input to the next Runnable unchanged
 rag_chain.invoke("What is Task Decomposition?")
 ```
 
