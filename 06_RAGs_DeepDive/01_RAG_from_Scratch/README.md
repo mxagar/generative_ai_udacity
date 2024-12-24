@@ -27,6 +27,7 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
     - [Tracing](#tracing)
     - [Playground](#playground)
     - [Prompts](#prompts)
+    - [Datasets and Evaluations](#datasets-and-evaluations)
     - [Others](#others)
 
 ## Setup
@@ -520,7 +521,17 @@ LangSmith: Observability and evaluation for LLM applications.
 Brief description of components:
 
 - Projects: collections of traces or logs from our application.
+- Playground: a space where run queries can be observed in detail and retried with different parameters.
+- Prompts: collection of prompts, obtained and saved from the Playground; we can create different versions (public or private) and pull them in our code.
+- Datasets and Evaluations: 
 - ...
+
+This section is built on some short videos produced by the LangChain team, all of them referenced.
+
+Additionally, there are some companion notebooks:
+
+- The original repository, added as submodule: [`notebooks/langsmith-onboarding/`](./notebooks/langsmith-onboarding/)
+- A test notebook created by me: [`notebooks/LangSmith_Onboarding.ipynb`](./notebooks/LangSmith_Onboarding.ipynb)
 
 ### Setup
 
@@ -539,6 +550,8 @@ LANGCHAIN_ENDPOINT="https://eu.api.smith.langchain.com"
 LANGCHAIN_API_KEY="xxx"
 LANGCHAIN_PROJECT="xxx" # Free choice, then a project appears in the LangSmith Web UI
 ```
+
+Note that the companion notebooks have been added as a submodule (see [Setup](#setup)).
 
 ### Tracing
 
@@ -593,6 +606,10 @@ Select a traced project:
 
 In the Playground, we can tune the parameters and the prompt, and iterate to see how the answers differ.
 
+Also, we can click on `Compare` and different queries with different settings are run and compared:
+
+![Playground - Compare](./assets/playground_compare.png)
+
 If we are using a paywalled provider, we are requested to enter their API key.
 
 We can also change the output type:
@@ -601,15 +618,83 @@ We can also change the output type:
 - Ask to trigger a **tool**
 - Ask to comply to a given **output schema**
 
+Example code in [`notebooks/LangSmith_Onboarding.ipynb`](./notebooks/LangSmith_Onboarding.ipynb):
+
+```python
+from dotenv import load_dotenv
+
+load_dotenv(override=True, dotenv_path="../.env")
+
+import os
+os.environ["LANGCHAIN_PROJECT"] = "langsmith-onboarding"
+
+from langsmith import utils
+utils.tracing_is_enabled()
+
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0)
+
+def fake_db_retrieval():
+    with open('langsmith-onboarding/polly_facts.txt', 'r') as file:
+        polly_facts = file.read()
+    return polly_facts
+
+from langchain_core.prompts import ChatPromptTemplate
+
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a parrot named Polly! Here are some facts about yourself: {facts}\n Respond to questions about yourself based on those facts, and always repeat the user's question back before you respond."),
+    ("user", "{question}")
+])
+
+chain = prompt | llm
+
+question = "What sport are you the best at?"
+chain.invoke({"question": question, "facts": fake_db_retrieval()})
+```
+
 ### Prompts
 
 Source: [Getting Started with LangSmith (3/7): Prompts](https://www.youtube.com/watch?v=OJUR7Aa5atM)
 
+In a Playground window, we can take our current prompt and replace content in it with variables such as `{variable}`, and we add their current values in the panel on the right.
+
+That way we can select prompts that work well and save them as templates that contain variables, ready to be used in other situations.
+
+![Playground - Prompts](./assets/playground_prompts.png)
+
+Prompts can be saved (including the model settings associated with them), as public or private, and then they can be fetched to be used, e.g.:
+
+```python
+# ...
+
+from langchain import hub
+prompt = hub.pull("polly-prompt-1") # name of our saved prompt
+
+chain = fake_db_retrieval_step | prompt | llm
+
+question = "What do you like to eat?"
+chain.invoke(question)
+```
+
+Our prompts can be accessed in the left vertical menu; if we open one, we can further tune it by clicking on the `Edit in Playground` button:
+
+- We can change the prompt, e.g.: add "always answer in French".
+- To save: `Commit`. Each commit has a hash, which can be used to pull the desired prompt version (an example is in each commit):
+  ```python
+  from langchain import hub
+  #prompt = hub.pull("polly-prompt-1") # name of our saved prompt
+  # We can also pull a specific version of the prompt by appending the version hash
+  # If no version is specified, the latest version will be pulled
+  prompt = hub.pull("polly-prompt-1:97e2301d")
+  ```
+
+### Datasets and Evaluations
+
+Source: [Getting Started with LangSmith (4/7): Datasets and Evaluations](https://www.youtube.com/watch?v=EhAHbRJUZIA&list=TLPQMjQxMjIwMjSOwzqjSGfahg&index=2)
 
 ### Others
 
-
-[Getting Started with LangSmith (4/7): X]()
 [Getting Started with LangSmith (5/7): X]()
 [Getting Started with LangSmith (6/7): X]()
 [Getting Started with LangSmith (7/7): X]()
