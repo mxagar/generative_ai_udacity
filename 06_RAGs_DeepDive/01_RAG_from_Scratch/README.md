@@ -419,10 +419,90 @@ Resources:
   - Original: [`rag_from_scratch_1_to_4.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_1_to_4.ipynb)
   - Mine: [`RAG_Scratch_Part_04.ipynb`](./notebooks/RAG_Scratch_Part_04.ipynb)
 
+After the relevant documents associated with the question have been retrieved, those documents are passed as context to the LLM by asking in a prompt to provide an answer to the question given the selected documents.
+
+The prompt is basically a command text with placeholders as *context* and *query*, which are replaced by the current question.
+
+![RAG Generation](./assets/generation.png)
+
 ### Code Walkthrough
 
 ```python
+from dotenv import load_dotenv
 
+load_dotenv(override=True, dotenv_path="../.env")
+
+# Load blog document
+import bs4
+from langchain_community.document_loaders import WebBaseLoader
+
+loader = WebBaseLoader(
+    web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
+    bs_kwargs=dict(
+        parse_only=bs4.SoupStrainer(
+            class_=("post-content", "post-title", "post-header")
+        )
+    ),
+)
+blog_docs = loader.load()
+
+# Split
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+    chunk_size=300, 
+    chunk_overlap=50)
+
+splits = text_splitter.split_documents(blog_docs)
+
+# Index
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
+vectorstore = Chroma.from_documents(documents=splits, 
+                                    embedding=OpenAIEmbeddings())
+
+
+# Define retriever: k-NN serach with k=1
+retriever = vectorstore.as_retriever(search_kwargs={"k": 1})
+
+# Retrieve
+docs = retriever.get_relevant_documents("What is Task Decomposition?")
+
+from langchain_openai import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate
+
+# Prompt
+template = """Answer the question based only on the following context:
+{context}
+
+Question: {question}
+"""
+
+prompt = ChatPromptTemplate.from_template(template)
+
+# LLM
+llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+
+# Chain
+chain = prompt | llm
+
+# Run
+chain.invoke({"context":docs, "question":"What is Task Decomposition?"})
+
+from langchain import hub
+prompt_hub_rag = hub.pull("rlm/rag-prompt")
+
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
+
+rag_chain = (
+    {"context": retriever, "question": RunnablePassthrough()}
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+
+rag_chain.invoke("What is Task Decomposition?")
 ```
 
 ## Extra: LangSmith
