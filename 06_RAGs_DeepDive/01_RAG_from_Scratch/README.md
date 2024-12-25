@@ -5,6 +5,8 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
 - [RAG from Scratch by Langchain (Github)](https://github.com/langchain-ai/rag-from-scratch)
 - [RAG from Scratch by Langchain (Youtube & Freecodecamp)](https://www.youtube.com/watch?v=sVcwVQRHIc8)
 
+![RAG from Scratch](./assets/rag_from_scratch.png)
+
 ## Table of Contents
 
 - [RAG from Scratch: LangChain](#rag-from-scratch-langchain)
@@ -560,16 +562,46 @@ In the **multi-query approach**, given a query `Q`, we generate some new queries
 ### Code Walkthrough
 
 ```python
+from dotenv import load_dotenv
 
+load_dotenv(override=True, dotenv_path="../.env")
 ```
 
 ## Part 6: X
 
+Resources:
+
+- Video: [RAG from Scratch: Part X]()
+- Notebooks:
+  - Original: [`rag_from_scratch_5_to_9.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_5_to_9.ipynb)
+  - Mine: [`RAG_Scratch_Part_06.ipynb`](./notebooks/RAG_Scratch_Part_06.ipynb)
+
 ## Part 7: X
+
+Resources:
+
+- Video: [RAG from Scratch: Part X]()
+- Notebooks:
+  - Original: [`rag_from_scratch_5_to_9.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_5_to_9.ipynb)
+  - Mine: [`RAG_Scratch_Part_07.ipynb`](./notebooks/RAG_Scratch_Part_07.ipynb)
 
 ## Part 8: X
 
+Resources:
+
+- Video: [RAG from Scratch: Part X]()
+- Notebooks:
+  - Original: [`rag_from_scratch_5_to_9.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_5_to_9.ipynb)
+  - Mine: [`RAG_Scratch_Part_08.ipynb`](./notebooks/RAG_Scratch_Part_08.ipynb)
+
 ## Part 9: X
+
+Resources:
+
+- Video: [RAG from Scratch: Part X]()
+- Notebooks:
+  - Original: [`rag_from_scratch_5_to_9.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_5_to_9.ipynb)
+  - Mine: [`RAG_Scratch_Part_09.ipynb`](./notebooks/RAG_Scratch_Part_09.ipynb)
 
 ## Part 10: X
 
