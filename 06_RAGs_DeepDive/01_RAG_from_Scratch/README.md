@@ -26,7 +26,8 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
     - [Code Walkthrough](#code-walkthrough-3)
   - [Part 5: Query Translation - Multi-Query Approach](#part-5-query-translation---multi-query-approach)
     - [Code Walkthrough](#code-walkthrough-4)
-  - [Part 5: Query Translation - Fusion Approach](#part-5-query-translation---fusion-approach)
+  - [Part 5: Query Translation - Rank Fusion Approach](#part-5-query-translation---rank-fusion-approach)
+    - [Code Walkthrough](#code-walkthrough-5)
   - [Part 7: X](#part-7-x)
   - [Part 8: X](#part-8-x)
   - [Part 9: X](#part-9-x)
@@ -687,7 +688,7 @@ final_rag_chain.invoke({"question":question})
 ![LangSmith: Multi-Query](./assets/langsmith_multi_query.png)
 
 
-## Part 5: Query Translation - Fusion Approach
+## Part 5: Query Translation - Rank Fusion Approach
 
 Resources:
 
@@ -696,7 +697,199 @@ Resources:
   - Original: [`rag_from_scratch_5_to_9.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_5_to_9.ipynb)
   - Mine: [`RAG_Scratch_Part_06.ipynb`](./notebooks/RAG_Scratch_Part_06.ipynb)
 
+The **Rank Fusion** approach is very similar to the multi-query approach from the previous section, however, we have this difference:
 
+- In the multi-query approach, we computed a unique set of documents from all the retrieved sets.
+- In the rank-fusion approach we fuse the document sets and rank each document.
+
+Thus, we basically change
+
+- the prompt, which asks for *related* multiple queries associated to the first query,
+- and the `get_unique_union()` step, which becomes `reciprocal_rank_fusion()`; the latter takes several sets and fuses them by additionally performing ranking.
+
+Note that the fusion-ranking approach can be used with different retrieval systems; i.e., for instance, we can perform *semantic search* with several prompts and *keyword-based search*, and combine the results.
+
+In general, the `reciprocal_rank_fusion()` function works as follows:
+
+1. **Input**: The function takes multiple ranked lists as input. Each list contains items ranked by their relevance, with the most relevant items at the top.
+
+2. **Reciprocal Rank Calculation**: For each item in each list, calculate the reciprocal rank. The reciprocal rank of an item at position `k` in a list is `1 / (k + 1)`. This gives higher scores to items that appear higher in the list.
+
+3. **Score Aggregation**: Sum the reciprocal ranks of each item across all lists. This means that items appearing in multiple lists will have higher aggregated scores.
+
+4. **Sorting**: Sort the items by their aggregated scores in descending order to produce the final combined ranked list.
+
+```python
+def reciprocal_rank_fusion(*ranked_lists):
+    from collections import defaultdict
+
+    # Dictionary to store the aggregated scores
+    scores = defaultdict(float)
+
+    # Iterate over each ranked list
+    for ranked_list in ranked_lists:
+        # Iterate over each item in the ranked list
+        for rank, item in enumerate(ranked_list):
+            # Calculate the reciprocal rank and add it to the item's score
+            scores[item] += 1 / (rank + 1)
+
+    # Sort items by their aggregated scores in descending order
+    fused_ranked_list = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+
+    # Return only the items, not their scores
+    return [item for item, score in fused_ranked_list]
+
+# Example usage
+ranked_list1 = ['a', 'b', 'c', 'd']
+ranked_list2 = ['b', 'a', 'e', 'd']
+ranked_list3 = ['c', 'a', 'b', 'f']
+
+fused_list = reciprocal_rank_fusion(ranked_list1, ranked_list2, ranked_list3)
+print(fused_list)
+```
+
+### Code Walkthrough
+
+The code is very similar to the previous section; instead of `get_unique_union()`, we use `reciprocal_rank_fusion()`,
+
+However, the rank/score value seems to be ignored in the RAG chain?
+Maybe the prompt needs to be changed to include the rank/score as a hint/variable?
+
+```python
+from dotenv import load_dotenv
+
+load_dotenv(override=True, dotenv_path="../.env")
+
+#### INDEXING ####
+
+# Load blog
+import bs4
+from langchain_community.document_loaders import WebBaseLoader
+loader = WebBaseLoader(
+    web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
+    bs_kwargs=dict(
+        parse_only=bs4.SoupStrainer(
+            class_=("post-content", "post-title", "post-header")
+        )
+    ),
+)
+blog_docs = loader.load()
+
+# Split
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+    chunk_size=300, 
+    chunk_overlap=50)
+
+# Make splits
+splits = text_splitter.split_documents(blog_docs)
+
+# Index
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
+vectorstore = Chroma.from_documents(documents=splits, 
+                                    embedding=OpenAIEmbeddings())
+
+retriever = vectorstore.as_retriever()
+
+### MULTIPLE QUERIES PROMPT ###
+
+from langchain.prompts import ChatPromptTemplate
+
+# RAG-Fusion: Related - key term in the prompt is *related*
+template = """You are a helpful assistant that generates multiple search queries based on a single input query. \n
+Generate multiple search queries related to: {question} \n
+Output (4 queries):"""
+prompt_rag_fusion = ChatPromptTemplate.from_template(template)
+
+from langchain_core.output_parsers import StrOutputParser
+from langchain_openai import ChatOpenAI
+
+generate_queries = (
+    prompt_rag_fusion 
+    | ChatOpenAI(temperature=0)
+    | StrOutputParser() 
+    | (lambda x: x.split("\n"))
+)
+
+### Reciprocal Rank Fusion (RRF) ###
+
+from langchain.load import dumps, loads
+
+# This function takes a list of lists of ranked documents (ranked by their order)
+# and returns a list of tuples, each containing the document and its fused score.
+# To that end, it uses the Reciprocal Rank Fusion (RRF) algorithm is used:
+# - For each document in each list, its score is computed: 1 / (rank + k),
+# - Document scores are summed up across all lists,
+# - Documents are sorted by their total scores in descending order.
+def reciprocal_rank_fusion(results: list[list], k=60):
+    """ Reciprocal_rank_fusion that takes multiple lists of ranked documents 
+        and an optional parameter k used in the RRF formula """
+    
+    # Initialize a dictionary to hold fused scores for each unique document
+    fused_scores = {}
+
+    # Iterate through each list of ranked documents
+    for docs in results:
+        # Iterate through each document in the list, with its rank (position in the list)
+        for rank, doc in enumerate(docs):
+            # Convert the document to a string format to use as a key (assumes documents can be serialized to JSON)
+            doc_str = dumps(doc)
+            # If the document is not yet in the fused_scores dictionary, add it with an initial score of 0
+            if doc_str not in fused_scores:
+                fused_scores[doc_str] = 0
+            # Retrieve the current score of the document, if any
+            previous_score = fused_scores[doc_str]
+            # Update the score of the document using the RRF formula: 1 / (rank + k)
+            fused_scores[doc_str] += 1 / (rank + k)
+
+    # Sort the documents based on their fused scores in descending order to get the final reranked results
+    reranked_results = [
+        (loads(doc), score)
+        for doc, score in sorted(fused_scores.items(), key=lambda x: x[1], reverse=True)
+    ]
+
+    # Return the reranked results as a list of tuples, each containing the document and its fused score
+    return reranked_results
+
+retrieval_chain_rag_fusion = generate_queries | retriever.map() | reciprocal_rank_fusion
+question = "What is task decomposition for LLM agents?"
+docs = retrieval_chain_rag_fusion.invoke({"question": question})
+len(docs)
+
+### RAG CHAIN ###
+
+from operator import itemgetter
+from langchain_openai import ChatOpenAI
+from langchain_core.runnables import RunnablePassthrough
+
+template = """Answer the following question based on this context:
+
+{context}
+
+Question: {question}
+"""
+
+llm = ChatOpenAI(temperature=0)
+
+prompt = ChatPromptTemplate.from_template(template)
+
+# Here we define the final chain that will be used to answer the question
+# We use the the retrieval_chain_rag_fusion as the context for the LLM,
+# i.e., we passed the fused-ranked documents.
+# HOWEVER, THE RANK/SCORE SEEMS TO BE IGNORED IN THE RAG CHAIN?
+# Maybe the prompt needs to be changed to include the rank/score as a hint/variable?
+final_rag_chain = (
+    {"context": retrieval_chain_rag_fusion, 
+     "question": itemgetter("question")} 
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+
+final_rag_chain.invoke({"question":question})
+
+```
 
 ## Part 7: X
 
