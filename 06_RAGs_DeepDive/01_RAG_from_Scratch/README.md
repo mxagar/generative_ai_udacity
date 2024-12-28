@@ -26,7 +26,7 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
     - [Code Walkthrough](#code-walkthrough-3)
   - [Part 5: Query Translation - Multi-Query Approach](#part-5-query-translation---multi-query-approach)
     - [Code Walkthrough](#code-walkthrough-4)
-  - [Part 6: X](#part-6-x)
+  - [Part 5: Query Translation - Fusion Approach](#part-5-query-translation---fusion-approach)
   - [Part 7: X](#part-7-x)
   - [Part 8: X](#part-8-x)
   - [Part 9: X](#part-9-x)
@@ -561,22 +561,142 @@ In the **multi-query approach**, given a query `Q`, we generate some new queries
 
 A common approach to generate multiple queries is using an LLM as an agent which rephrases the original query.
 
+In the following, the code to achieve that is shown; the following image displays the view in LangSmith:
+
+![LangSmith: Multi-Query](./assets/langsmith_multi_query.png)
+
 ### Code Walkthrough
 
 ```python
 from dotenv import load_dotenv
 
 load_dotenv(override=True, dotenv_path="../.env")
+
+#### INDEXING ####
+
+# Load blog
+import bs4
+from langchain_community.document_loaders import WebBaseLoader
+loader = WebBaseLoader(
+    web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
+    bs_kwargs=dict(
+        parse_only=bs4.SoupStrainer(
+            class_=("post-content", "post-title", "post-header")
+        )
+    ),
+)
+blog_docs = loader.load()
+
+# Split
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+    chunk_size=300, 
+    chunk_overlap=50)
+
+# Make splits
+splits = text_splitter.split_documents(blog_docs)
+
+# Index
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
+vectorstore = Chroma.from_documents(documents=splits, 
+                                    embedding=OpenAIEmbeddings())
+
+retriever = vectorstore.as_retriever()
+
+#### MULTI-QUERY PROMPT ####
+
+from langchain.prompts import ChatPromptTemplate
+
+# Prompt for Multi Query: Different Perspectives
+# We use an LLM as an agent which rephrases the original query
+# The prompt text has the {question} variable, which is the one that is rephrased
+# The prompt explicitly says to provide 5 alternative questions separated by new lines
+template = """You are an AI language model assistant. Your task is to generate five 
+different versions of the given user question to retrieve relevant documents from a vector 
+database. By generating multiple perspectives on the user question, your goal is to help
+the user overcome some of the limitations of the distance-based similarity search. 
+Provide these alternative questions separated by newlines. Original question: {question}"""
+prompt_perspectives = ChatPromptTemplate.from_template(template)
+
+from langchain_core.output_parsers import StrOutputParser
+from langchain_openai import ChatOpenAI
+
+# Note that we split by new lines (following the prompt)
+generate_queries = (
+    prompt_perspectives 
+    | ChatOpenAI(temperature=0) 
+    | StrOutputParser() 
+    | (lambda x: x.split("\n"))
+)
+
+#### MULTI-QUERY RETRIEVAL ####
+
+from langchain.load import dumps, loads
+
+def get_unique_union(documents: list[list]):
+    """ Unique union of retrieved docs """
+    # Flatten list of lists, and convert each Document to string
+    flattened_docs = [dumps(doc) for sublist in documents for doc in sublist]
+    # Get unique documents
+    unique_docs = list(set(flattened_docs))
+    # Return
+    return [loads(doc) for doc in unique_docs]
+
+# Retrieve
+# We build a chain in which the rephrasing/generation of alternate questions
+# is a step; then, a retriever gets all those prompts
+# and we filter the unique set from the retrieved documents,
+# because overlap in the returned sets (one for each alternate prompt) is expected
+question = "What is task decomposition for LLM agents?"
+retrieval_chain = generate_queries | retriever.map() | get_unique_union
+docs = retrieval_chain.invoke({"question":question})
+len(docs) # 4
+
+#### MULTI-QUERY RAG CHAIN ####
+
+from operator import itemgetter
+from langchain_openai import ChatOpenAI
+from langchain_core.runnables import RunnablePassthrough
+
+# RAG
+template = """Answer the following question based on this context:
+
+{context}
+
+Question: {question}
+"""
+
+prompt = ChatPromptTemplate.from_template(template)
+
+llm = ChatOpenAI(temperature=0)
+
+# The retrieval chain, which creates the alternate prompts + an extended set of documents
+# is passed as a step
+final_rag_chain = (
+    {"context": retrieval_chain, 
+     "question": itemgetter("question")} 
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+
+final_rag_chain.invoke({"question":question})
 ```
 
-## Part 6: X
+![LangSmith: Multi-Query](./assets/langsmith_multi_query.png)
+
+
+## Part 5: Query Translation - Fusion Approach
 
 Resources:
 
-- Video: [RAG from Scratch: Part X]()
+- Video: [RAG from Scratch: Part 6](https://www.youtube.com/watch?v=77qELPbNgxA&list=PLfaIDFEXuae2LXbO1_PKyVJiQ23ZztA0x&index=6)
 - Notebooks:
   - Original: [`rag_from_scratch_5_to_9.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_5_to_9.ipynb)
   - Mine: [`RAG_Scratch_Part_06.ipynb`](./notebooks/RAG_Scratch_Part_06.ipynb)
+
+
 
 ## Part 7: X
 
@@ -604,6 +724,9 @@ Resources:
 - Notebooks:
   - Original: [`rag_from_scratch_5_to_9.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_5_to_9.ipynb)
   - Mine: [`RAG_Scratch_Part_09.ipynb`](./notebooks/RAG_Scratch_Part_09.ipynb)
+
+[Medium: Forget RAG, the Future is RAG-Fusion (by Adrian H. Raudaschl)](https://towardsdatascience.com/forget-rag-the-future-is-rag-fusion-1147298d8ad1)
+
 
 ## Part 10: X
 
