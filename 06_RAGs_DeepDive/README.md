@@ -9,7 +9,7 @@ Table of contents:
 - [Retrieval-Augmented Generation](#retrieval-augmented-generation)
   - [Other of My Basic Resources (Start There)](#other-of-my-basic-resources-start-there)
   - [RAG from Scratch - LangChain and Freecodecamp](#rag-from-scratch---langchain-and-freecodecamp)
-  - [RAG Deployment on AWS](#rag-deployment-on-aws)
+  - [RAG Deployment on Azure](#rag-deployment-on-azure)
   - [RAGAS Tutorial](#ragas-tutorial)
   - [Interesting Links](#interesting-links)
 
@@ -27,7 +27,7 @@ Sources:
 - [RAG from Scratch by Langchain (Github)](https://github.com/langchain-ai/rag-from-scratch)
 - [RAG from Scratch by Langchain (Youtube & Freecodecamp)](https://www.youtube.com/watch?v=sVcwVQRHIc8)
 
-## RAG Deployment on AWS
+## RAG Deployment on Azure
 
 :construction:
 

@@ -559,6 +559,8 @@ In the **multi-query approach**, given a query `Q`, we generate some new queries
 
 ![Multi-Query](./assets/multi_query.png)
 
+A common approach to generate multiple queries is using an LLM as an agent which rephrases the original query.
+
 ### Code Walkthrough
 
 ```python
