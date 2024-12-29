@@ -113,7 +113,9 @@ debugpy==1.8.11
 decorator==5.1.1
     # via ipython
 defusedxml==0.7.1
-    # via nbconvert
+    # via
+    #   nbconvert
+    #   youtube-transcript-api
 deprecated==1.2.15
     # via
     #   opentelemetry-api
@@ -627,6 +629,8 @@ python-dotenv==1.0.1
     #   uvicorn
 python-json-logger==3.2.1
     # via jupyter-events
+pytube==15.0.0
+    # via -r requirements.in
 pytz==2024.2
     # via pandas
 pyyaml==6.0.2
@@ -680,6 +684,7 @@ requests==2.32.3
     #   torchtext
     #   transformers
     #   wikipedia
+    #   youtube-transcript-api
 requests-oauthlib==2.0.0
     # via kubernetes
 requests-toolbelt==1.0.0
@@ -910,6 +915,8 @@ xxhash==3.5.0
     #   evaluate
 yarl==1.18.3
     # via aiohttp
+youtube-transcript-api==0.6.3
+    # via -r requirements.in
 zipp==3.21.0
     # via importlib-metadata
 
