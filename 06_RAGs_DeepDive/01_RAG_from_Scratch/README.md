@@ -26,9 +26,11 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
     - [Code Walkthrough](#code-walkthrough-3)
   - [Part 5: Query Translation - Multi-Query Approach](#part-5-query-translation---multi-query-approach)
     - [Code Walkthrough](#code-walkthrough-4)
-  - [Part 5: Query Translation - Rank Fusion Approach](#part-5-query-translation---rank-fusion-approach)
+  - [Part 6: Query Translation - Rank Fusion Approach](#part-6-query-translation---rank-fusion-approach)
     - [Code Walkthrough](#code-walkthrough-5)
-  - [Part 7: X](#part-7-x)
+  - [Part 7: Query Translation - Decomposition](#part-7-query-translation---decomposition)
+    - [Code Walkthrough](#code-walkthrough-6)
+    - [Interesting Links, Papers](#interesting-links-papers)
   - [Part 8: X](#part-8-x)
   - [Part 9: X](#part-9-x)
   - [Part 10: X](#part-10-x)
@@ -688,7 +690,7 @@ final_rag_chain.invoke({"question":question})
 ![LangSmith: Multi-Query](./assets/langsmith_multi_query.png)
 
 
-## Part 5: Query Translation - Rank Fusion Approach
+## Part 6: Query Translation - Rank Fusion Approach
 
 Resources:
 
@@ -891,14 +893,226 @@ final_rag_chain.invoke({"question":question})
 
 ```
 
-## Part 7: X
+## Part 7: Query Translation - Decomposition
 
 Resources:
 
-- Video: [RAG from Scratch: Part X]()
+- Video: [RAG from Scratch: Part 7](https://www.youtube.com/watch?v=h0OPWlEOank&list=PLfaIDFEXuae2LXbO1_PKyVJiQ23ZztA0x&index=7)
 - Notebooks:
   - Original: [`rag_from_scratch_5_to_9.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_5_to_9.ipynb)
   - Mine: [`RAG_Scratch_Part_07.ipynb`](./notebooks/RAG_Scratch_Part_07.ipynb)
+
+This approach is based in two papers:
+
+- Least-to-Most (see below): to solve a task, the LLM is asked first to decompose the problem into subtasks. Then, each subtask is solved separately by the LLM, and the final answer is assembled.
+- IR-CoT (see below): Information retrieval with Chain of Thought approach; information is retrieved step-wise an after each step some simple reasoning is required from the LLM.
+
+The main idea behind the *decomposition approach* for query translation lies on the approaches introduced by those papers:
+
+- The original question is decomposed into several subquestions.
+- For each subquestion, we run retrieval + generation (with context) to obtain the answer.
+- We can operate in two ways:
+  - **Recursively**: The answer of the previous subquestion is used as part of the context for the next; in the context we add also the documents retrieved for the current sub-question. I think that is not really *recursive*...
+  - We get the answers **individually/independently** for each sub-question, and use them together in a final LLM call where the original question is asked.
+
+This would be the *recursive approach*:
+
+![Query Translation - Decomposition](./assets/decomposition_recursive.png)
+
+This would be the *independent/individual QA approach*:
+
+![Query Translation - Decomposition](./assets/decomposition_individual.png)
+
+### Code Walkthrough
+
+```python
+from dotenv import load_dotenv
+
+load_dotenv(override=True, dotenv_path="../.env")
+
+#### INDEXING ####
+
+# Load blog
+import bs4
+from langchain_community.document_loaders import WebBaseLoader
+loader = WebBaseLoader(
+    web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
+    bs_kwargs=dict(
+        parse_only=bs4.SoupStrainer(
+            class_=("post-content", "post-title", "post-header")
+        )
+    ),
+)
+blog_docs = loader.load()
+
+# Split
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+    chunk_size=300, 
+    chunk_overlap=50)
+
+# Make splits
+splits = text_splitter.split_documents(blog_docs)
+
+# Index
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
+vectorstore = Chroma.from_documents(documents=splits, 
+                                    embedding=OpenAIEmbeddings())
+
+retriever = vectorstore.as_retriever()
+
+### PROMPT ###
+
+from langchain.prompts import ChatPromptTemplate
+
+# Decomposition
+template = """You are a helpful assistant that generates multiple sub-questions related to an input question. \n
+The goal is to break down the input into a set of sub-problems / sub-questions that can be answers in isolation. \n
+Generate multiple search queries related to: {question} \n
+Output (3 queries):"""
+prompt_decomposition = ChatPromptTemplate.from_template(template)
+
+from langchain_openai import ChatOpenAI
+from langchain_core.output_parsers import StrOutputParser
+
+# LLM
+llm = ChatOpenAI(temperature=0)
+
+# Chain
+generate_queries_decomposition = ( prompt_decomposition | llm | StrOutputParser() | (lambda x: x.split("\n")))
+
+# Run
+question = "What are the main components of an LLM-powered autonomous agent system?"
+questions = generate_queries_decomposition.invoke({"question":question})
+
+### ANSWER RECURSIVELY ###
+
+# Prompt
+template = """Here is the question you need to answer:
+
+\n --- \n {question} \n --- \n
+
+Here is any available background question + answer pairs:
+
+\n --- \n {q_a_pairs} \n --- \n
+
+Here is additional context relevant to the question: 
+
+\n --- \n {context} \n --- \n
+
+Use the above context and any background question + answer pairs to answer the question: \n {question}
+"""
+
+decomposition_prompt = ChatPromptTemplate.from_template(template)
+
+from operator import itemgetter
+from langchain_core.output_parsers import StrOutputParser
+
+def format_qa_pair(question, answer):
+    """Format Q and A pair"""
+    
+    formatted_string = ""
+    formatted_string += f"Question: {question}\nAnswer: {answer}\n\n"
+    return formatted_string.strip()
+
+# llm
+llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+
+q_a_pairs = ""
+for q in questions:
+    # itemgetter("question") extracts the question from the input dictionary
+    # passed to the invoke method
+    # Note that here we build the chain for each sub-question
+    # and add:
+    # - the retrieved documents (related to the sub-question) as context
+    # - the sub-question itself
+    # - the background/previous sub-question + answer pairs
+    rag_chain = (
+    {"context": itemgetter("question") | retriever, 
+     "question": itemgetter("question"),
+     "q_a_pairs": itemgetter("q_a_pairs")} 
+    | decomposition_prompt
+    | llm
+    | StrOutputParser())
+
+    answer = rag_chain.invoke({"question":q, "q_a_pairs":q_a_pairs})
+    q_a_pair = format_qa_pair(q, answer)
+    q_a_pairs = q_a_pairs + "\n---\n"+  q_a_pair
+
+answer
+
+### ANSWER INDIVIDUALLY ###
+
+# Answer each sub-question individually 
+
+from langchain import hub
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+from langchain_core.output_parsers import StrOutputParser
+from langchain_openai import ChatOpenAI
+
+# RAG prompt
+prompt_rag = hub.pull("rlm/rag-prompt")
+
+def retrieve_and_rag(question,prompt_rag,sub_question_generator_chain):
+    """RAG on each sub-question"""
+    
+    # Use our decomposition / 
+    sub_questions = sub_question_generator_chain.invoke({"question":question})
+    
+    # Initialize a list to hold RAG chain results
+    rag_results = []
+    
+    for sub_question in sub_questions:
+        
+        # Retrieve documents for each sub-question
+        #retrieved_docs = retriever.get_relevant_documents(sub_question)
+        retrieved_docs = retriever.invoke(sub_question)
+        
+        # Use retrieved documents and sub-question in RAG chain
+        answer = (prompt_rag | llm | StrOutputParser()).invoke({"context": retrieved_docs, 
+                                                                "question": sub_question})
+        rag_results.append(answer)
+    
+    return rag_results,sub_questions
+
+# Wrap the retrieval and RAG process in a RunnableLambda for integration into a chain
+answers, questions = retrieve_and_rag(question, prompt_rag, generate_queries_decomposition)
+
+def format_qa_pairs(questions, answers):
+    """Format Q and A pairs"""
+    
+    formatted_string = ""
+    for i, (question, answer) in enumerate(zip(questions, answers), start=1):
+        formatted_string += f"Question {i}: {question}\nAnswer {i}: {answer}\n\n"
+    return formatted_string.strip()
+
+context = format_qa_pairs(questions, answers)
+
+# Prompt
+template = """Here is a set of Q+A pairs:
+
+{context}
+
+Use these to synthesize an answer to the question: {question}
+"""
+
+prompt = ChatPromptTemplate.from_template(template)
+
+final_rag_chain = (
+    prompt
+    | llm
+    | StrOutputParser()
+)
+
+final_rag_chain.invoke({"context":context,"question":question})
+```
+
+### Interesting Links, Papers
+
+- [Least-to-Most Prompting Enables Complex Reasoning in Large Language Models (Zhou et al., 2023)](https://arxiv.org/abs/2205.10625)
+- [Interleaving Retrieval with Chain-of-Thought Reasoning for Knowledge-Intensive Multi-Step Questions (Trivedi et al., 2022)](https://arxiv.org/abs/2212.10509)
 
 ## Part 8: X
 
