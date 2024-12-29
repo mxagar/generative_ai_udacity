@@ -38,11 +38,14 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
   - [Part 9: Query Translation - HyDE](#part-9-query-translation---hyde)
     - [Code Walkthrough](#code-walkthrough-8)
     - [Interesting Links, Papers](#interesting-links-papers-2)
-  - [Part 10: X](#part-10-x)
+  - [Part 10: Routing - Logical and Semantic](#part-10-routing---logical-and-semantic)
+    - [Code Walkthrough](#code-walkthrough-9)
   - [Part 11: X](#part-11-x)
   - [Part 12: X](#part-12-x)
   - [Part 13: X](#part-13-x)
   - [Part 14: X](#part-14-x)
+  - [Part 15: X](#part-15-x)
+  - [Part 16: X](#part-16-x)
   - [Extra: LangSmith](#extra-langsmith)
     - [Setup](#setup-1)
     - [Tracing](#tracing)
@@ -1377,12 +1380,42 @@ final_rag_chain.invoke({"context":retireved_docs,"question":question})
 
 ```
 
-
 ### Interesting Links, Papers
 
 - [Precise Zero-Shot Dense Retrieval without Relevance Labels (Gao et al., 2022)](https://arxiv.org/abs/2212.10496)
 
-## Part 10: X
+## Part 10: Routing - Logical and Semantic
+
+Resources:
+
+- Video: [RAG from Scratch: Part 10](https://www.youtube.com/watch?v=pfpIndq7Fi8&list=PLfaIDFEXuae2LXbO1_PKyVJiQ23ZztA0x&index=10)
+- Notebooks:
+  - Original: [`rag_from_scratch_10_and_11.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_10_and_11.ipynb)
+  - Mine: [`RAG_Scratch_Part_10.ipynb`](./notebooks/RAG_Scratch_Part_10.ipynb)
+
+Routing refers to the action of selecting the proper data source (retriever) depending on the queries we have generated during query translation; in other words, we want to select
+
+- a vector store,
+- a graph DB,
+- a relational (SQL) DB.
+
+Alternatively, we can also use routing to redirect to a proper prompt, used with an associated data source.
+
+This routing can take place
+
+- using a logical scheme: we let an LLM to choose the correct retriever, by requesting a structured output;
+- using a semantic scheme: we can embed a library of prompts beforehand; then, when ask the question and select the prompt which is closest to it.
+
+![Routing: Logical](./assets/routing_logical.png)
+
+![Routing: Semantic](./assets/routing_semantic.png)
+
+A useful utility used in the example is the *function schema* of OpenAI, which allows for structured outputs
+
+![Routing with Structured Output](./assets/routing_structured.png) 
+
+### Code Walkthrough
+
 
 ## Part 11: X
 
@@ -1391,6 +1424,10 @@ final_rag_chain.invoke({"context":retireved_docs,"question":question})
 ## Part 13: X
 
 ## Part 14: X
+
+## Part 15: X
+
+## Part 16: X
 
 ## Extra: LangSmith
 
