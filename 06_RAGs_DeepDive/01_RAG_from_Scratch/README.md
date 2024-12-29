@@ -28,13 +28,16 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
     - [Code Walkthrough](#code-walkthrough-4)
   - [Part 6: Query Translation - Rank Fusion Approach](#part-6-query-translation---rank-fusion-approach)
     - [Code Walkthrough](#code-walkthrough-5)
+    - [Interesting Links](#interesting-links-1)
   - [Part 7: Query Translation - Decomposition](#part-7-query-translation---decomposition)
     - [Code Walkthrough](#code-walkthrough-6)
     - [Interesting Links, Papers](#interesting-links-papers)
   - [Part 8: Query Translation - Step-Back Prompting](#part-8-query-translation---step-back-prompting)
     - [Code Walkthrough](#code-walkthrough-7)
     - [Interesting Links, Papers](#interesting-links-papers-1)
-  - [Part 9: X](#part-9-x)
+  - [Part 9: Query Translation - HyDE](#part-9-query-translation---hyde)
+    - [Code Walkthrough](#code-walkthrough-8)
+    - [Interesting Links, Papers](#interesting-links-papers-2)
   - [Part 10: X](#part-10-x)
   - [Part 11: X](#part-11-x)
   - [Part 12: X](#part-12-x)
@@ -895,6 +898,10 @@ final_rag_chain.invoke({"question":question})
 
 ```
 
+### Interesting Links
+
+- [Medium: Forget RAG, the Future is RAG-Fusion (by Adrian H. Raudaschl)](https://towardsdatascience.com/forget-rag-the-future-is-rag-fusion-1147298d8ad1)
+
 ## Part 7: Query Translation - Decomposition
 
 Resources:
@@ -1263,17 +1270,117 @@ chain.invoke({"question": question})
 
 - [Take a Step Back: Evoking Reasoning via Abstraction in Large Language Models (Zheng et al., 2023)](https://arxiv.org/abs/2310.06117)
 
-## Part 9: X
+## Part 9: Query Translation - HyDE
 
 Resources:
 
-- Video: [RAG from Scratch: Part X]()
+- Video: [RAG from Scratch: Part 9](https://www.youtube.com/watch?v=SaDzIVkYqyY&list=PLfaIDFEXuae2LXbO1_PKyVJiQ23ZztA0x&index=9)
 - Notebooks:
   - Original: [`rag_from_scratch_5_to_9.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_5_to_9.ipynb)
   - Mine: [`RAG_Scratch_Part_09.ipynb`](./notebooks/RAG_Scratch_Part_09.ipynb)
 
-[Medium: Forget RAG, the Future is RAG-Fusion (by Adrian H. Raudaschl)](https://towardsdatascience.com/forget-rag-the-future-is-rag-fusion-1147298d8ad1)
+The intuition behind HyDE is the following:
 
+- When we perform semantic search of a question, we map it to the embedding space and look for similar document vectors.
+- However, a question and a closest chunk are in reality very different things: one is short, the other long, one is a question, the other a statement/affirmation, etc.
+- Solution: map the question into a hypothetical document which best represents it in the embedding space.
+
+Therefore, basically, we initially ask an LLM to re-write the query as a hypothetical document. Then, we use that hypothetical document to retrieve the candidate documents.
+
+### Code Walkthrough
+
+```python
+from dotenv import load_dotenv
+
+load_dotenv(override=True, dotenv_path="../.env")
+
+#### INDEXING ####
+
+# Load blog
+import bs4
+from langchain_community.document_loaders import WebBaseLoader
+loader = WebBaseLoader(
+    web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
+    bs_kwargs=dict(
+        parse_only=bs4.SoupStrainer(
+            class_=("post-content", "post-title", "post-header")
+        )
+    ),
+)
+blog_docs = loader.load()
+
+# Split
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+    chunk_size=300, 
+    chunk_overlap=50)
+
+# Make splits
+splits = text_splitter.split_documents(blog_docs)
+
+# Index
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
+vectorstore = Chroma.from_documents(documents=splits, 
+                                    embedding=OpenAIEmbeddings())
+
+retriever = vectorstore.as_retriever()
+
+### PROMPT: Generate a hypothetical document ###
+
+from langchain.prompts import ChatPromptTemplate
+
+# HyDE document genration
+template = """Please write a scientific paper passage to answer the question
+Question: {question}
+Passage:"""
+prompt_hyde = ChatPromptTemplate.from_template(template)
+
+from langchain_core.output_parsers import StrOutputParser
+from langchain_openai import ChatOpenAI
+
+generate_docs_for_retrieval = (
+    prompt_hyde | ChatOpenAI(temperature=0) | StrOutputParser() 
+)
+
+# Run
+question = "What is task decomposition for LLM agents?"
+generate_docs_for_retrieval.invoke({"question":question})
+
+# Retrieve
+retrieval_chain = generate_docs_for_retrieval | retriever 
+retireved_docs = retrieval_chain.invoke({"question":question})
+retireved_docs
+
+# RAG
+from langchain_openai import ChatOpenAI
+from langchain_core.output_parsers import StrOutputParser
+
+llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+
+template = """Answer the following question based on this context:
+
+{context}
+
+Question: {question}
+"""
+
+prompt = ChatPromptTemplate.from_template(template)
+
+final_rag_chain = (
+    prompt
+    | llm
+    | StrOutputParser()
+)
+
+final_rag_chain.invoke({"context":retireved_docs,"question":question})
+
+```
+
+
+### Interesting Links, Papers
+
+- [Precise Zero-Shot Dense Retrieval without Relevance Labels (Gao et al., 2022)](https://arxiv.org/abs/2212.10496)
 
 ## Part 10: X
 
