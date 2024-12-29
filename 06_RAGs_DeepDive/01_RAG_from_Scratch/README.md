@@ -31,7 +31,9 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
   - [Part 7: Query Translation - Decomposition](#part-7-query-translation---decomposition)
     - [Code Walkthrough](#code-walkthrough-6)
     - [Interesting Links, Papers](#interesting-links-papers)
-  - [Part 8: X](#part-8-x)
+  - [Part 8: Query Translation - Step-Back Prompting](#part-8-query-translation---step-back-prompting)
+    - [Code Walkthrough](#code-walkthrough-7)
+    - [Interesting Links, Papers](#interesting-links-papers-1)
   - [Part 9: X](#part-9-x)
   - [Part 10: X](#part-10-x)
   - [Part 11: X](#part-11-x)
@@ -902,6 +904,8 @@ Resources:
   - Original: [`rag_from_scratch_5_to_9.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_5_to_9.ipynb)
   - Mine: [`RAG_Scratch_Part_07.ipynb`](./notebooks/RAG_Scratch_Part_07.ipynb)
 
+Decomposition aims to translate the query into a less abstract or more concrete domains.
+
 This approach is based in two papers:
 
 - Least-to-Most (see below): to solve a task, the LLM is asked first to decompose the problem into subtasks. Then, each subtask is solved separately by the LLM, and the final answer is assembled.
@@ -1114,14 +1118,150 @@ final_rag_chain.invoke({"context":context,"question":question})
 - [Least-to-Most Prompting Enables Complex Reasoning in Large Language Models (Zhou et al., 2023)](https://arxiv.org/abs/2205.10625)
 - [Interleaving Retrieval with Chain-of-Thought Reasoning for Knowledge-Intensive Multi-Step Questions (Trivedi et al., 2022)](https://arxiv.org/abs/2212.10509)
 
-## Part 8: X
+## Part 8: Query Translation - Step-Back Prompting
 
 Resources:
 
-- Video: [RAG from Scratch: Part X]()
+- Video: [RAG from Scratch: Part 8](https://www.youtube.com/watch?v=xn1jEjRyJ2U&list=PLfaIDFEXuae2LXbO1_PKyVJiQ23ZztA0x&index=8)
 - Notebooks:
   - Original: [`rag_from_scratch_5_to_9.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_5_to_9.ipynb)
   - Mine: [`RAG_Scratch_Part_08.ipynb`](./notebooks/RAG_Scratch_Part_08.ipynb)
+
+While Decomposition translates the query into more concrete domains, *Step-back* translates it to a more abstract domain.
+
+In the original paper (see below), they create so called *step-back* questions giving few-shot examples; the generated step-back question is expected to be more general. For instance: to the question
+
+    In which country was Steve Jobs born?
+
+we would get something like
+
+    Tell me about Steve Jobs' biography
+
+The final RAG prompt contains
+
+- The regular retrieved documents, i.e., the documents retrieved after our original Q
+- The documents retrieved after formulating the *step-back* Q
+
+### Code Walkthrough
+
+```python
+from dotenv import load_dotenv
+
+load_dotenv(override=True, dotenv_path="../.env")
+
+#### INDEXING ####
+
+# Load blog
+import bs4
+from langchain_community.document_loaders import WebBaseLoader
+loader = WebBaseLoader(
+    web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
+    bs_kwargs=dict(
+        parse_only=bs4.SoupStrainer(
+            class_=("post-content", "post-title", "post-header")
+        )
+    ),
+)
+blog_docs = loader.load()
+
+# Split
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+    chunk_size=300, 
+    chunk_overlap=50)
+
+# Make splits
+splits = text_splitter.split_documents(blog_docs)
+
+# Index
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
+vectorstore = Chroma.from_documents(documents=splits, 
+                                    embedding=OpenAIEmbeddings())
+
+retriever = vectorstore.as_retriever()
+
+### STEP-BACK PROMPT ###
+
+# Few Shot Examples
+from langchain_core.prompts import ChatPromptTemplate, FewShotChatMessagePromptTemplate
+examples = [
+    {
+        "input": "Could the members of The Police perform lawful arrests?",
+        "output": "what can the members of The Police do?",
+    },
+    {
+        "input": "Jan Sindel’s was born in what country?",
+        "output": "what is Jan Sindel’s personal history?",
+    },
+]
+# We now transform these to example messages
+example_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("human", "{input}"),
+        ("ai", "{output}"),
+    ]
+)
+few_shot_prompt = FewShotChatMessagePromptTemplate(
+    example_prompt=example_prompt,
+    examples=examples,
+)
+prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """You are an expert at world knowledge. Your task is to step back and paraphrase a question to a more generic step-back question, which is easier to answer. Here are a few examples:""",
+        ),
+        # Few shot examples
+        few_shot_prompt,
+        # New question
+        ("user", "{question}"),
+    ]
+)
+
+from langchain_openai import ChatOpenAI
+from langchain_core.output_parsers import StrOutputParser
+
+llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+
+generate_queries_step_back = prompt | ChatOpenAI(temperature=0) | StrOutputParser()
+question = "What is task decomposition for LLM agents?"
+generate_queries_step_back.invoke({"question": question})
+
+### ORIGNAL QUESTION ###
+
+from langchain_core.runnables import RunnableLambda
+
+# Response prompt 
+response_prompt_template = """You are an expert of world knowledge. I am going to ask you a question. Your response should be comprehensive and not contradicted with the following context if they are relevant. Otherwise, ignore them if they are not relevant.
+
+# {normal_context}
+# {step_back_context}
+
+# Original Question: {question}
+# Answer:"""
+response_prompt = ChatPromptTemplate.from_template(response_prompt_template)
+
+chain = (
+    {
+        # Retrieve context using the normal question
+        "normal_context": RunnableLambda(lambda x: x["question"]) | retriever,
+        # Retrieve context using the step-back question
+        "step_back_context": generate_queries_step_back | retriever,
+        # Pass on the question
+        "question": lambda x: x["question"],
+    }
+    | response_prompt
+    | ChatOpenAI(temperature=0)
+    | StrOutputParser()
+)
+
+chain.invoke({"question": question})
+```
+
+### Interesting Links, Papers
+
+- [Take a Step Back: Evoking Reasoning via Abstraction in Large Language Models (Zheng et al., 2023)](https://arxiv.org/abs/2310.06117)
 
 ## Part 9: X
 
