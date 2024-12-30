@@ -54,8 +54,8 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
   - [Part 14: ColBERT](#part-14-colbert)
     - [Code Walkthrough](#code-walkthrough-13)
     - [Interesting Links, Papers](#interesting-links-papers-5)
-  - [Part 15: X](#part-15-x)
-  - [Part 16: X](#part-16-x)
+  - [Extra: CRAG](#extra-crag)
+  - [Extra: Self-RAG](#extra-self-rag)
   - [Extra: LangSmith](#extra-langsmith)
     - [Setup](#setup-1)
     - [Tracing](#tracing)
@@ -1922,9 +1922,13 @@ See [`RAG_Scratch_Part_14.ipynb`](./notebooks/RAG_Scratch_Part_14.ipynb).
 - [Langchain: RAGatouille](https://python.langchain.com/docs/integrations/retrievers/ragatouille/)
 - [Simon Willson: Exploring ColBERT with RAGatouille](https://til.simonwillison.net/llms/colbert-ragatouille)
 
-## Part 15: X
+## Extra: CRAG
 
-## Part 16: X
+
+
+## Extra: Self-RAG
+
+
 
 ## Extra: LangSmith
 
