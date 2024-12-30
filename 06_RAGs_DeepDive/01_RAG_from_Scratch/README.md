@@ -43,7 +43,11 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
   - [Part 11:  Query Structuring](#part-11--query-structuring)
     - [Code Walkthrough](#code-walkthrough-10)
     - [Interesting Links](#interesting-links-2)
-  - [Part 12: X](#part-12-x)
+  - [Part 12: Chunking and Multi-representation Indexing](#part-12-chunking-and-multi-representation-indexing)
+    - [Chunking](#chunking)
+    - [Multi-Representation Indexing](#multi-representation-indexing)
+    - [Code Walkthrough](#code-walkthrough-11)
+    - [Interesting Links, Papers](#interesting-links-papers-3)
   - [Part 13: X](#part-13-x)
   - [Part 14: X](#part-14-x)
   - [Part 15: X](#part-15-x)
@@ -1699,7 +1703,64 @@ query_analyzer.invoke(
 
 - [Medium: Constructing Queries with Langchain (by Fatima Mubarak)](https://medium.com/munchy-bytes/constructing-queries-with-langchain-5e3ded7d0c1e)
 
-## Part 12: X
+## Part 12: Chunking and Multi-representation Indexing
+
+Resources:
+
+- Video: [RAG from Scratch: Part 12](https://www.youtube.com/watch?v=gTCU9I6QqCE&list=PLfaIDFEXuae2LXbO1_PKyVJiQ23ZztA0x&index=12)
+- Notebooks:
+  - Original: [`rag_from_scratch_12_to_14.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_12_to_14.ipynb)
+  - Mine: [`RAG_Scratch_Part_12.ipynb`](./notebooks/RAG_Scratch_Part_12.ipynb)
+
+### Chunking
+
+Chunking is not explained; information on specific methods here can be found in this video:
+
+[The 5 Levels Of Text Splitting For Retrieval (by Greg Kamradt)](https://www.youtube.com/watch?v=8OJC21T2SL4)
+
+1. Character Split (`langchain.text_splitter.CharacterTextSplitter`): Splits text into chunks based purely on character count.
+2. Recursive Character Split (`langchain.text_splitter.RecursiveCharacterTextSplitter`): Attempts to split text hierarchically, respecting semantic boundaries (e.g., sentences, paragraphs).
+3. Document Specific Splitting: Custom splitting tailored to the document structure or type (PDFs by pages or headings, HTML documents by tags).
+4. Semantic Splitting (With Embeddings): Uses embeddings to determine where logical semantic breaks occur (e.g., topic changes or key points).
+5. Agentic Splitting: Splitting is controlled by an AI agent that dynamically decides where to split based on context and downstream requirements.
+
+| **Method**                | **Focus**                | **Preserves Semantics?** | **Computational Cost** | **Best For**                        |
+|---------------------------|--------------------------|---------------------------|--------------------------|--------------------------------------|
+| **Character Split**        | Uniform size            | No                        | Low                      | Simple, fast chunking.              |
+| **Recursive Character Split** | Semantic boundaries      | Yes                       | Medium                   | Balanced splitting with context.    |
+| **Document-Specific**      | Document structure      | Depends on rules          | Medium                   | Structured or specific formats.     |
+| **Semantic Splitting**     | Topic/meaning           | Yes                       | High                     | Topic-based or meaning-focused tasks. |
+| **Agentic Splitting**      | Context/task-aware      | Yes                       | High                     | Complex, dynamic workflows.         |
+
+### Multi-Representation Indexing
+
+A multi-representation indexing approach called *proposition indexing* is introduced.
+
+Proposition indexing consists in creating some rich summaries of the document chunks which are better suited for retrieval; these representations are called *propositions*, and they contain distilled chunk information: a summary, keywords, key ideas, etc. These propositions are indexed along with the original documents (or chunks). During retrieval, the summaries are checked against the query vectors; once the best propositions are filtered, their associated original documents are returned, not the propositions. A nice trick is that we can return the full document, not the chunks; thus, with large context LLMs, we can have a better performance.
+
+Somehow, we have decoupled the documents and the information bits used for retrieval.
+
+The original paper is linked below.
+
+![Multi-Representation Indexing](./assets/multi_representation_indexing.png)
+
+### Code Walkthrough
+
+
+
+### Interesting Links, Papers
+
+Chunking:
+
+- [The 5 Levels Of Text Splitting For Retrieval (by Greg Kamradt)](https://www.youtube.com/watch?v=8OJC21T2SL4)
+- [Langchain: How to split text based on semantic similarity](https://python.langchain.com/docs/how_to/semantic-chunker/)
+- [Langchain: How to split Markdown by Headers](https://python.langchain.com/docs/how_to/markdown_header_metadata_splitter/)
+- [Langchain: Text splitters](https://python.langchain.com/docs/concepts/text_splitters/)
+
+Multi-representation indexing:
+
+- [Dense X Retrieval: What Retrieval Granularity Should We Use?](https://arxiv.org/abs/2312.06648)
+- [Langchain Blog: Multi-Vector Retriever for RAG on tables, text, and images](https://blog.langchain.dev/semi-structured-multi-modal-rag/)
 
 ## Part 13: X
 
