@@ -51,7 +51,9 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
   - [Part 13: Hierarchical Indexing with RAPTOR](#part-13-hierarchical-indexing-with-raptor)
     - [Code Walkthrough](#code-walkthrough-12)
     - [Interesting Links, Papers](#interesting-links-papers-4)
-  - [Part 14: X](#part-14-x)
+  - [Part 14: ColBERT](#part-14-colbert)
+    - [Code Walkthrough](#code-walkthrough-13)
+    - [Interesting Links, Papers](#interesting-links-papers-5)
   - [Part 15: X](#part-15-x)
   - [Part 16: X](#part-16-x)
   - [Extra: LangSmith](#extra-langsmith)
@@ -1557,7 +1559,7 @@ Resources:
   - Original: [`rag_from_scratch_10_and_11.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_10_and_11.ipynb)
   - Mine: [`RAG_Scratch_Part_11.ipynb`](./notebooks/RAG_Scratch_Part_11.ipynb)
 
-Query structuring consists in converting a natural language query into some structured query, e.g., SQL or any other metadata-based structured query.
+Query structuring consists in converting a natural language query into some structured query or DSL (Domain Specific Language), e.g., SQL or any other metadata-based structured query.
 
 Vectorstores usually have metadata fields associated to the chunks: `content_search`, `date`, etc. If we are leveraging *query structuring*, we create a structured query which uses those metadata fields; to achieve that, the field names are passed to an LLM so that it can generate the query equivalent to the natural language one which complies with the fields. Then, the string output is parsed to a Pydantic object.
 
@@ -1888,8 +1890,37 @@ I replicated the code in [`RAG_Scratch_Part_13.ipynb`](./notebooks/RAG_Scratch_P
 
 - [RAPTOR: Recursive Abstractive Processing for Tree-Organized Retrieval (Sarthi et al., 2024)](https://arxiv.org/abs/2401.18059)
 
+## Part 14: ColBERT
 
-## Part 14: X
+Resources:
+
+- Video: [RAG from Scratch: Part 14](https://www.youtube.com/watch?v=cN6S0Ehm7_8&list=PLfaIDFEXuae2LXbO1_PKyVJiQ23ZztA0x&index=14)
+- Notebooks:
+  - Original: [`rag_from_scratch_12_to_14.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_12_to_14.ipynb)
+  - Mine: [`RAG_Scratch_Part_14.ipynb`](./notebooks/RAG_Scratch_Part_14.ipynb)
+
+The idea behind ColBERT is to embed every token:
+
+- We treat each token in a document separately as a chunk and embed it, with some additional weighting related to the position.
+- We do the same for the query: we split the query into tokens and embed them.
+
+Then, for each token in the query, we look for the most similar token-embedding in every document. Each document ends up having a set of highest similarity scores and document tokens related to all query tokens. We aggregate these scores for each document and we get the document with the highest score.
+
+This approach is very performant, but latency is definitely an issue, so it's not clear if we can use it in production.
+
+![ColBERT](./assets/colbert.png)
+
+### Code Walkthrough
+
+In the notebook, [RAGatouille](https://github.com/AnswerDotAI/RAGatouille) is used, which makes very easy to use the ColBERT approach.
+
+See [`RAG_Scratch_Part_14.ipynb`](./notebooks/RAG_Scratch_Part_14.ipynb).
+
+### Interesting Links, Papers
+
+- [How ColBERT Helps Developers Overcome the Limits of RAG](https://hackernoon.com/how-colbert-helps-developers-overcome-the-limits-of-rag)
+- [Langchain: RAGatouille](https://python.langchain.com/docs/integrations/retrievers/ragatouille/)
+- [Simon Willson: Exploring ColBERT with RAGatouille](https://til.simonwillison.net/llms/colbert-ragatouille)
 
 ## Part 15: X
 
