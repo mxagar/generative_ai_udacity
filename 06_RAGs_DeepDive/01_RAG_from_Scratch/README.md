@@ -48,7 +48,9 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
     - [Multi-Representation Indexing](#multi-representation-indexing)
     - [Code Walkthrough](#code-walkthrough-11)
     - [Interesting Links, Papers](#interesting-links-papers-3)
-  - [Part 13: X](#part-13-x)
+  - [Part 13: Hierarchical Indexing with RAPTOR](#part-13-hierarchical-indexing-with-raptor)
+    - [Code Walkthrough](#code-walkthrough-12)
+    - [Interesting Links, Papers](#interesting-links-papers-4)
   - [Part 14: X](#part-14-x)
   - [Part 15: X](#part-15-x)
   - [Part 16: X](#part-16-x)
@@ -1839,7 +1841,53 @@ Multi-representation indexing:
 - [Dense X Retrieval: What Retrieval Granularity Should We Use?](https://arxiv.org/abs/2312.06648)
 - [Langchain Blog: Multi-Vector Retriever for RAG on tables, text, and images](https://blog.langchain.dev/semi-structured-multi-modal-rag/)
 
-## Part 13: X
+## Part 13: Hierarchical Indexing with RAPTOR
+
+Resources:
+
+- Videos: 
+  - [RAG from Scratch: Part 13](https://www.youtube.com/watch?v=z_6EeA2LDSw&list=PLfaIDFEXuae2LXbO1_PKyVJiQ23ZztA0x&index=13)
+  - [Building long context RAG with RAPTOR from scratch](https://www.youtube.com/watch?v=jbGchdTL7d0)
+- Notebooks:
+  - Originals:
+    - [`rag_from_scratch_12_to_14.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_12_to_14.ipynb)
+    - [`RAPTOR.ipynb`](https://github.com/langchain-ai/langchain/blob/master/cookbook/RAPTOR.ipynb)
+  - Mine: [`RAG_Scratch_Part_13.ipynb`](./notebooks/RAG_Scratch_Part_13.ipynb)
+
+There are different types of questions/queries:
+
+- Some require very detailed information: *low-level questions*
+- Some require an overview: *high-level questions*
+
+That represents a challenge during retrieval, particularly for *high-level questions*: if we use k-NN retrieval, we limit our candidate list to `k` documents/chunks, but in some cases we might need more chunks than those `k` to get an overview answer.
+
+In the RAPTOR paper (linked below) they proposed the following scheme:
+
+- Leaf/raw documents are clustered based on similarity.
+- Each cluster is summarized.
+- Cluster summaries are embedded and added to the vectorstore.
+- Cluster summaries are summarized to generate a parent summary, which is also added to the vectorstore.
+- We do that recursively until we get a root summary, which is also added to the vectorstore.
+
+With this scheme, higher-level questions find their proper summary.
+
+Note that leafs can be:
+
+- Text chunks from a single doc (as shown in the paper)
+- Full docs (as shown in the image)
+
+![RAPTOR](./assets/raptor.png)
+
+### Code Walkthrough
+
+This code is from [`RAPTOR.ipynb`](https://github.com/langchain-ai/langchain/blob/master/cookbook/RAPTOR.ipynb). In the notebook, RAPTOR is applied this to LangChain's LCEL documentation. In this case, each `doc` is a unique web page of the LCEL docs. The context varies from < 2k tokens on up to > 10k tokens.
+
+I replicated the code in [`RAG_Scratch_Part_13.ipynb`](./notebooks/RAG_Scratch_Part_13.ipynb).
+
+### Interesting Links, Papers
+
+- [RAPTOR: Recursive Abstractive Processing for Tree-Organized Retrieval (Sarthi et al., 2024)](https://arxiv.org/abs/2401.18059)
+
 
 ## Part 14: X
 
