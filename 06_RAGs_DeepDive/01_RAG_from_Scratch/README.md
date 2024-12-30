@@ -42,6 +42,7 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
     - [Code Walkthrough](#code-walkthrough-9)
   - [Part 11:  Query Structuring](#part-11--query-structuring)
     - [Code Walkthrough](#code-walkthrough-10)
+    - [Interesting Links](#interesting-links-2)
   - [Part 12: X](#part-12-x)
   - [Part 13: X](#part-13-x)
   - [Part 14: X](#part-14-x)
@@ -1543,9 +1544,160 @@ print(chain.invoke("What's a black hole"))
 
 ## Part 11:  Query Structuring
 
+Resources:
+
+- Video: [RAG from Scratch: Part 11](https://www.youtube.com/watch?v=kl6NwWYxvbM&list=PLfaIDFEXuae2LXbO1_PKyVJiQ23ZztA0x&index=11)
+- Notebooks:
+  - Original: [`rag_from_scratch_10_and_11.ipynb`](./notebooks/rag-from-scratch/rag_from_scratch_10_and_11.ipynb)
+  - Mine: [`RAG_Scratch_Part_11.ipynb`](./notebooks/RAG_Scratch_Part_11.ipynb)
+
+Query structuring consists in converting a natural language query into some structured query, e.g., SQL or any other metadata-based structured query.
+
+Vectorstores usually have metadata fields associated to the chunks: `content_search`, `date`, etc. If we are leveraging *query structuring*, we create a structured query which uses those metadata fields; to achieve that, the field names are passed to an LLM so that it can generate the query equivalent to the natural language one which complies with the fields. Then, the string output is parsed to a Pydantic object.
+
+![Query Structuring](./assets/query_structuring.png)
+
 ### Code Walkthrough
 
+Let’s assume we’ve built an index that:
 
+1. Allows us to perform unstructured search over the `contents` and `title` of each document.
+2. And to use range filtering on `view count`, `publication date`, and `length`.
+
+We want to convert natural language into structured search queries.
+
+We can define a schema for structured search queries.
+
+The documents metadata should be accessible via `.metadata`:
+
+```python
+    docs[0].metadata
+
+    {'source': 'pbAd8O1Lvm4',
+    'title': 'Self-reflective RAG with LangGraph: Self-RAG and CRAG',
+    'description': 'Unknown',
+    'view_count': 11922,
+    'thumbnail_url': 'https://i.ytimg.com/vi/pbAd8O1Lvm4/hq720.jpg',
+    'publish_date': '2024-02-07 00:00:00',
+    'length': 1058,
+    'author': 'LangChain'}
+```
+
+The notebook code is the following:
+
+```python
+from dotenv import load_dotenv
+
+load_dotenv(override=True, dotenv_path="../.env")
+
+import datetime
+from typing import Literal, Optional, Tuple
+#from langchain_core.pydantic_v1 import BaseModel, Field
+from pydantic import BaseModel, Field
+
+# Define the schema for the tutorial search request.
+# This schema is a Pydantic model that defines the structure of the request body.
+# Then, we define a prompt that asks to convert a NL question into a search query
+# that follows this schema; we can request that to an LLM by using
+# the with_structured_output method.
+class TutorialSearch(BaseModel):
+    """Search over a database of tutorial videos about a software library."""
+
+    content_search: str = Field(
+        ...,
+        description="Similarity search query applied to video transcripts.",
+    )
+    title_search: str = Field(
+        ...,
+        description=(
+            "Alternate version of the content search query to apply to video titles. "
+            "Should be succinct and only include key words that could be in a video "
+            "title."
+        ),
+    )
+    min_view_count: Optional[int] = Field(
+        None,
+        description="Minimum view count filter, inclusive. Only use if explicitly specified.",
+    )
+    max_view_count: Optional[int] = Field(
+        None,
+        description="Maximum view count filter, exclusive. Only use if explicitly specified.",
+    )
+    earliest_publish_date: Optional[datetime.date] = Field(
+        None,
+        description="Earliest publish date filter, inclusive. Only use if explicitly specified.",
+    )
+    latest_publish_date: Optional[datetime.date] = Field(
+        None,
+        description="Latest publish date filter, exclusive. Only use if explicitly specified.",
+    )
+    min_length_sec: Optional[int] = Field(
+        None,
+        description="Minimum video length in seconds, inclusive. Only use if explicitly specified.",
+    )
+    max_length_sec: Optional[int] = Field(
+        None,
+        description="Maximum video length in seconds, exclusive. Only use if explicitly specified.",
+    )
+
+    def pretty_print(self) -> None:
+        for field in self.__fields__:
+            if getattr(self, field) is not None and getattr(self, field) != getattr(
+                self.__fields__[field], "default", None
+            ):
+                print(f"{field}: {getattr(self, field)}")
+
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
+
+system = """You are an expert at converting user questions into database queries. \
+You have access to a database of tutorial videos about a software library for building LLM-powered applications. \
+Given a question, return a database query optimized to retrieve the most relevant results.
+
+If there are acronyms or words you are not familiar with, do not try to rephrase them."""
+prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", system),
+        ("human", "{question}"),
+    ]
+)
+llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0)
+structured_llm = llm.with_structured_output(TutorialSearch)
+query_analyzer = prompt | structured_llm
+
+query_analyzer.invoke({"question": "rag from scratch"}).pretty_print()
+# content_search: rag from scratch
+# title_search: rag
+# min_view_count: 1000
+
+query_analyzer.invoke(
+    {"question": "videos on chat langchain published in 2023"}
+).pretty_print()
+# content_search: chat langchain
+# title_search: 2023
+# earliest_publish_date: 2023-01-01
+# latest_publish_date: 2024-01-01
+
+query_analyzer.invoke(
+    {"question": "videos that are focused on the topic of chat langchain that are published before 2024"}
+).pretty_print()
+# content_search: chat langchain
+# title_search: chat langchain
+# latest_publish_date: 2024-01-01
+
+query_analyzer.invoke(
+    {
+        "question": "how to use multi-modal models in an agent, only videos under 5 minutes"
+    }
+).pretty_print()
+# content_search: multi-modal models agent
+# title_search: multi-modal models agent
+# max_length_sec: 300
+```
+
+### Interesting Links
+
+- [Medium: Constructing Queries with Langchain (by Fatima Mubarak)](https://medium.com/munchy-bytes/constructing-queries-with-langchain-5e3ded7d0c1e)
 
 ## Part 12: X
 
