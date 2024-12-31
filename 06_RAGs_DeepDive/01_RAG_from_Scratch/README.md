@@ -54,7 +54,8 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
   - [Part 14: ColBERT](#part-14-colbert)
     - [Code Walkthrough](#code-walkthrough-13)
     - [Interesting Links, Papers](#interesting-links-papers-5)
-  - [Extra: CRAG](#extra-crag)
+  - [Extra: Corrective RAG (CRAG)](#extra-corrective-rag-crag)
+    - [Ollama](#ollama)
   - [Extra: Self-RAG](#extra-self-rag)
   - [Extra: LangSmith](#extra-langsmith)
     - [Setup](#setup-1)
@@ -118,11 +119,13 @@ I have a `.env` file as the following:
 ```bash
 # Obtained from LangSmith
 LANGCHAIN_TRACING_V2=true
-LANGCHAIN_ENDPOINT="https://eu.api.smith.langchain.com"
+LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
 LANGCHAIN_API_KEY="xxx"
 LANGCHAIN_PROJECT="xxx"
 # OpenAI Project API Key
 OPENAI_API_KEY="xxx"
+# Tavily Search Engine API Key
+TAVILY_API_KEY="xxx"
 ```
 
 ### Original LangChain Repository
@@ -1922,9 +1925,56 @@ See [`RAG_Scratch_Part_14.ipynb`](./notebooks/RAG_Scratch_Part_14.ipynb).
 - [Langchain: RAGatouille](https://python.langchain.com/docs/integrations/retrievers/ragatouille/)
 - [Simon Willson: Exploring ColBERT with RAGatouille](https://til.simonwillison.net/llms/colbert-ragatouille)
 
-## Extra: CRAG
+## Extra: Corrective RAG (CRAG)
 
+Resources:
 
+- Video: [Building Corrective RAG from scratch with open-source, local LLMs](https://www.youtube.com/watch?v=E2shqsYwxck)
+- Notebooks:
+  - Originals: 
+    - [`langgraph_crag.ipynb`](https://github.com/langchain-ai/langgraph/blob/main/examples/rag/langgraph_crag.ipynb)
+    - [`langgraph_crag_local.ipynb`](https://github.com/langchain-ai/langgraph/blob/main/examples/rag/langgraph_crag_local.ipynb)
+  - Mine: [`CRAG.ipynb`](./notebooks/CRAG.ipynb)
+
+Paper: [Corrective Retrieval Augmented Generation (Yan et al., 2024)](https://arxiv.org/abs/2401.15884)
+
+Used tools:
+
+- [Ollama](https://ollama.com) for local LLMs: install it and pull & run an LLM, e.g., `ollama pull llama3.2; ollama run llama3.2`. See more information below.
+- [Tavily Search](https://tavily.com): we need a free account and an API key in `.env`: `TAVILY_API_KEY`.
+- [LangGraph](https://langchain-ai.github.io/langgraph/): 
+
+Self-reflection has become popular recently. It is based on the idea that the LLM (or another grading model) is asked to assess the quality of its output wrt. the main task; if the quality is improvable, the LLM is asked to retry its generation.
+
+The idea behind Corrective RAG (CRAG) is simple and well laid out in their paper:
+
+- First, we do retrieval of the documents given the question: `d`.
+- Then, we grade the documents relative to the question; the scores can be `CORRECT, AMBIGUOUS, INCORRECT`.
+- If `CORRECT`: documents are stripped/compressed to relevant chunks: `k_in`.
+- If `AMBIGUOUS` or `INCORRECT`: a web search is done to compute new/external information chunks: `k_ex`.
+- The final set of `k_in` and `k_ex` is used for generation.
+
+![CRAG Paper Figure](./assets/crag.png)
+
+In the notebook
+
+![CRAG Implementation Schematics](./assets/crag_implementation.png)
+
+### Ollama
+
+Ollama allows to pull and use models locally very easily; we should install it and browse the available models (and tags/versions) on their web, which contain a model card as well as running commands.
+
+![Ollama](./assets/ollama_mistral.png)
+
+Example used in the notebook:
+
+```bash
+# Pull Mistral-Instruct model (4.1 GB)
+ollama pull mistral:instruct
+
+# Run Mistral-Instruct model locally (4.1 GB)
+ollama run mistral:instruct
+```
 
 ## Extra: Self-RAG
 
