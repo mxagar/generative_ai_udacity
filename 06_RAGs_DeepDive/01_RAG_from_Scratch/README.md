@@ -55,7 +55,8 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
     - [Code Walkthrough](#code-walkthrough-13)
     - [Interesting Links, Papers](#interesting-links-papers-5)
   - [Extra: Corrective RAG (CRAG)](#extra-corrective-rag-crag)
-    - [Ollama](#ollama)
+    - [Code](#code)
+    - [Local Setup (no APIs Used)](#local-setup-no-apis-used)
   - [Extra: Self-RAG](#extra-self-rag)
   - [Extra: LangSmith](#extra-langsmith)
     - [Setup](#setup-1)
@@ -1934,7 +1935,9 @@ Resources:
   - Originals: 
     - [`langgraph_crag.ipynb`](https://github.com/langchain-ai/langgraph/blob/main/examples/rag/langgraph_crag.ipynb)
     - [`langgraph_crag_local.ipynb`](https://github.com/langchain-ai/langgraph/blob/main/examples/rag/langgraph_crag_local.ipynb)
-  - Mine: [`CRAG.ipynb`](./notebooks/CRAG.ipynb)
+  - Mine:
+    - [`CRAG.ipynb`](./notebooks/CRAG.ipynb)
+    - [`CRAG_local.ipynb`](./notebooks/CRAG_local.ipynb)
 
 Paper: [Corrective Retrieval Augmented Generation (Yan et al., 2024)](https://arxiv.org/abs/2401.15884)
 
@@ -1956,13 +1959,36 @@ The idea behind Corrective RAG (CRAG) is simple and well laid out in their paper
 
 ![CRAG Paper Figure](./assets/crag.png)
 
-In the notebook
+In the notebook, [LangGraph](https://www.langchain.com/langgraph) is used. LangGraph allows to define workflows as a graph, where 
+
+- We have a state dictionary which is passed from node to node, and each node modifies it.
+- Each node in the graph has a function assigned, which modifies the state.
 
 ![CRAG Implementation Schematics](./assets/crag_implementation.png)
 
-### Ollama
+![CRAG Implementation Schematics](./assets/crag_implementation_2.png)
 
-Ollama allows to pull and use models locally very easily; we should install it and browse the available models (and tags/versions) on their web, which contain a model card as well as running commands.
+When the graph is created in the notebooks, we compile it and can display its shape as a figure:
+
+![CRAG Graph](./assets/crag_graph.png)
+
+### Code
+
+I have replicated two notebooks:
+
+- [`CRAG.ipynb`](./notebooks/CRAG.ipynb): CRAG approach using OpenAI models via their API.
+- [`CRAG_local.ipynb`](./notebooks/CRAG_local.ipynb): CRAG approach using local models with Ollama.
+
+The latter shows how to use LangChain locally.
+
+### Local Setup (no APIs Used)
+
+In the notebook [`CRAG_local.ipynb`](./notebooks/CRAG_local.ipynb), a similar implementation as before is done, but everything runs locally with:
+
+- [GPT4AllEmbeddings](https://python.langchain.com/docs/integrations/text_embedding/gpt4all/)
+- [Ollama](https://ollama.com)
+
+Ollama allows to pull and use models locally very easily; we need to install it and browse the available models (and tags/versions) on their web, which contain a model card as well as running commands.
 
 ![Ollama](./assets/ollama_mistral.png)
 
