@@ -47,3 +47,5 @@ youtube-transcript-api
 pytube
 umap-learn
 ragatouille
+langgraph 
+tavily-python
