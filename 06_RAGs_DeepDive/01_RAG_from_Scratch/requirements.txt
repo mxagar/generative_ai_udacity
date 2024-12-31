@@ -50,6 +50,7 @@ async-timeout==4.0.3
 attrs==24.3.0
     # via
     #   aiohttp
+    #   jsonlines
     #   jsonschema
     #   referencing
 autopep8==2.3.1
@@ -102,6 +103,7 @@ click==8.1.8
     #   flask
     #   llama-parse
     #   nltk
+    #   nomic
     #   typer
     #   uvicorn
 colbert-ai==0.2.19
@@ -211,6 +213,8 @@ google-auth==2.37.0
     # via kubernetes
 googleapis-common-protos==1.66.0
     # via opentelemetry-exporter-otlp-proto-grpc
+gpt4all==2.8.2
+    # via nomic
 greenlet==3.1.1
     # via sqlalchemy
 grpcio==1.68.1
@@ -229,6 +233,7 @@ httpx==0.27.2
     # via
     #   chromadb
     #   jupyterlab
+    #   langchain-mistralai
     #   langgraph-sdk
     #   langsmith
     #   llama-cloud
@@ -237,7 +242,9 @@ httpx==0.27.2
     #   openai
     #   tavily-python
 httpx-sse==0.4.0
-    # via langchain-community
+    # via
+    #   langchain-community
+    #   langchain-mistralai
 huggingface-hub==0.27.0
     # via
     #   -r requirements.in
@@ -306,6 +313,8 @@ joblib==1.4.2
     #   scikit-learn
 json5==0.10.0
     # via jupyterlab-server
+jsonlines==4.0.0
+    # via nomic
 jsonpatch==1.33
     # via langchain-core
 jsonpointer==3.0.0
@@ -386,12 +395,21 @@ langchain-core==0.3.28
     #   langchain-chroma
     #   langchain-community
     #   langchain-experimental
+    #   langchain-mistralai
+    #   langchain-nomic
+    #   langchain-ollama
     #   langchain-openai
     #   langchain-text-splitters
     #   langgraph
     #   langgraph-checkpoint
     #   ragatouille
 langchain-experimental==0.3.4
+    # via -r requirements.in
+langchain-mistralai==0.2.4
+    # via -r requirements.in
+langchain-nomic==0.0.1
+    # via -r requirements.in
+langchain-ollama==0.2.2
     # via -r requirements.in
 langchain-openai==0.2.14
     # via -r requirements.in
@@ -466,6 +484,8 @@ llvmlite==0.43.0
     # via
     #   numba
     #   pynndescent
+loguru==0.7.3
+    # via nomic
 lxml==5.3.0
     # via -r requirements.in
 markdown-it-py==3.0.0
@@ -532,6 +552,10 @@ nltk==3.9.1
     # via
     #   llama-index
     #   llama-index-core
+nomic[local]==3.3.4
+    # via
+    #   -r requirements.in
+    #   langchain-nomic
 notebook==7.3.2
     # via jupyter
 notebook-shim==0.2.4
@@ -562,6 +586,7 @@ numpy==1.26.4
     #   langchain-community
     #   llama-index-core
     #   matplotlib
+    #   nomic
     #   numba
     #   numexpr
     #   onnx
@@ -582,7 +607,9 @@ oauthlib==3.2.2
     #   kubernetes
     #   requests-oauthlib
 ollama==0.4.4
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   langchain-ollama
 onnx==1.17.0
     # via ragatouille
 onnxruntime==1.20.1
@@ -672,6 +699,7 @@ pandas==2.2.3
     #   datasets
     #   evaluate
     #   llama-index-readers-file
+    #   nomic
 pandocfilters==1.5.1
     # via nbconvert
 parso==0.8.4
@@ -683,6 +711,7 @@ pillow==11.0.0
     #   diffusers
     #   llama-index-core
     #   matplotlib
+    #   nomic
     #   sentence-transformers
     #   torchvision
 platformdirs==4.3.6
@@ -718,7 +747,9 @@ ptyprocess==0.7.0
 pure-eval==0.2.3
     # via stack-data
 pyarrow==18.1.0
-    # via datasets
+    # via
+    #   datasets
+    #   nomic
 pyasn1==0.6.1
     # via
     #   pyasn1-modules
@@ -737,10 +768,12 @@ pydantic==2.10.4
     #   instructor
     #   langchain
     #   langchain-core
+    #   langchain-mistralai
     #   langsmith
     #   llama-cloud
     #   llama-index-core
     #   llama-parse
+    #   nomic
     #   ollama
     #   openai
     #   pydantic-settings
@@ -756,6 +789,8 @@ pygments==2.18.0
     #   jupyter-console
     #   nbconvert
     #   rich
+pyjwt==2.10.1
+    # via nomic
 pynndescent==0.5.13
     # via umap-learn
 pynvml==12.0.0
@@ -832,6 +867,7 @@ requests==2.32.3
     #   datasets
     #   diffusers
     #   evaluate
+    #   gpt4all
     #   huggingface-hub
     #   instructor
     #   jupyterlab-server
@@ -841,6 +877,7 @@ requests==2.32.3
     #   langchainhub
     #   langsmith
     #   llama-index-core
+    #   nomic
     #   posthog
     #   requests-oauthlib
     #   requests-toolbelt
@@ -866,6 +903,7 @@ rich==13.9.4
     # via
     #   chromadb
     #   instructor
+    #   nomic
     #   typer
 rpds-py==0.22.3
     # via
@@ -959,6 +997,7 @@ tinycss2==1.4.0
 tokenizers==0.20.3
     # via
     #   chromadb
+    #   langchain-mistralai
     #   transformers
 tomli==2.2.1
     # via
@@ -999,9 +1038,11 @@ tqdm==4.67.1
     #   colbert-ai
     #   datasets
     #   evaluate
+    #   gpt4all
     #   huggingface-hub
     #   llama-index-core
     #   nltk
+    #   nomic
     #   openai
     #   sentence-transformers
     #   torchtext
@@ -1045,6 +1086,7 @@ typing-extensions==4.12.2
     #   async-lru
     #   chromadb
     #   fastapi
+    #   gpt4all
     #   huggingface-hub
     #   ipython
     #   langchain-core

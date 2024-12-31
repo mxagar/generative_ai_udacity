@@ -20,6 +20,10 @@ langchain[all]
 langchain-openai
 langchain-community
 langchain-chroma
+langchain-nomic
+langchain-mistralai
+langchain-ollama
+langchainhub
 langchain_experimental
 lxml
 numexpr
@@ -41,7 +45,6 @@ transformers
 transformers[torch]
 wheel
 wikipedia
-langchainhub
 tiktoken
 youtube-transcript-api
 pytube
@@ -49,3 +52,4 @@ umap-learn
 ragatouille
 langgraph 
 tavily-python
+nomic[local]
