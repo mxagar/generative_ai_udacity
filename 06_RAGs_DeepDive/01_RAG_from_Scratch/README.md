@@ -65,8 +65,10 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
     - [Tracing](#tracing)
     - [Playground](#playground)
     - [Prompts](#prompts)
-    - [Datasets and Evaluations](#datasets-and-evaluations)
-    - [Others](#others)
+    - [Datasets and Experiments](#datasets-and-experiments)
+    - [Annotation Queues](#annotation-queues)
+    - [Automations and Online Evaluation](#automations-and-online-evaluation)
+    - [Dashboards](#dashboards)
 
 ## Setup
 
@@ -2075,8 +2077,10 @@ Brief description of components:
 - Projects: collections of traces or logs from our application.
 - Playground: a space where run queries can be observed in detail and retried with different parameters.
 - Prompts: collection of prompts, obtained and saved from the Playground; we can create different versions (public or private) and pull them in our code.
-- Datasets and Evaluations: 
-- ...
+- Datasets and Experiments: ...
+- Annotation Queues: ...
+- Automations and Online Evaluation: ..
+- Dashboards: ...
 
 This section is built on some short videos produced by the LangChain team, all of them referenced.
 
@@ -2241,12 +2245,36 @@ Our prompts can be accessed in the left vertical menu; if we open one, we can fu
   prompt = hub.pull("polly-prompt-1:97e2301d")
   ```
 
-### Datasets and Evaluations
+### Datasets and Experiments
 
-Source: [Getting Started with LangSmith (4/7): Datasets and Evaluations](https://www.youtube.com/watch?v=EhAHbRJUZIA&list=TLPQMjQxMjIwMjSOwzqjSGfahg&index=2)
+Source: [Getting Started with LangSmith (4/7): Datasets and Experiments](https://www.youtube.com/watch?v=EhAHbRJUZIA&list=TLPQMjQxMjIwMjSOwzqjSGfahg&index=2)
 
-### Others
+LangSmith allows to create Datasets and Experiments (left bar menu):
 
-[Getting Started with LangSmith (5/7): X]()
-[Getting Started with LangSmith (6/7): X]()
-[Getting Started with LangSmith (7/7): X]()
+- Datasets can be created (`+ New Dataset`) or modified for evaluation in different ways:
+  - Import from CSV/JSON.
+  - Create empty dataset and add items (QA and context) manually.
+  - We can programmatically create a dataset, too, via `client.create_dataset()`.
+- Experiments are Evaluations in which we test our LLM/RAG against a given dataset.
+  - When we click on `+ New Experiment`, an example code is provided, where we see all the steps to implement an Evaluation/Experiment:
+    - Imports
+    - Create a dataset, if necessary, using `client.create_dataset()`
+    - Define the target function
+    - Define the evaluator
+    - Run the evaluation with `client.evaluate()`
+  - Note that we can change many things in our RAG/Application and test how it behaves against the selected dataset: the prompt, the model, etc.
+
+
+
+### Annotation Queues
+
+Source: [Getting Started with LangSmith (5/7): Annotation Queues](https://www.youtube.com/watch?v=rP-tMjaWoX8)
+
+### Automations and Online Evaluation
+
+Source: [Getting Started with LangSmith (6/7): Automations & Online Evaluation](https://www.youtube.com/watch?v=xj2R3lBgihs)
+
+### Dashboards
+
+Source: [Getting Started with LangSmith (7/7): Dashboards](https://www.youtube.com/watch?v=LEIghyTGgQk)
+

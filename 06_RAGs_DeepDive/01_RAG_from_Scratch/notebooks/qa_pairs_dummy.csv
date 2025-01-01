@@ -1,0 +1,11 @@
+pair_id,question_id,answer_id,question_text,answer_text,answer_quality
+1,1,11,At what time is lunch time?,Lunch time is at 13:00,0.7
+2,1,12,At what time is lunch time?,Lunch time is at 19:00,-0.7
+3,1,13,At what time is lunch time?,"It depends on the location: In South Europe it is usually at 13:00 CET, in North Europe at 12:00 CET. A good average lunch time could be 12:30 in the local time.",0.9
+4,2,14,What is the capital of France?,The capital of France is Paris.,1.0
+5,2,15,What is the capital of France?,The capital of France is Lyon.,-0.5
+6,3,16,Which are the primary colors?,"The primary colors are red, blue, and yellow.",1.0
+7,3,17,Which are the primary colors?,Primary colors include green and purple.,-0.8
+8,4,18,How long does it take to boil an egg?,It takes about 7 minutes to boil an egg.,0.8
+9,5,19,What is the tallest mountain in the world?,The tallest mountain in the world is Mount Everest.,1.0
+10,5,20,What is the tallest mountain in the world?,The tallest mountain is Zugspitze.,-0.6
