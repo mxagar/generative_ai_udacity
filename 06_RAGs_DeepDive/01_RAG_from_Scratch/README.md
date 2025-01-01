@@ -58,6 +58,8 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
     - [Code](#code)
     - [Local Setup (no APIs Used)](#local-setup-no-apis-used)
   - [Extra: Self-RAG](#extra-self-rag)
+    - [Code Walkthrough](#code-walkthrough-14)
+    - [Paper](#paper)
   - [Extra: LangSmith](#extra-langsmith)
     - [Setup](#setup-1)
     - [Tracing](#tracing)
@@ -2004,7 +2006,63 @@ ollama run mistral:instruct
 
 ## Extra: Self-RAG
 
+- Video: [Self-reflective RAG with LangGraph: Self-RAG and CRAG](https://www.youtube.com/watch?v=pbAd8O1Lvm4)
+- Notebooks:
+  - Originals: 
+    - [`langgraph_self_rag_local.ipynb`](https://github.com/langchain-ai/langgraph/blob/main/examples/rag/langgraph_self_rag_local.ipynb)
+    - [`langgraph_self_rag.ipynb`](https://github.com/langchain-ai/langgraph/blob/main/examples/rag/langgraph_self_rag.ipynb)
+  - Mine:
+    - [`SelfRAG.ipynb`](./notebooks/SelfRAG.ipynb)
 
+The *Self-RAG* approach is similar to the previous one, but more sophisticated; a graph is built using LangGraph and the following workflow is implemented:
+
+![Self-RAG](./assets/self_rag.png)
+
+Thus, after the document retrieval, we check:
+
+- The relevance of the documents
+- The hallucination level of the generated answers
+- Whether the answer targets the question or not
+
+Depending on the values/states on those conditional steps, we can go back to
+
+- Retrieve new documents
+- Re-generate the answer
+- etc.
+
+### Code Walkthrough
+
+The API-based implementation is replicated in [`SelfRAG.ipynb`](./notebooks/SelfRAG.ipynb).
+
+### Paper
+
+[Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection (Asai et al., 2023)](https://arxiv.org/abs/2310.11511)
+
+Decisions made:
+
+> 1. Should I retrieve from retriever, `R` -
+> 
+> * Input: `x (question)` OR `x (question)`, `y (generation)`
+> * Decides when to retrieve `D` chunks with `R`
+> * Output: `yes, no, continue`
+> 
+> 2. Are the retrieved passages `D` relevant to the question `x` -
+> 
+> * * Input: (`x (question)`, `d (chunk)`) for `d` in `D`
+> * `d` provides useful information to solve `x`
+> * Output: `relevant, irrelevant`
+> 
+> 3. Are the LLM generation from each chunk in `D` is relevant to the chunk (hallucinations, etc)  -
+> 
+> * Input: `x (question)`, `d (chunk)`,  `y (generation)` for `d` in `D`
+> * All of the verification-worthy statements in `y (generation)` are supported by `d`
+> * Output: `{fully supported, partially supported, no support`
+> 
+> 4. The LLM generation from each chunk in `D` is a useful response to `x (question)` -
+> 
+> * Input: `x (question)`, `y (generation)` for `d` in `D`
+> * `y (generation)` is a useful response to `x (question)`.
+> * Output: `{5, 4, 3, 2, 1}`
 
 ## Extra: LangSmith
 
