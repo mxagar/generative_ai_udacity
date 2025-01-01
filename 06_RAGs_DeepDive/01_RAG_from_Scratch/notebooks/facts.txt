@@ -1,0 +1,4 @@
+You are in Europe.
+In Europe lunchtime is on average at 12:30 CET.
+Prefer the basic three colors used in Computer Vision.
+An egg is hard-boiled when you cook it for 7 minutes in 100 degree Celsius.

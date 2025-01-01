@@ -66,6 +66,9 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
     - [Playground](#playground)
     - [Prompts](#prompts)
     - [Datasets and Experiments](#datasets-and-experiments)
+      - [Datasets](#datasets)
+      - [Experiments](#experiments)
+      - [Code Walkthrough](#code-walkthrough-15)
     - [Annotation Queues](#annotation-queues)
     - [Automations and Online Evaluation](#automations-and-online-evaluation)
     - [Dashboards](#dashboards)
@@ -2264,7 +2267,157 @@ LangSmith allows to create Datasets and Experiments (left bar menu):
     - Run the evaluation with `client.evaluate()`
   - Note that we can change many things in our RAG/Application and test how it behaves against the selected dataset: the prompt, the model, etc.
 
+#### Datasets
 
+I manually added the local CSV [`qa_pairs_dummy.csv`](./notebooks/qa_pairs_dummy.csv) and picked the fields `question_text` (input) and `answer_text` (output); then, I removed all bad QA pairs. We can do that programmatically by applying a `groupby` to the dataframe.
+
+Later, I programmatically added the same CSV from a notebook; see below.
+
+Notes:
+
+- Datasets are supposed to be *gold standard* QAs.
+- When we create a Dataset, we can add later more examples to it (i.e., samples or items). We can do that manually or using the *AI generated examples* feature if we are in a tier with that capability unlocked.
+- We can add any QA pair to an existing dataset anytime; e.g., in a tracked project, under `RunnableSequence`, if a QA pair is great, we add it to a Dataset where it should belong to (button `Add to`).
+
+#### Experiments
+
+Usually we create experiments programmatically and in association with a dataset. An example code is shown by the UI if we click on `+ New Experiment`. I run the example experiment and modified it to work with a custom dataset; see code below.
+
+Note that once the experiment is run, we can browse the results in the web UI, similarly as it is done with W&B or MLflow.
+
+In addition:
+
+- Some tiers have pre-defined *autoevaluators*, i.e., functions that run by default for every QA pair.
+- We can compare experiments: we simply select 2 experiments in the Experiments view.
+
+#### Code Walkthrough
+
+In the notebook [`LangSmith_Onboarding.ipynb`](./notebooks/LangSmith_Onboarding.ipynb) there is a section titled **Own Re-Implementation with Custom Dataset and Evaluation Logic**, where I modified the default example provided by LangSmith when `+ New Experiment` is clicked.
+
+See the code below.
+
+When run, we can browse the results in the web UI:
+
+- We can scroll through all the QA pairs and their evaluator scores.
+- We can also select each QA pair and see in detail the input and output values.
+
+![LangSmith Dataset Experiment](./assets/langsmith_dataset_experiment.png)
+
+![LangSmith Dataset Experiment: QA Pair Run](./assets/langsmith_experiment_qa_pair_run.png)
+
+```python
+from langsmith import wrappers, Client
+from pydantic import BaseModel, Field
+
+client = Client()
+
+## -- Dataset
+
+import pandas as pd
+
+# Load a custom dataset
+df = pd.read_csv('qa_pairs_dummy.csv')
+
+# Get the best answer for each question
+idx = df.groupby("question_id")["answer_quality"].idxmax()
+pair_ids = df.loc[idx, "pair_id"]
+df_best = df.loc[df.pair_id.isin(pair_ids)]
+
+# Extract QA pairs
+qa_pairs = [(row['question_text'], row['answer_text']) for index, row in df_best.iterrows()]
+
+# Create inputs and reference outputs
+inputs = [{"question": input_prompt} for input_prompt, _ in qa_pairs]
+outputs = [{"answer": output_answer} for _, output_answer in qa_pairs]
+
+# Programmatically create a dataset in LangSmith
+dataset = client.create_dataset(
+    dataset_name = "dummy-qa-pairs-programmatic",
+    description = "A programmatically uploaded dummy dataset."
+)
+
+# Add examples to the dataset
+client.create_examples(inputs=inputs, outputs=outputs, dataset_id=dataset.id)
+
+## -- Model
+
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+
+def fake_retrieval():
+    with open('facts.txt', 'r') as file:
+        polly_facts = file.read()
+    return polly_facts
+
+def target_model(inputs: dict) -> dict:
+    llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0)
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "You are an AI Assistant. You are asked questions which you answer to the best of you knowledge. You need to consider some facts: {facts}\n Respond the questions you are asked based on those facts, and always repeat the user's question back before you respond."),
+        ("user", "{question}")
+    ])
+    chain = prompt | llm
+
+    response = chain.invoke({"question": inputs["question"], "facts": fake_retrieval()}).content
+
+    return { "response": response }
+
+
+## -- Evaluator
+
+from openai import OpenAI
+
+# Here, we use OpenAI as the evaluator, but we could use any other model
+# even a local model via Ollama
+openai_client = wrappers.wrap_openai(OpenAI())
+
+# Define instructions for the LLM judge evaluator
+instructions = """Evaluate Student Answer against Ground Truth for conceptual similarity and classify true or false: 
+- False: No conceptual match and similarity
+- True: Most or full conceptual match and similarity
+- Key criteria: Concept should match, not exact wording.
+"""
+
+# Define output schema for the LLM judge
+class BooleanGrade(BaseModel):
+    score: bool = Field(description="Boolean that indicates whether the response is accurate relative to the reference answer")
+
+# Define LLM judge that grades the accuracy of the response relative to reference output
+# Here, we could replace the OpenAI evaluator with a custom LLM, even a local one (via Ollama)
+def accuracy(outputs: dict, reference_outputs: dict) -> bool:
+    response = openai_client.beta.chat.completions.parse(
+        model="gpt-4o-mini",
+        messages=[
+            { "role": "system", "content": instructions },
+            { "role": "user", "content": f"""Ground Truth answer: {reference_outputs["answer"]}; 
+            Student's Answer: {outputs["response"]}"""
+        }],
+        response_format=BooleanGrade
+    )
+    return response.choices[0].message.parsed.score
+
+# Define another evaluation function which works without an LLM judge
+def answer_contains_question(outputs: dict, inputs: dict) -> bool:
+    threshold: float = 0.5
+    question_words = set(inputs["question"].split())
+    response_words = set(outputs["response"].split())
+    common_words = question_words.intersection(response_words)
+    return len(common_words) / len(question_words) >= threshold
+
+## -- Run Evaluation
+
+# After running the evaluation, a link will be provided to view the results in langsmith
+experiment_results = client.evaluate(
+    target_model,
+    data = "dummy-qa-pairs-programmatic",
+    evaluators = [
+        accuracy,
+        answer_contains_question,
+        # can add multiple evaluators here
+    ],
+    experiment_prefix = "dummy-qa-pairs-programmatic-experiment",
+    max_concurrency = 2,
+)
+```
 
 ### Annotation Queues
 
