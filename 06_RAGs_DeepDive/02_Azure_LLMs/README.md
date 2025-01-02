@@ -10,13 +10,27 @@ For a guide on Azure, check my notes in [mxagar/azure_guide](https://github.com/
   - [Table of Contents](#table-of-contents)
   - [0. Setup](#0-setup)
   - [1. Introduction to LLMOps with Azure](#1-introduction-to-llmops-with-azure)
-    - [Azure AI Search](#azure-ai-search)
-    - [Github Actions](#github-actions)
-    - [Azure AI Document Intelligence](#azure-ai-document-intelligence)
-    - [Extra Exercises](#extra-exercises)
+    - [Introduction to Azure and Its AI Services](#introduction-to-azure-and-its-ai-services)
+      - [Azure Machine Learning](#azure-machine-learning)
+      - [Azure OpenAI](#azure-openai)
+    - [Overview of LLMs](#overview-of-llms)
+    - [LLM Deployment in Azure](#llm-deployment-in-azure)
   - [2. LLMs with Azure](#2-llms-with-azure)
+    - [Azure Machine Learning and LLMs](#azure-machine-learning-and-llms)
+    - [Azure OpenAI Service](#azure-openai-service)
+    - [Azure OpenAI APIs](#azure-openai-apis)
   - [3. Extending with Functions and Plugins](#3-extending-with-functions-and-plugins)
+    - [Improved Prompts with Semantic Kernel](#improved-prompts-with-semantic-kernel)
+    - [Extending Results with Functions](#extending-results-with-functions)
+    - [Using Functions with External APIs](#using-functions-with-external-apis)
   - [4. Building an End-to-End Application in Azure](#4-building-an-end-to-end-application-in-azure)
+    - [Architecture](#architecture)
+      - [Azure AI Search](#azure-ai-search)
+      - [Github Actions](#github-actions)
+      - [Azure AI Document Intelligence](#azure-ai-document-intelligence)
+      - [Extra Exercises](#extra-exercises)
+    - [RAG with Azure AI Search](#rag-with-azure-ai-search)
+    - [Deployment and Scaling with Github Action](#deployment-and-scaling-with-github-action)
 
 ## 0. Setup
 
@@ -51,6 +65,92 @@ pip-sync requirements.txt
 
 ## 1. Introduction to LLMOps with Azure
 
+### Introduction to Azure and Its AI Services
+
+For an overview of Azure, check my guides: [mxagar/azure_guide/01_fundamentals](https://github.com/mxagar/azure_guide/tree/main/01_fundamentals)
+
+An important portal for learning Azure: [https://learn.microsoft.com/](https://learn.microsoft.com/)
+
+- Documentation: Generic topics explained in detail.
+- Training
+- [**Code Samples**](https://learn.microsoft.com/en-gb/samples/browse/): We have very specific and useful examples here!
+
+It's important to distinguish between two important AI services:
+
+- Azure OpenAI: These are OpenAI models
+  - We can open **Azure OpenAI Studio** and check them.
+  - If we use them, we get OpenAI model clones running on our Subscription only for us!
+- Azure Machine Learning: Here, we can create instances, which are then opened in **Azure Machine Learning Studio**
+  - In the Studio, we have access to all sorts of models, not the OpenAI models.
+  - We have models for vision, language, etc.
+  - We have Endpoints, etc.
+
+#### Azure Machine Learning
+
+An **Azure Machine Learning Workspace** is created. The *container registry* is left empty (i.e., *None*).
+
+![Create Azure ML Workspace](./assets/create_azure_ml_workspace.png)
+
+Several services are deployed (it takes some minutes) in the selected/created RG.
+
+![Azure ML Resource Group Overview](./assets/azure_ml_rg.png)
+
+Once created, we go to the `Azure Machine Learning workspace` service instance and click on `Launch Studio`.
+
+![Azure ML Studio](./assets/azure_ml_studio.png)
+
+There we see we have many options on the left menu:
+
+- Model catalog (OpenAI models appear again, but we are redirected to OpenAI Studio).
+- Notebooks (also samples).
+- (Our) Models, in a registry.
+- Endpoints.
+- Compute instances: we can create compute instance with GPU and attach them to our Notebooks.
+
+#### Azure OpenAI
+
+TBD.
+
+### Overview of LLMs
+
+TBD.
+
+### LLM Deployment in Azure
+
+TBD.
+
+## 2. LLMs with Azure
+
+### Azure Machine Learning and LLMs
+
+TBD.
+
+### Azure OpenAI Service
+
+TBD.
+
+### Azure OpenAI APIs
+
+TBD.
+
+## 3. Extending with Functions and Plugins
+
+### Improved Prompts with Semantic Kernel
+
+TBD.
+
+### Extending Results with Functions
+
+TBD.
+
+### Using Functions with External APIs
+
+TBD.
+
+## 4. Building an End-to-End Application in Azure
+
+### Architecture
+
 Summary:
 
 - The section covers the architectural overview and components involved in building an end-to-end application using large language models; specifically, the RAG (Retrieval Augmented Generation) pattern is introduced.
@@ -71,7 +171,7 @@ Azure enables the necessary components to implement [Retrieval Augmented Generat
 
 ![Azure RAG](./assets/azure_rag.png)
 
-### Azure AI Search
+#### Azure AI Search
 
 Azure AI Search (previously known as Azure Cognitive Search) is a basic Azure service we need; it allows to search data from storage components.
 
@@ -97,7 +197,7 @@ More information can be found in the official Azure documentation: [Create an Az
 - When to add a second service
 - Add more services to a subscription
 
-### Github Actions
+#### Github Actions
 
 Github Actions allow to easily deploy an application to the cloud, i.e., Azure.
 
@@ -181,7 +281,7 @@ jobs:
             az containerapp update -n demo-container -g demo-container --image demoalfredo.azurecr.io/alfredodeza/huggingface-azure-acr:${{ github.sha }}
 ```
 
-### Azure AI Document Intelligence
+#### Azure AI Document Intelligence
 
 A link to this blog post is provided:
 
@@ -202,7 +302,7 @@ Additional resources:
 - [Quickstart: Document Intelligence SDKs](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/quickstarts/get-started-sdks-rest-api?view=doc-intel-4.0.0&pivots=programming-language-python#layout-model) – use your preferred SDK or REST API to extract content and structure from documents.
 - [Sample code of using Layout API to output in markdown format](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/documentintelligence/azure-ai-documentintelligence/samples/sample_analyze_documents_output_in_markdown.py).
 
-### Extra Exercises
+#### Extra Exercises
 
 Azure AI Search:
 
@@ -217,9 +317,10 @@ Azure Document Intelligence:
 - [ ] Analyze a document via the portal.
 - [ ] Convert a document into Markdown with the SDK.
 
-## 2. LLMs with Azure
+### RAG with Azure AI Search
 
-## 3. Extending with Functions and Plugins
+TBD.
 
-## 4. Building an End-to-End Application in Azure
+### Deployment and Scaling with Github Action
 
+TBD.
