@@ -71,7 +71,7 @@ This project includes resources from [RAG from Scratch](https://github.com/langc
       - [Code Walkthrough](#code-walkthrough-15)
     - [Annotation Queues](#annotation-queues)
     - [Automations and Online Evaluation](#automations-and-online-evaluation)
-    - [Dashboards](#dashboards)
+    - [Monitoring and Dashboards](#monitoring-and-dashboards)
 
 ## Setup
 
@@ -2080,7 +2080,7 @@ Brief description of components:
 - Projects: collections of traces or logs from our application.
 - Playground: a space where run queries can be observed in detail and retried with different parameters.
 - Prompts: collection of prompts, obtained and saved from the Playground; we can create different versions (public or private) and pull them in our code.
-- Datasets and Experiments: ...
+- Datasets and Experiments: we can store datasets (typically, QA pairs) and perform evaluations/experiments with different LLM configurations (prompt, model type, etc.) by using those predefined datasets. Everything can be uploaded programmatically via the LangSmith SDK.
 - Annotation Queues: ...
 - Automations and Online Evaluation: ..
 - Dashboards: ...
@@ -2423,11 +2423,73 @@ experiment_results = client.evaluate(
 
 Source: [Getting Started with LangSmith (5/7): Annotation Queues](https://www.youtube.com/watch?v=rP-tMjaWoX8)
 
+Annotation Queues are a tool for developers and application domain experts to give feedback on model performance.
+
+- When we create one (left bar menu, then `+ New Annotation Queue` in Annotation view), we usually associate a Dataset to it.
+- We configure also the type of feedback (the rubric) we'd like to collect: metrics, etc.
+- We populate the Annotation Queue by adding items (e.g., `RunnableSequence`) from the **Tracing Projects**: select & click on `Add to Annotation Queue` (select the proper Queue).
+- After a Queue is populated, Reviewers can
+  - comment the items
+  - provide the manual metrics/scores requested
+  - etc.
+- When an item is reviewed, it is removed from the Queue
+- We can also modify the QA content of an item, e.g., to be the optimal/correct one, and add it to a Dataset (golden standard).
+
+![Annotation Queue](./assets/annotation_queue.png)
+
+![Add Items to Annotation Queue](./assets/add_to_annotation_queue.png)
+
+![Annotation Item](./assets/annotation_item.png)
+
 ### Automations and Online Evaluation
 
 Source: [Getting Started with LangSmith (6/7): Automations & Online Evaluation](https://www.youtube.com/watch?v=xj2R3lBgihs)
 
-### Dashboards
+Automations can be defined at the **Tracing Project** level (view); to that end we simply `Add Rule` and define the actions we would like to run automatically every time a run item is created.
+
+- We can filter the types or Run items
+- We can define a sampling rate: if the action is simply running a code, we can choose 1.0, but if it consists in using an LLM to evaluate something, maybe we prefer to reduce the frequency to 0.1 to avoid large costs.
+- We select and define an **Action**: This is what is going to be executed; we have different options
+  - LLM as judge: an LLM is used along with its prompt to perform some kind of scoring; structured outputs can be used.
+  - Code evaluator: we define/implement a python function which crunches some values. 
+  - ...
+- We can chain rules, i.e., first we evaluate a score (first rule/action) and depending on it we trigger another action
+
+Example automation/rule use-cases:
+
+- Score answer relevance:
+  - LLM as judge: it computes a relevance score for every traced project RUn item.
+- Add relevant answers to annotation queue:
+  - If the relevance score is above a threshold, the item is added to an Annotation Queue.
+
+![Rules]./(assets/rules.png)
+
+### Monitoring and Dashboards
 
 Source: [Getting Started with LangSmith (7/7): Dashboards](https://www.youtube.com/watch?v=LEIghyTGgQk)
 
+For each **Traced Project**, we can open the **Monitor** tab and look at important metrics:
+
+- Volume: Trace count, LLM calls
+- Success rates
+- Feedback: we can have automated rules which yield scores, which are collected here, among others; this is very important for detecting drift.
+- Latency: Trace and LLM
+- Tokens: Total, Tokens/sec, etc.
+- Cost: Total, per Trace, etc.
+- ... 
+
+![Monitoring Traces](./assets/monitor_traces.png)
+
+Additionally, we can create **Dashboards**: left menu > `Dashboards` > `+ Dashboard`.
+Dashboards select metrics from the Monitor tab; they can be used to condense specific or global scores we are interested in.
+In a Dashboard, we can 
+
+- filter the metrics to time,
+- add charts (line or bar) as we please, for each selected metric or group of metrics,
+- combine metrics from different traced projects
+
+Examples of Dashboard metrics:
+
+- Total tokens
+- Average feedback score
+- Cost
