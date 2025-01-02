@@ -9,7 +9,7 @@ Table of contents:
 - [Retrieval-Augmented Generation](#retrieval-augmented-generation)
   - [Other of My Basic Resources (Start There)](#other-of-my-basic-resources-start-there)
   - [RAG from Scratch - LangChain and Freecodecamp](#rag-from-scratch---langchain-and-freecodecamp)
-  - [RAG Deployment on Azure](#rag-deployment-on-azure)
+  - [Operationalizing LLMs on Azure](#operationalizing-llms-on-azure)
   - [RAGAS Tutorial](#ragas-tutorial)
   - [Interesting Links](#interesting-links)
 
@@ -27,17 +27,23 @@ Sources:
 - [RAG from Scratch by Langchain (Github)](https://github.com/langchain-ai/rag-from-scratch)
 - [RAG from Scratch by Langchain (Youtube & Freecodecamp)](https://www.youtube.com/watch?v=sVcwVQRHIc8)
 
-## RAG Deployment on Azure
+## Operationalizing LLMs on Azure
 
-:construction:
+Folder: [`02_Azure_LLMs/`](./02_Azure_LLMs/)
 
-TBD.
+Sources:
+
+- [Operationalizing LLMs on Azure](https://www.coursera.org/learn/llmops-azure), second module of the Cousera Specialization [Large Language Model Operations (LLMOps)](https://www.coursera.org/specializations/large-language-model-operations).
 
 ## RAGAS Tutorial
 
 :construction:
 
 TBD.
+
+Links:
+
+- [Session 7: RAG Evaluation with RAGAS and How to Improve Retrieval](https://www.youtube.com/watch?v=mEv-2Xnb_Wk)
 
 ## Interesting Links
 
