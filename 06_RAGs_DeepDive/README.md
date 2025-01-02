@@ -11,6 +11,7 @@ Table of contents:
   - [RAG from Scratch - LangChain and Freecodecamp](#rag-from-scratch---langchain-and-freecodecamp)
   - [Operationalizing LLMs on Azure](#operationalizing-llms-on-azure)
   - [RAGAS Tutorial](#ragas-tutorial)
+  - [A Toy RAG Application](#a-toy-rag-application)
   - [Interesting Links](#interesting-links)
 
 ## Other of My Basic Resources (Start There)
@@ -33,17 +34,22 @@ Folder: [`02_Azure_LLMs/`](./02_Azure_LLMs/)
 
 Sources:
 
-- [Operationalizing LLMs on Azure](https://www.coursera.org/learn/llmops-azure), second module of the Cousera Specialization [Large Language Model Operations (LLMOps)](https://www.coursera.org/specializations/large-language-model-operations).
+- [Operationalizing LLMs on Azure](https://www.coursera.org/learn/llmops-azure), second module of the Coursera Specialization [Large Language Model Operations (LLMOps)](https://www.coursera.org/specializations/large-language-model-operations).
 
 ## RAGAS Tutorial
+
+Links:
+
+- [Session 7: RAG Evaluation with RAGAS and How to Improve Retrieval](https://www.youtube.com/watch?v=mEv-2Xnb_Wk)
+- [RAGAS: Get Started](https://docs.ragas.io/en/stable/getstarted/)
 
 :construction:
 
 TBD.
 
-Links:
+## A Toy RAG Application
 
-- [Session 7: RAG Evaluation with RAGAS and How to Improve Retrieval](https://www.youtube.com/watch?v=mEv-2Xnb_Wk)
+See my repository with a RAG application: [rag_app](https://github.com/mxagar/rag_app).
 
 ## Interesting Links
 
