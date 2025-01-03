@@ -10,27 +10,27 @@ For a guide on Azure, check my notes in [mxagar/azure_guide](https://github.com/
   - [Table of Contents](#table-of-contents)
   - [0. Setup](#0-setup)
   - [1. Introduction to LLMOps with Azure](#1-introduction-to-llmops-with-azure)
-    - [Introduction to Azure and Its AI Services](#introduction-to-azure-and-its-ai-services)
+    - [1.1 Introduction to Azure and Its AI Services](#11-introduction-to-azure-and-its-ai-services)
       - [Azure Machine Learning](#azure-machine-learning)
       - [Azure OpenAI](#azure-openai)
-    - [Overview of LLMs](#overview-of-llms)
-    - [LLM Deployment in Azure](#llm-deployment-in-azure)
+    - [1.2 Overview of LLMs](#12-overview-of-llms)
+    - [1.3 LLM Deployment in Azure](#13-llm-deployment-in-azure)
   - [2. LLMs with Azure](#2-llms-with-azure)
-    - [Azure Machine Learning and LLMs](#azure-machine-learning-and-llms)
-    - [Azure OpenAI Service](#azure-openai-service)
-    - [Azure OpenAI APIs](#azure-openai-apis)
+    - [2.1 Azure Machine Learning and LLMs](#21-azure-machine-learning-and-llms)
+    - [2.2 Azure OpenAI Service](#22-azure-openai-service)
+    - [2.3 Azure OpenAI APIs](#23-azure-openai-apis)
   - [3. Extending with Functions and Plugins](#3-extending-with-functions-and-plugins)
-    - [Improved Prompts with Semantic Kernel](#improved-prompts-with-semantic-kernel)
-    - [Extending Results with Functions](#extending-results-with-functions)
-    - [Using Functions with External APIs](#using-functions-with-external-apis)
+    - [3.1 Improved Prompts with Semantic Kernel](#31-improved-prompts-with-semantic-kernel)
+    - [3.2 Extending Results with Functions](#32-extending-results-with-functions)
+    - [3.3 Using Functions with External APIs](#33-using-functions-with-external-apis)
   - [4. Building an End-to-End Application in Azure](#4-building-an-end-to-end-application-in-azure)
-    - [Architecture](#architecture)
+    - [4.1 Architecture](#41-architecture)
       - [Azure AI Search](#azure-ai-search)
       - [Github Actions](#github-actions)
       - [Azure AI Document Intelligence](#azure-ai-document-intelligence)
       - [Extra Exercises](#extra-exercises)
-    - [RAG with Azure AI Search](#rag-with-azure-ai-search)
-    - [Deployment and Scaling with Github Action](#deployment-and-scaling-with-github-action)
+    - [4.2 RAG with Azure AI Search](#42-rag-with-azure-ai-search)
+    - [4.3 Deployment and Scaling with Github Action](#43-deployment-and-scaling-with-github-action)
 
 ## 0. Setup
 
@@ -65,7 +65,7 @@ pip-sync requirements.txt
 
 ## 1. Introduction to LLMOps with Azure
 
-### Introduction to Azure and Its AI Services
+### 1.1 Introduction to Azure and Its AI Services
 
 For an overview of Azure, check my guides: [mxagar/azure_guide/01_fundamentals](https://github.com/mxagar/azure_guide/tree/main/01_fundamentals)
 
@@ -194,45 +194,45 @@ else:
 # Because they make up everything.
 ```
 
-### Overview of LLMs
+### 1.2 Overview of LLMs
 
 TBD.
 
-### LLM Deployment in Azure
+### 1.3 LLM Deployment in Azure
 
 TBD.
 
 ## 2. LLMs with Azure
 
-### Azure Machine Learning and LLMs
+### 2.1 Azure Machine Learning and LLMs
 
 TBD.
 
-### Azure OpenAI Service
+### 2.2 Azure OpenAI Service
 
 TBD.
 
-### Azure OpenAI APIs
+### 2.3 Azure OpenAI APIs
 
 TBD.
 
 ## 3. Extending with Functions and Plugins
 
-### Improved Prompts with Semantic Kernel
+### 3.1 Improved Prompts with Semantic Kernel
 
 TBD.
 
-### Extending Results with Functions
+### 3.2 Extending Results with Functions
 
 TBD.
 
-### Using Functions with External APIs
+### 3.3 Using Functions with External APIs
 
 TBD.
 
 ## 4. Building an End-to-End Application in Azure
 
-### Architecture
+### 4.1 Architecture
 
 Summary:
 
@@ -400,10 +400,10 @@ Azure Document Intelligence:
 - [ ] Analyze a document via the portal.
 - [ ] Convert a document into Markdown with the SDK.
 
-### RAG with Azure AI Search
+### 4.2 RAG with Azure AI Search
 
 TBD.
 
-### Deployment and Scaling with Github Action
+### 4.3 Deployment and Scaling with Github Action
 
 TBD.
