@@ -53,3 +53,5 @@ ragatouille
 langgraph 
 tavily-python
 nomic[local]
+onnx
+onnxruntime

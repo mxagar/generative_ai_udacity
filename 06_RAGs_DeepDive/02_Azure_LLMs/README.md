@@ -15,6 +15,7 @@ For a guide on Azure, check my notes in [mxagar/azure_guide](https://github.com/
       - [Azure OpenAI](#azure-openai)
     - [1.2 Overview of LLMs](#12-overview-of-llms)
     - [1.3 LLM Deployment in Azure](#13-llm-deployment-in-azure)
+      - [Azure Machine Learning](#azure-machine-learning-1)
   - [2. LLMs with Azure](#2-llms-with-azure)
     - [2.1 Azure Machine Learning and LLMs](#21-azure-machine-learning-and-llms)
     - [2.2 Azure OpenAI Service](#22-azure-openai-service)
@@ -236,7 +237,85 @@ Very interesting blog post by MS: [An Introduction to LLMOps: Operationalizing a
 
 ### 1.3 LLM Deployment in Azure
 
-TBD.
+:warning: If we get a deployment error associated with an *unregistred service*, that's because we need to **register** a service to our Subscription.
+In Azure Portal:
+
+    Select Subscriptio > Settings: Resource Providers > Search for Service, e.g.: Microsoft.MachineLearningServices > Register
+
+#### Azure Machine Learning
+
+The service Azure Machine Learning has many models from many vendors:
+
+- All available models have been vetted to work on Azure.
+- Some models might be available in given regions/zones.
+
+Also, note that we can upload our models, e.g., in ONNX format!
+
+Steps to browse the models:
+
+- Create an instance/workspace, e.g., `demo-coursera-ml-us`.
+- Open workspace and go to `Model catalog`.
+- We can filter by many aspects:
+  - Collections: HuggingFace, Meta, etc.
+    - OpenAI models appear also here, but if we deploy one, we are redirected from Azure Machine Learning space to the Azure AI Foundry (previously Azure Open AI Studio).
+  - Inference Task: text completion, summarization, object detection, etc.
+  - Licenses
+  - etc.
+
+Important sections (left menu):
+
+- `Model catalog`: curated models from Azure
+- `Assets: Models`: all our model appear here, we can upload models, too
+- `Assets: Environment`: a deployment requires an environment, which is usually a Docker image (`Dockerfile`) with optional files (`requirements.txt`); there are environments available and we can create custom ones.
+- `Assets: Endpoints`: Models are deployed to an endpoint, which has a URI as well ass access credentials.
+- `Manage: Compute`: Deployments require a compute resource, which is instantiated here.
+
+Deployment options for the models:
+
+- After a model is selected (e.g., from the Model catalog), we click on `Deploy`; we usually have the options
+  - Pay-as-you-go
+  - Real-time
+  - Batch inference
+- When we select a deployment method, sometimes we get the error *not enough quota*
+  - That's because we need to first define a `Compute` instance 
+    - We can select CPU/GPU
+    - Look at the price per hour: the more resources, the more expensive
+- If we want to deploy a custom model we uploaded, the procedure is similar, but we have to specify
+  - The model (which needs to be uploaded, e.g. an ONNX file)
+  - The environment (`Dockerfile` + `requirements.txt`)
+  - The scoring script
+  - The deployment configuration:
+    - Managed compute vs Kubernetes
+    - Authentication type
+    - Timeout
+    - etc.
+  - etc.
+
+Check [`02_azure_machine_learning_basics.ipynb`](./notebooks/02_azure_machine_learning_basics.ipynb) to see how a Pytorch model can be converted to ONNX format and uploaded to Azure Machine Learning.
+
+Snapshot: Upload an ONNX Model
+
+![Upload an ONNX Model](assets/azure_ml_upload_onnx_model.png)
+
+Snapshot: Deploy an ONNX Model
+
+![Deploy an ONNX Model](assets/azure_ml_deploy_onnx_model.png)
+
+Snapshot: Scoring of an ONNX Model
+
+![Scoring of an ONNX Model](assets/azure_ml_deploy_onnx_model_scoring_environment.png)
+
+Snapshot: Deploy a Model from Catalog
+
+![Deploy a Model from Catalog](assets/azure_ml_deploy_model_catalog.png)
+
+Snapshot: Deploy Compute
+
+![Deploy Compute](assets/azure_ml_deploy_compute.png)
+
+Snapshot: Deployed Compute Details. Note that we can launch come applications that are already running!
+
+![Deployed Compute Details](assets/azure_ml_compute_details.png)
 
 ## 2. LLMs with Azure
 

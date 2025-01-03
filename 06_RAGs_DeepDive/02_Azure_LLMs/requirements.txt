@@ -611,9 +611,13 @@ ollama==0.4.4
     #   -r requirements.in
     #   langchain-ollama
 onnx==1.17.0
-    # via ragatouille
+    # via
+    #   -r requirements.in
+    #   ragatouille
 onnxruntime==1.20.1
-    # via chromadb
+    # via
+    #   -r requirements.in
+    #   chromadb
 openai==1.58.1
     # via
     #   -r requirements.in
