@@ -196,7 +196,43 @@ else:
 
 ### 1.2 Overview of LLMs
 
-TBD.
+Summary of flow in an LLM:
+
+- A text is a sequence of words.
+- Words are converted into tokens: indices in a vocabulary.
+- Tokens are converted into embedding vectors.
+- An LLM is a probability machine: given the input sequence of words (tokens, vectors), the probabilities of all the vocabulary tokens to be the next are predicted. Then, we choose according to different strategies, e.g., we pick the most probable one, or sample among the most probable ones.
+
+Benefits and risks of LLMs:
+
+- They create coherent text.
+- Tasks that work well:
+  - Summarization, given the original text.
+  - Rewriting texts, given all the information.
+- **BUT, they hallucinate**: they basically predict the next word based on the probability distributions they have learned.
+
+Mitigating the risks of LLMs, in increasing order of difficulty and cost:
+
+- Prompt engineering
+- Add retrieval and extend context (RAG)
+- Fine-tune with new documents
+- Train from scratch
+
+![LLM Risk Mitigation](./assets/llm_risk_mitigation.png)
+
+LLM Operations is composed of the following components:
+
+1. Data
+2. Models: training, fine-tuning, storage
+3. Testing: evaluation of models
+4. Search: we need to search data, etc.
+5. Prompting: interface, commands to the LLMs
+6. Deployment to the cloud: packaging, setting up inference, scaling, etc.
+7. Monitoring: observe performance, drift, etc.
+
+All those components need to be able to connect to each other and we need to be able to automate them.
+
+Very interesting blog post by MS: [An Introduction to LLMOps: Operationalizing and Managing Large Language Models using Azure ML](https://techcommunity.microsoft.com/blog/machinelearningblog/an-introduction-to-llmops-operationalizing-and-managing-large-language-models-us/3910996).
 
 ### 1.3 LLM Deployment in Azure
 
