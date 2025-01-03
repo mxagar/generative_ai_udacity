@@ -87,7 +87,7 @@ It's important to distinguish between two important AI services:
 
 #### Azure Machine Learning
 
-An **Azure Machine Learning Workspace** is created. The *container registry* is left empty (i.e., *None*).
+An **Azure Machine Learning Workspace** is created in [Azure Machine Learning](https://learn.microsoft.com/en-us/azure/machine-learning/overview-what-is-azure-machine-learning?view=azureml-api-2). The *container registry* is left empty (i.e., *None*).
 
 ![Create Azure ML Workspace](./assets/create_azure_ml_workspace.png)
 
@@ -107,9 +107,92 @@ There we see we have many options on the left menu:
 - Endpoints.
 - Compute instances: we can create compute instance with GPU and attach them to our Notebooks.
 
+:warning: **IMPORTANT**: When we deploy an Azure Machine Learning Workspace **without** anything in it, it does not incur in any fixed costs; but when we start adding compute & Co., then we'll have costs.
+
 #### Azure OpenAI
 
-TBD.
+[Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview) is a wrapper for the OpenAI models on Azure, i.e., we can deploy and access custom OpenAI models via Azure using it. In addition, it offers other functionalities for user convenience: fine-tuning, network access, etc.
+
+We create a resource instance on the Azure Platform:
+
+![Create Azure OpenAI Service](./assets/create_azure_open_ai.png)
+
+- Basics: see snapshot.
+  - Check the [Azure OpenAI Pricing](https://azure.microsoft.com/en-gb/pricing/details/cognitive-services/openai-service/)
+- Network: we select `all networks`, i.e., we can access the resource from the Internet. We could restrict that to selected networks or completely shut down network access.
+
+:warning: **IMPORTANT**: When we deploy an Azure OpenAI instance **it incurs fixed costs even if we don't use it!**
+
+Once created, we go to the resource:
+
+- (Left) Resource Management > Keys and Endpoints: Endpoints + Credentials to access via Internet are here!
+- (Left) Overview: general information
+  - Here we should have also a link to the **Azure Open AI Studio** (old) or **Azure AI Foundry**.
+  - In the Studio/Foundry, we can configure and deploy models, get credentials, try them in the playground, fine-tune them, etc.
+
+![Azure AI Foundry](./assets/azure_ai_foundry.png)
+
+In **Azure AI Foundry**:
+
+- In the **Shared Resources** section we have management tools:
+  - Deployments: they should appear here, with their configuration properties.
+  - Quotas: each region-model-subscription has a limit in tokens/minute, etc.
+  - Data files: for fine-tuning
+  - Safety and Security: content filters.
+  - etc.
+- In the **Playground**, we can use/chat with the deployed models.
+
+![Azure AI Foundry: Playground](./assets/auzure_ai_foundry_playground.png)
+
+![Azure AI Foundry: Deployments](./assets/auzure_ai_foundry_deployments.png)
+
+In the notebook [`01_azure_open_ai_basics.ipynb`](./notebooks/01_azure_open_ai_basics.ipynb) I show how to use the OpenAI deployment programmatically via REST; I used the API key and the Endpoint obtained from the Azure AI Foundry (Deployments):
+
+```python
+import os
+import requests
+from dotenv import load_dotenv
+
+load_dotenv(override=True, dotenv_path=".env")
+
+# Define your Azure OpenAI details
+AZURE_OPENAI_ENDPOINT_URI = os.getenv("AZURE_OPENAI_ENDPOINT_URI")
+AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
+
+# Set up the request headers
+headers = {
+    "Content-Type": "application/json",
+    "api-key": AZURE_OPENAI_API_KEY,
+}
+
+# Define the request body
+data = {
+    "messages": [
+        {"role": "system", "content": "You are an assistant."},
+        {"role": "user", "content": "Tell me a joke."},
+    ],
+    "max_tokens": 100,
+}
+
+# Send the POST request
+response = requests.post(
+    f"{AZURE_OPENAI_ENDPOINT_URI}",
+    headers=headers,
+    json=data,
+)
+
+# Handle the response
+if response.status_code == 200:
+    result = response.json()
+    print("Response:")
+    print(result["choices"][0]["message"]["content"])
+else:
+    print(f"Error: {response.status_code} - {response.text}")
+# Response:
+# Why don't scientists trust atoms? 
+# 
+# Because they make up everything.
+```
 
 ### Overview of LLMs
 
