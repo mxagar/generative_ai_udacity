@@ -145,16 +145,27 @@ In **Azure AI Foundry**:
   - Quotas: each region-model-subscription has a limit in tokens/minute, etc.
   - Data files: for fine-tuning
   - Safety and Security: content filters.
+  - Quotas.
   - etc.
 - In the **Playground**, we can use/chat with the deployed models.
+  - We can use our deployed model in the chat.
+  - If we click on `View code` we see the Python code for interaction.
+
+- Deploying an Azure OpenAI model here is much easier than deploying any other readily available model.
+  - No need to define Compute and/or configure Endpoints.
+- Also, once deployed, we can change its configuration, e.g., change its Tokens Per Minute (TPM) quota.
+  - One important feature is using the dynamic quota, i.e., capacity increases dynamically if general subscription quota is available.
+  - Note also that we have a content filter by default! The answer will contain some assessment wrt. our filter!
 
 ![Azure AI Foundry: Playground](./assets/auzure_ai_foundry_playground.png)
 
 ![Azure AI Foundry: Deployments](./assets/auzure_ai_foundry_deployments.png)
 
+![Azure AI Foundry: OpenAI Model Update](assets/azure_openai_model_update.png)
+
 In the notebook [`01_azure_open_ai_basics.ipynb`](./notebooks/01_azure_open_ai_basics.ipynb) I show how to use the OpenAI deployment programmatically via REST; I used the API key and the Endpoint obtained from the Azure AI Foundry (Deployments).
 
-Also, in the Chat Playground, if we click on `View code` we see the Python code for interaction, which is different to this one. The example code from `View code` has more options!
+Also, in the Chat Playground, if we click on `View code` we see the Python code for interaction, which is different to the simple REST API call. The example code from `View code` has more options; I also tested it in the notebook.
 
 ```python
 ### -- Simple API Call
@@ -259,6 +270,58 @@ print(completion.to_json())
 #       },
 #   ...
 # }
+```
+
+Note that the response from the API is very rich:
+
+```json
+{
+  "id": "chatcmpl-xxx",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "Hello! How can I assist you in finding information today?",
+        "role": "assistant"
+      },
+      "content_filter_results": {
+        "hate": {
+          "filtered": false,
+          "severity": "safe"
+        },
+        "self_harm": {
+          "filtered": false,
+          "severity": "safe"
+        },
+        "sexual": {
+          "filtered": false,
+          "severity": "safe"
+        },
+        "violence": {
+          "filtered": false,
+          "severity": "safe"
+        }
+      }
+    }
+  ],
+  "created": 1735936877,
+  "model": "gpt-35-turbo",
+  "object": "chat.completion",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 12,
+    "prompt_tokens": 19,
+    "total_tokens": 31
+  },
+  "prompt_filter_results": [
+    {
+      "prompt_index": 0,
+      "content_filter_results": {}
+    }
+  ]
+}
 ```
 
 ### 1.2 Overview of LLMs
@@ -401,25 +464,9 @@ Azure AI Content Safety is an API which filters input/output content. Examples:
 
 #### Azure Open AI (Studio - or Azure AI Foundry)
 
-Compared to Azure Machine Learning, the Azure OpenAI Studio (now Azure AI Foundry) is much faster and easier to use:
+Compared to Azure Machine Learning, the Azure OpenAI Studio (now Azure AI Foundry) is constrained to OpenAI models but it is much faster and easier to use.
 
-- It is constrained to OpenAI models.
-- We can select a model in the Model catalog and deploy it
-  - Configuration is very easy.
-  - No need to define Compute and/or configure Endpoints.
-- Then, the model appears in the Deployments tab/menu.
-- We can also test models in the Playground (Chat).
-  - We can use our deployed model in the chat.
-  - If we click on `View code` we see the Python code for interaction.
-- Also, it is very easy to edit the deployment once it's running.
-- As explained in the previous section [Azure OpenAI](#azure-openai):
-  - The model details contain the endpoint and the necessary key.
-  - The notebook [`01_azure_open_ai_basics.ipynb`](./notebooks/01_azure_open_ai_basics.ipynb) shows how to interact with the deployed model using REST requests.
-  - Also, in the Chat Playground, if we click on `View code` we see the Python code for interaction.
-
-![Azure AI Foundry: Playground](./assets/auzure_ai_foundry_playground.png)
-
-![Azure AI Foundry: Deployments](./assets/auzure_ai_foundry_deployments.png)
+See the previous section [Azure OpenAI](#azure-openai).
 
 ## 2. LLMs with Azure
 
@@ -499,7 +546,11 @@ In the course video, the instructor shows that once deployed, we have several in
 
 ### 2.2 Azure OpenAI Service
 
-TBD.
+Some months ago we needed to request access to Azure OpenAI; but apparently that's not the case anymore.
+
+Compared to Azure Machine Learning, the Azure OpenAI Studio (now Azure AI Foundry) is constrained to OpenAI models but it is much faster and easier to use.
+
+See the previous section [Azure OpenAI](#azure-openai).
 
 ### 2.3 Azure OpenAI APIs
 
