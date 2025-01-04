@@ -20,6 +20,9 @@ For a guide on Azure, check my notes in [mxagar/azure_guide](https://github.com/
       - [Azure Open AI (Studio - or Azure AI Foundry)](#azure-open-ai-studio---or-azure-ai-foundry)
   - [2. LLMs with Azure](#2-llms-with-azure)
     - [2.1 Azure Machine Learning and LLMs](#21-azure-machine-learning-and-llms)
+      - [Check Quotas](#check-quotas)
+      - [Create Compute Instances](#create-compute-instances)
+      - [Deploy a Model](#deploy-a-model)
     - [2.2 Azure OpenAI Service](#22-azure-openai-service)
     - [2.3 Azure OpenAI APIs](#23-azure-openai-apis)
   - [3. Extending with Functions and Plugins](#3-extending-with-functions-and-plugins)
@@ -422,7 +425,77 @@ Compared to Azure Machine Learning, the Azure OpenAI Studio (now Azure AI Foundr
 
 ### 2.1 Azure Machine Learning and LLMs
 
-TBD.
+#### Check Quotas
+
+Before deploying anything, we need to make sure we have the necessary quotas active.
+
+    Azure Portal > Quotas > Machine Learning: Find Compute resource we need in region
+        Device quota not enough? Request increase
+
+The resource we are going to use the quota with needs to be in the same region; in our case, our Azure Machine Learning workspace must be deployed in the same region, e.g., East US, West Europe, etc.
+
+A typical compute quota for ML applications is an NCAS device: NVIDIA GPU-enabled virtual machine (VM); they are expensive, so choose wisely. Example choice:
+
+`Standard NCASv3_T4 Family Cluster Dedicated vCPUs` in West Europe (Usage: 0 of 12 available).
+
+If we request it a quota increase, it takes some minutes to process.
+
+![Quotas](./assets/quotas.png)
+
+Also, note that the Azure Machine Learning Studio has also a section/tab called *Quotas*:
+
+![Quotas in Azure Machine Learning](./assets/quotas_azure_ml.png)
+
+Some additional device families:
+
+- Standard DASv4 Family Cluster Dedicated vCPUs: no GPU, but CPU and memory intensive work; e.g., for classical ML.
+- Standard EDSv4 Family Cluster Dedicated vCPUs: no GPU, but large amounts of memory per CPU (AMD processors); e.g., for large-scale enterprise applications.
+- Standard ESv3 Family Cluster Dedicated vCPUs: no GPU, memory-intensive workloads (Intel processors); e.g., Spark applications.
+- ...
+
+More information: [Azure subscription and service limits, quotas, and constraints](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits).
+
+#### Create Compute Instances
+
+Once we have checked that we have available quota, we need to deploy a compute instance.
+
+In out Azure Machine Learning Workspace (recall it's tied to a region), we go to `Compute` menu and deploy a compute instance:
+
+- Select GPU if we need
+- Select device; e.g.: Standard_NC6s_v3 (6 cores, 112 GB RAM, 736 GB disk)
+  - GPU - 1 x NVIDIA Tesla V100
+  - USD 3.82/hr (when running)
+- After we deploy it and set it running, when we click on it 
+  - We see we can apply some actions: Stop, Delete, Restart, etc.
+  - We have some running applications available and accessible via link: Jupyter, etc.
+
+![Azure Machine Learning: Compute Deployment](./assets/azure_ml_compute_deployed_1.png)
+
+![Azure Machine Learning: Compute Deployment](./assets/azure_ml_compute_deployed_2.png)
+
+More information: [Tutorial: Create resources you need to get started](https://learn.microsoft.com/en-gb/azure/machine-learning/quickstart-create-resources?view=azureml-api-2).
+
+#### Deploy a Model
+
+When a Compute instance is deployed on our Azure Machine Learning Workspace, we can select a LLM model from the `Model catalog` and deploy it.
+
+:warning: The example chosen in the course was `microsoft-phi-2`; however, I was not able to replicate the deployment, even tough I followed all the steps. I think the error is related to the quotas, and the current high demand for GPUs.
+
+In the course video, the instructor shows that once deployed, we have several infos on the resource:
+
+- Swagger URI: API documentation
+- Authentication configuration: key or token
+- REST endpoint
+- Also, there as some important tabs:
+  - Test
+  - Consume: information for using the endpoint
+    - Keys
+    - Endpoint URL
+    - Code examples
+  - Monitoring
+  - Logs tab
+
+![Azure Machine Learning: Model Deployment](./assets/azure_ml_model_deployment.png)
 
 ### 2.2 Azure OpenAI Service
 
