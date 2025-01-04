@@ -16,6 +16,8 @@ For a guide on Azure, check my notes in [mxagar/azure_guide](https://github.com/
     - [1.2 Overview of LLMs](#12-overview-of-llms)
     - [1.3 LLM Deployment in Azure](#13-llm-deployment-in-azure)
       - [Azure Machine Learning](#azure-machine-learning-1)
+      - [Azure AI Content Safety](#azure-ai-content-safety)
+      - [Azure Open AI (Studio - or Azure AI Foundry)](#azure-open-ai-studio---or-azure-ai-foundry)
   - [2. LLMs with Azure](#2-llms-with-azure)
     - [2.1 Azure Machine Learning and LLMs](#21-azure-machine-learning-and-llms)
     - [2.2 Azure OpenAI Service](#22-azure-openai-service)
@@ -147,9 +149,13 @@ In **Azure AI Foundry**:
 
 ![Azure AI Foundry: Deployments](./assets/auzure_ai_foundry_deployments.png)
 
-In the notebook [`01_azure_open_ai_basics.ipynb`](./notebooks/01_azure_open_ai_basics.ipynb) I show how to use the OpenAI deployment programmatically via REST; I used the API key and the Endpoint obtained from the Azure AI Foundry (Deployments):
+In the notebook [`01_azure_open_ai_basics.ipynb`](./notebooks/01_azure_open_ai_basics.ipynb) I show how to use the OpenAI deployment programmatically via REST; I used the API key and the Endpoint obtained from the Azure AI Foundry (Deployments).
+
+Also, in the Chat Playground, if we click on `View code` we see the Python code for interaction, which is different to this one. The example code from `View code` has more options!
 
 ```python
+### -- Simple API Call
+
 import os
 import requests
 from dotenv import load_dotenv
@@ -193,6 +199,63 @@ else:
 # Why don't scientists trust atoms? 
 # 
 # Because they make up everything.
+
+### -- Code Example from Playground
+
+import os  
+import base64
+from openai import AzureOpenAI
+from dotenv import load_dotenv
+
+load_dotenv(override=True, dotenv_path=".env")
+
+# Now, the URL is shorter and we add the endpoint and deployment name
+endpoint = os.getenv("ENDPOINT_URL")
+deployment = os.getenv("DEPLOYMENT_NAME")
+subscription_key = os.getenv("AZURE_OPENAI_API_KEY")
+
+# Initialize Azure OpenAI client with key-based authentication    
+client = AzureOpenAI(  
+    azure_endpoint=endpoint,  
+    api_key=subscription_key,  
+    api_version="2024-05-01-preview",  
+)
+
+#Prepare the chat prompt 
+chat_prompt = [
+    {
+        "role": "system",
+        "content": "You are an AI assistant that helps people find information."
+    }
+] 
+    
+# Include speech result if speech is enabled  
+messages = chat_prompt  
+    
+# Generate the completion  
+completion = client.chat.completions.create(  
+    model=deployment,  
+    messages=messages,  
+    max_tokens=800,  
+    temperature=0.7,  
+    top_p=0.95,  
+    frequency_penalty=0,  
+    presence_penalty=0,  
+    stop=None,  
+    stream=False
+)
+
+print(completion.to_json())
+# {
+#   ...
+#   "choices": [
+#     {
+#       "message": {
+#         "content": "Hello! How can I assist you in finding information today?",
+#         "role": "assistant"
+#       },
+#   ...
+# }
 ```
 
 ### 1.2 Overview of LLMs
@@ -316,6 +379,44 @@ Snapshot: Deploy Compute
 Snapshot: Deployed Compute Details. Note that we can launch come applications that are already running!
 
 ![Deployed Compute Details](assets/azure_ml_compute_details.png)
+
+#### Azure AI Content Safety
+
+Check: [What is Azure AI Content Safety?](https://learn.microsoft.com/en-us/azure/ai-services/content-safety/overview)
+
+Azure AI Content Safety is an API which filters input/output content. Examples:
+
+> - [Jailbreak risk detection](https://learn.microsoft.com/en-us/rest/api/contentsafety/text-operations/detect-text-jailbreak?view=rest-contentsafety-2024-02-15-preview&tabs=HTTP): Scans text for the risk of a User input attack on a Large Language Model. This is an input filter.
+> - [Protected material test](https://learn.microsoft.com/en-us/rest/api/contentsafety/text-operations/detect-text-protected-material?view=rest-contentsafety-2024-09-01&tabs=HTTP): Scans AI-generated text for known text content (for example, song lyrics, articles, recipes, selected web content). This is an output filter.
+
+**Content Safety** is a service, so we can create an instance in the Portal: `Search > Content safety`.
+
+- When we instantiate/create one, we open the Azure Content Safety Studio
+- We can configure and try the Content Safety functionality in the Azure Content Safety Studio.
+  - However, we are going to use it usually via an API.
+  - The Azure Content Safety Studio has links to the documentation and Python code examples where the API calls are performed via `resquests`.
+
+#### Azure Open AI (Studio - or Azure AI Foundry)
+
+Compared to Azure Machine Learning, the Azure OpenAI Studio (now Azure AI Foundry) is much faster and easier to use:
+
+- It is constrained to OpenAI models.
+- We can select a model in the Model catalog and deploy it
+  - Configuration is very easy.
+  - No need to define Compute and/or configure Endpoints.
+- Then, the model appears in the Deployments tab/menu.
+- We can also test models in the Playground (Chat).
+  - We can use our deployed model in the chat.
+  - If we click on `View code` we see the Python code for interaction.
+- Also, it is very easy to edit the deployment once it's running.
+- As explained in the previous section [Azure OpenAI](#azure-openai):
+  - The model details contain the endpoint and the necessary key.
+  - The notebook [`01_azure_open_ai_basics.ipynb`](./notebooks/01_azure_open_ai_basics.ipynb) shows how to interact with the deployed model using REST requests.
+  - Also, in the Chat Playground, if we click on `View code` we see the Python code for interaction.
+
+![Azure AI Foundry: Playground](./assets/auzure_ai_foundry_playground.png)
+
+![Azure AI Foundry: Deployments](./assets/auzure_ai_foundry_deployments.png)
 
 ## 2. LLMs with Azure
 
