@@ -642,7 +642,18 @@ while True:
 
 ### 3.1 Improved Prompts with Semantic Kernel
 
-TBD.
+Semantic Kernel is the Microsoft version of LangChain:
+
+- [Introduction to Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/overview/)
+- [microsoft/semantic-kernel](https://github.com/microsoft/semantic-kernel)
+- [Official Quick Start Guide for Python](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide?pivots=programming-language-python)
+
+Installation:
+
+```bash
+pip install semantic-kernel
+```
+
 
 ### 3.2 Extending Results with Functions
 

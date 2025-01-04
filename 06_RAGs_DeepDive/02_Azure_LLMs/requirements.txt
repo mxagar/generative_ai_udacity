@@ -18,6 +18,7 @@ aiohttp==3.11.11
     #   langchain
     #   langchain-community
     #   llama-index-core
+    #   semantic-kernel
 aiosignal==1.3.2
     # via aiohttp
 annotated-types==0.7.0
@@ -55,6 +56,10 @@ attrs==24.3.0
     #   referencing
 autopep8==2.3.1
     # via -r requirements.in
+azure-core==1.32.0
+    # via azure-identity
+azure-identity==1.19.0
+    # via semantic-kernel
 babel==2.16.0
     # via jupyterlab-server
 backoff==2.2.1
@@ -89,7 +94,11 @@ certifi==2024.12.14
     #   llama-cloud
     #   requests
 cffi==1.17.1
-    # via argon2-cffi-bindings
+    # via
+    #   argon2-cffi-bindings
+    #   cryptography
+chardet==5.2.0
+    # via prance
 charset-normalizer==3.4.0
     # via requests
 chroma-hnswlib==0.7.6
@@ -106,6 +115,8 @@ click==8.1.8
     #   nomic
     #   typer
     #   uvicorn
+cloudevents==1.11.0
+    # via semantic-kernel
 colbert-ai==0.2.19
     # via ragatouille
 coloredlogs==15.0.1
@@ -116,6 +127,11 @@ comm==0.2.2
     #   ipywidgets
 contourpy==1.3.1
     # via matplotlib
+cryptography==44.0.0
+    # via
+    #   azure-identity
+    #   msal
+    #   pyjwt
 cycler==0.12.1
     # via matplotlib
 dataclasses-json==0.6.7
@@ -134,6 +150,7 @@ decorator==5.1.1
 defusedxml==0.7.1
     # via
     #   nbconvert
+    #   semantic-kernel
     #   youtube-transcript-api
 deprecated==1.2.15
     # via
@@ -141,6 +158,8 @@ deprecated==1.2.15
     #   opentelemetry-api
     #   opentelemetry-exporter-otlp-proto-grpc
     #   opentelemetry-semantic-conventions
+deprecation==2.1.0
+    # via cloudevents
 diffusers==0.31.0
     # via -r requirements.in
 dill==0.3.8
@@ -286,6 +305,8 @@ ipython==8.31.0
     #   jupyter-console
 ipywidgets==8.1.5
     # via jupyter
+isodate==0.7.2
+    # via openapi-core
 isoduration==20.11.0
     # via jsonschema
 itsdangerous==2.2.0
@@ -300,6 +321,7 @@ jinja2==3.1.5
     #   jupyterlab
     #   jupyterlab-server
     #   nbconvert
+    #   semantic-kernel
     #   torch
 jiter==0.6.1
     # via
@@ -326,8 +348,17 @@ jsonschema[format-nongpl]==4.23.0
     #   jupyter-events
     #   jupyterlab-server
     #   nbformat
-jsonschema-specifications==2024.10.1
-    # via jsonschema
+    #   openapi-core
+    #   openapi-schema-validator
+    #   openapi-spec-validator
+jsonschema-path==0.3.3
+    # via
+    #   openapi-core
+    #   openapi-spec-validator
+jsonschema-specifications==2023.12.1
+    # via
+    #   jsonschema
+    #   openapi-schema-validator
 jupyter==1.1.1
     # via -r requirements.in
 jupyter-client==8.6.3
@@ -428,6 +459,8 @@ langsmith==0.2.4
     #   langchain
     #   langchain-community
     #   langchain-core
+lazy-object-proxy==1.10.0
+    # via openapi-spec-validator
 llama-cloud==0.1.7
     # via llama-index-indices-managed-llama-cloud
 llama-index==0.12.8
@@ -513,8 +546,16 @@ mmh3==5.0.1
     # via chromadb
 monotonic==1.6
     # via posthog
+more-itertools==10.5.0
+    # via openapi-core
 mpmath==1.3.0
     # via sympy
+msal==1.31.1
+    # via
+    #   azure-identity
+    #   msal-extensions
+msal-extensions==1.2.0
+    # via azure-identity
 msgpack==1.1.0
     # via langgraph-checkpoint
 multidict==6.1.0
@@ -542,6 +583,7 @@ nest-asyncio==1.6.0
     # via
     #   ipykernel
     #   llama-index-core
+    #   semantic-kernel
 networkx==3.4.2
     # via
     #   llama-index-core
@@ -594,6 +636,7 @@ numpy==1.26.4
     #   pandas
     #   scikit-learn
     #   scipy
+    #   semantic-kernel
     #   sentence-transformers
     #   torchtext
     #   torchvision
@@ -626,6 +669,15 @@ openai==1.58.1
     #   llama-index-agent-openai
     #   llama-index-embeddings-openai
     #   llama-index-llms-openai
+    #   semantic-kernel
+openapi-core==0.19.4
+    # via semantic-kernel
+openapi-schema-validator==0.6.2
+    # via
+    #   openapi-core
+    #   openapi-spec-validator
+openapi-spec-validator==0.7.1
+    # via openapi-core
 opentelemetry-api==1.29.0
     # via
     #   chromadb
@@ -635,6 +687,7 @@ opentelemetry-api==1.29.0
     #   opentelemetry-instrumentation-fastapi
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
+    #   semantic-kernel
 opentelemetry-exporter-otlp-proto-common==1.29.0
     # via opentelemetry-exporter-otlp-proto-grpc
 opentelemetry-exporter-otlp-proto-grpc==1.29.0
@@ -655,6 +708,7 @@ opentelemetry-sdk==1.29.0
     # via
     #   chromadb
     #   opentelemetry-exporter-otlp-proto-grpc
+    #   semantic-kernel
 opentelemetry-semantic-conventions==0.50b0
     # via
     #   opentelemetry-instrumentation
@@ -680,6 +734,7 @@ packaging==24.2
     #   bert-score
     #   build
     #   datasets
+    #   deprecation
     #   evaluate
     #   faiss-cpu
     #   huggingface-hub
@@ -694,6 +749,7 @@ packaging==24.2
     #   nbconvert
     #   onnxruntime
     #   opentelemetry-instrumentation
+    #   prance
     #   pytest
     #   transformers
 pandas==2.2.3
@@ -706,8 +762,12 @@ pandas==2.2.3
     #   nomic
 pandocfilters==1.5.1
     # via nbconvert
+parse==1.20.2
+    # via openapi-core
 parso==0.8.4
     # via jedi
+pathable==0.4.3
+    # via jsonschema-path
 pexpect==4.9.0
     # via ipython
 pillow==11.0.0
@@ -722,8 +782,12 @@ platformdirs==4.3.6
     # via jupyter-core
 pluggy==1.5.0
     # via pytest
+portalocker==2.10.1
+    # via msal-extensions
 posthog==3.7.4
     # via chromadb
+prance==23.6.21.0
+    # via semantic-kernel
 prometheus-client==0.21.1
     # via jupyter-server
 prompt-toolkit==3.0.48
@@ -760,6 +824,8 @@ pyasn1==0.6.1
     #   rsa
 pyasn1-modules==0.4.1
     # via google-auth
+pybars4==0.9.13
+    # via semantic-kernel
 pycodestyle==2.12.1
     # via autopep8
 pycparser==2.22
@@ -781,20 +847,27 @@ pydantic==2.10.4
     #   ollama
     #   openai
     #   pydantic-settings
+    #   semantic-kernel
 pydantic-core==2.27.2
     # via
     #   instructor
     #   pydantic
 pydantic-settings==2.7.0
-    # via langchain-community
+    # via
+    #   langchain-community
+    #   semantic-kernel
 pygments==2.18.0
     # via
     #   ipython
     #   jupyter-console
     #   nbconvert
     #   rich
-pyjwt==2.10.1
-    # via nomic
+pyjwt[crypto]==2.10.1
+    # via
+    #   msal
+    #   nomic
+pymeta3==0.5.1
+    # via pybars4
 pynndescent==0.5.13
     # via umap-learn
 pynvml==12.0.0
@@ -837,6 +910,7 @@ pyyaml==6.0.2
     #   chromadb
     #   datasets
     #   huggingface-hub
+    #   jsonschema-path
     #   jupyter-events
     #   kubernetes
     #   langchain
@@ -856,6 +930,7 @@ ragatouille==0.0.8.post4
 referencing==0.35.1
     # via
     #   jsonschema
+    #   jsonschema-path
     #   jsonschema-specifications
     #   jupyter-events
 regex==2024.11.6
@@ -867,6 +942,7 @@ regex==2024.11.6
 requests==2.32.3
     # via
     #   -r requirements.in
+    #   azure-core
     #   bert-score
     #   datasets
     #   diffusers
@@ -874,6 +950,7 @@ requests==2.32.3
     #   gpt4all
     #   huggingface-hub
     #   instructor
+    #   jsonschema-path
     #   jupyterlab-server
     #   kubernetes
     #   langchain
@@ -881,8 +958,10 @@ requests==2.32.3
     #   langchainhub
     #   langsmith
     #   llama-index-core
+    #   msal
     #   nomic
     #   posthog
+    #   prance
     #   requests-oauthlib
     #   requests-toolbelt
     #   tavily-python
@@ -899,6 +978,7 @@ rfc3339-validator==0.1.4
     # via
     #   jsonschema
     #   jupyter-events
+    #   openapi-schema-validator
 rfc3986-validator==0.1.1
     # via
     #   jsonschema
@@ -915,6 +995,10 @@ rpds-py==0.22.3
     #   referencing
 rsa==4.9
     # via google-auth
+ruamel-yaml==0.18.8
+    # via prance
+ruamel-yaml-clib==0.2.12
+    # via ruamel-yaml
 safetensors==0.4.5
     # via
     #   -r requirements.in
@@ -934,6 +1018,8 @@ scipy==1.14.1
     #   scikit-learn
     #   sentence-transformers
     #   umap-learn
+semantic-kernel==1.17.1
+    # via -r requirements.in
 send2trash==1.8.3
     # via jupyter-server
 sentence-transformers==2.7.0
@@ -944,8 +1030,10 @@ shellingham==1.5.4
     # via typer
 six==1.17.0
     # via
+    #   azure-core
     #   kubernetes
     #   posthog
+    #   prance
     #   python-dateutil
     #   rfc3339-validator
 smmap==5.0.1
@@ -1088,6 +1176,8 @@ typing-extensions==4.12.2
     #   anyio
     #   asgiref
     #   async-lru
+    #   azure-core
+    #   azure-identity
     #   chromadb
     #   fastapi
     #   gpt4all
@@ -1147,7 +1237,9 @@ websocket-client==1.8.0
 websockets==14.1
     # via uvicorn
 werkzeug==3.1.3
-    # via flask
+    # via
+    #   flask
+    #   openapi-core
 wheel==0.45.1
     # via -r requirements.in
 widgetsnbextension==4.0.13

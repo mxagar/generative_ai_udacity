@@ -55,3 +55,4 @@ tavily-python
 nomic[local]
 onnx
 onnxruntime
+semantic-kernel
