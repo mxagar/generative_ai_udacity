@@ -150,7 +150,6 @@ In **Azure AI Foundry**:
 - In the **Playground**, we can use/chat with the deployed models.
   - We can use our deployed model in the chat.
   - If we click on `View code` we see the Python code for interaction.
-
 - Deploying an Azure OpenAI model here is much easier than deploying any other readily available model.
   - No need to define Compute and/or configure Endpoints.
 - Also, once deployed, we can change its configuration, e.g., change its Tokens Per Minute (TPM) quota.
@@ -165,7 +164,14 @@ In **Azure AI Foundry**:
 
 In the notebook [`01_azure_open_ai_basics.ipynb`](./notebooks/01_azure_open_ai_basics.ipynb) I show how to use the OpenAI deployment programmatically via REST; I used the API key and the Endpoint obtained from the Azure AI Foundry (Deployments).
 
-Also, in the Chat Playground, if we click on `View code` we see the Python code for interaction, which is different to the simple REST API call. The example code from `View code` has more options; I also tested it in the notebook.
+- Note that we have access to the Endpoint URL and the keys in two spots:
+  - In the Azure Portal, if we select the Azure OpenAI resource: Resource management > Keys and Endpoint.
+  - In the Azure AI Foundry: Select deployment: Details view.
+- Also, note that the Endpoint URL can have several forms:
+  - A specific form is suited for `curl` or `requests` calls, because it contains all the elements necessary to contact our model.
+  - A generic is shorter, it's the base of the specific; it is used by libraries, like `openai`.
+
+In the Chat Playground, if we click on `View code` we see the Python code for interaction, which is different to the simple REST API call. The example code from `View code` has more options; I also tested it in the notebook.
 
 ```python
 ### -- Simple API Call
@@ -554,7 +560,83 @@ See the previous section [Azure OpenAI](#azure-openai).
 
 ### 2.3 Azure OpenAI APIs
 
-TBD.
+This section is the continuation of the section [Azure OpenAI](#azure-openai).
+
+Following the code example from the playground, a mini app is build.
+
+- The application maintains a state called `history`, which contains the conversation so far.
+- With a `while True` loop, we interact with the deployed LLM while the conversation is kept in memory (context).
+- The code is in [`01_azure_open_ai_basics.ipynb`](./notebooks/01_azure_open_ai_basics.ipynb), but it is better suited to be run in a script.
+
+```python
+import os  
+import base64
+from openai import AzureOpenAI
+from openai import ChatCompletion
+from dotenv import load_dotenv
+from typing import List, Dict, Optional
+
+load_dotenv(override=True, dotenv_path=".env")
+
+# Now, the URL is shorter and we add the endpoint and deployment name
+endpoint = os.getenv("ENDPOINT_URL")
+deployment = os.getenv("DEPLOYMENT_NAME")
+subscription_key = os.getenv("AZURE_OPENAI_API_KEY")
+
+# Initialize Azure OpenAI client with key-based authentication    
+client = AzureOpenAI(  
+    azure_endpoint=endpoint,  
+    api_key=subscription_key,  
+    api_version="2024-05-01-preview",  
+)
+
+def chat(user_message: str, history: Optional[list[dict]] = None) -> ChatCompletion:
+    if history is None:
+        history = [
+            {
+                "role": "system",
+                "content": "You are an AI assistant that helps people find information."
+            }
+        ]
+
+    # Insert the user message into the history
+    history.append(
+        {
+            "role": "user",
+            "content": user_message
+        }
+    )
+    
+    # Generate the completion  
+    completion = client.chat.completions.create(  
+        model=deployment,  
+        messages=history,  
+        max_tokens=800,  
+        temperature=0.7,  
+        top_p=0.95,
+        frequency_penalty=0,  
+        presence_penalty=0,  
+        stop=None,  
+        stream=False
+    )
+    
+    # Extend history
+    history.append(
+        {
+            "role": "assistant",
+            "content": completion.choices[0].message.content
+        }
+    )
+    
+    return completion, history
+
+history = None
+while True:
+    user_message = input(">>: ")
+    completion, history = chat(user_message, history)
+    print(f"assistant: {completion.to_dict()['choices'][0]['message']['content']}")
+
+```
 
 ## 3. Extending with Functions and Plugins
 
