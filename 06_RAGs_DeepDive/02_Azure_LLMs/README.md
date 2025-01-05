@@ -29,6 +29,8 @@ For a guide on Azure, check my notes in [mxagar/azure_guide](https://github.com/
     - [3.1 Improved Prompts with Semantic Kernel](#31-improved-prompts-with-semantic-kernel)
       - [Prompts from Messages with LangChain](#prompts-from-messages-with-langchain)
     - [3.2 Extending Results with Functions](#32-extending-results-with-functions)
+      - [Functions with OpenAI Library](#functions-with-openai-library)
+      - [Functions with LangChain Library](#functions-with-langchain-library)
     - [3.3 Using Functions with External APIs](#33-using-functions-with-external-apis)
   - [4. Building an End-to-End Application in Azure](#4-building-an-end-to-end-application-in-azure)
     - [4.1 Architecture](#41-architecture)
@@ -758,7 +760,242 @@ main()
 
 ### 3.2 Extending Results with Functions
 
-TBD.
+These are the key ideas behind the approach of functions in LLMs:
+
+- we define some functions with a signature/interface that are implemented locally or remotely (e.g., APIs);
+- we expose to the LLM the signature/interface definition;
+- when we ask a question to the LLM which could be resolved by the function, it creates the call arguments necessary for that;
+- then, the result from the function call is used by the LLM to formulate the answer.
+
+It is like creating some plug-ins for the LLMs!
+
+![Functions in LLMs](./assets/functions.png)
+
+Documentation:
+
+- [OpenAI Function Calling](https://platform.openai.com/docs/guides/function-calling)
+- [OpenAI Python](https://github.com/openai/openai-python)
+
+According to OpenAI:
+
+> Function calling was introduced with the release of `gpt-4-turbo` on June 13, 2023. All `gpt-*` models released after this date support function calling.
+> Legacy models released before this date were not trained to support function calling.
+
+So we can use, e.g., `gpt-4o-mini`.
+
+#### Functions with OpenAI Library
+
+From [`04_langchain.ipynb`](./notebooks/04_langchain.ipynb):
+
+```python
+import os
+from os.path import dirname
+import json
+from dotenv import load_dotenv
+
+from langchain.chat_models import AzureChatOpenAI
+from openai import AzureOpenAI
+from langchain.prompts import ChatPromptTemplate
+from langchain.schema import HumanMessage, SystemMessage, AIMessage, FunctionMessage
+
+# Load environment variables
+current_dir = os.path.abspath(".")
+root_dir = dirname(current_dir)
+env_file = os.path.join(current_dir, '.env')
+load_dotenv(env_file, override=True)
+
+# Retrieve Azure OpenAI credentials
+deployment_name = os.getenv("DEPLOYMENT_NAME")
+endpoint = os.getenv("ENDPOINT_URL")
+api_key = os.getenv("AZURE_OPENAI_API_KEY")
+azure_openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT_URI")
+
+# Get the API Key from environment variable AZURE_OPENAI_API_KEY
+client = AzureOpenAI(
+    api_key=api_key,
+    # https://learn.microsoft.com/azure/ai-services/openai/reference#rest-api-versioning
+    api_version="2024-08-01-preview", # API version is in the Endpoint URI
+    # https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal#create-a-resource
+    azure_endpoint=endpoint,
+)
+
+# Define the get_weather function
+def get_weather(location: str, date: str) -> dict:
+    """
+    Mock function to get weather information for a location and date.
+    """
+    return {
+        "location": location,
+        "date": date,
+        "forecast": "sunny",
+        "temperature": "25°C"
+    }
+
+# Define the function schema
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_weather",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": {"type": "string"},
+                    "date": {"type": "string"},
+                },
+            },
+        },
+    }
+]
+
+
+# Main function
+def main():
+    user_query = "What is the weather in Paris tomorrow?"
+
+    # Send the initial request to the model
+    response = client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": "You are an AI assistant."},
+            {"role": "user", "content": user_query}
+        ],
+        model=deployment_name,
+        tools=tools,
+        #tool_choice="auto"  # Let the model decide when to call the function
+    )
+
+    # Check if the model requested a function call
+    if response.choices[0].message.tool_calls is not None:
+        function_call = response.choices[0].message.tool_calls[0].function
+        function_name = function_call.name
+        function_arguments = json.loads(function_call.arguments)
+
+        # Execute the requested function
+        if function_name == "get_weather":
+            function_result = get_weather(**function_arguments)
+
+        # Send the function result back to the model
+        final_response = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": "You are an AI assistant."},
+                {"role": "user", "content": user_query},
+                {"role": "function", "name": function_name, "content": json.dumps(function_result)}
+            ],
+            model=deployment_name
+        )
+
+        # Print the model's final response
+        print(final_response.choices[0].message.content)
+    else:
+        # Print the model's direct response
+        print(response.choices[0].message.content)
+
+main()
+```
+
+#### Functions with LangChain Library
+
+From [`04_langchain.ipynb`](./notebooks/04_langchain.ipynb):
+
+```python
+import os
+import json
+from dotenv import load_dotenv
+from langchain.chat_models import AzureChatOpenAI
+from langchain.schema import SystemMessage, HumanMessage, AIMessage, FunctionMessage
+from langchain.prompts import ChatPromptTemplate
+
+# Load environment variables
+current_dir = os.path.abspath(".")
+root_dir = dirname(current_dir)
+env_file = os.path.join(current_dir, '.env')
+load_dotenv(env_file, override=True)
+
+# Retrieve Azure OpenAI credentials
+deployment_name = os.getenv("DEPLOYMENT_NAME")
+endpoint = os.getenv("ENDPOINT_URL")
+api_key = os.getenv("AZURE_OPENAI_API_KEY")
+azure_openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT_URI")
+
+# Initialize Azure OpenAI via LangChain
+chat_model = AzureChatOpenAI(
+    azure_endpoint=azure_openai_endpoint,
+    openai_api_version="2024-08-01-preview", # API version is in the Endpoint URI
+    openai_api_key=api_key,
+    temperature=0.7
+)
+
+# Define the get_weather function as a LangChain tool
+def get_weather(location: str, date: str) -> dict:
+    """
+    Mock function to get weather information for a location and date.
+    """
+    return {
+        "location": location,
+        "date": date,
+        "forecast": "sunny",
+        "temperature": "25°C"
+    }
+
+# Define the tool schema for LangChain
+tools = [get_weather]
+
+# Define the function schemas for LangChain
+function_schemas = [
+    {
+        "name": "get_weather",
+        "description": "Provides weather information for a given location and date.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "location": {"type": "string", "description": "The city to get the weather for."},
+                "date": {"type": "string", "description": "The date to get the weather for (e.g., '2023-09-25')."}
+            },
+            "required": ["location", "date"]
+        }
+    }
+]
+
+# Define the prompt template
+def create_prompt(user_input: str):
+    return ChatPromptTemplate.from_messages([
+        SystemMessage(content="You are an AI assistant."),
+        HumanMessage(content=user_input)
+    ])
+
+# Main function
+def main():
+    user_query = "What is the weather in Paris tomorrow?"
+
+    # Initial response with tool metadata
+    response = chat_model.invoke(
+        create_prompt(user_query).format_prompt().to_messages(),
+        functions=function_schemas,
+        function_call="auto"  # Allow the model to decide when to call the function
+    )
+
+    # Check if the model requests a function call
+    if response.additional_kwargs.get("function_call"):
+        function_call = response.additional_kwargs["function_call"]
+        function_name = function_call["name"]
+        function_arguments = json.loads(function_call["arguments"])
+
+        # Execute the requested function
+        if function_name == "get_weather":
+            function_result = get_weather(**function_arguments)
+
+        # Send the function result back to the model
+        messages = create_prompt(user_query).format_prompt().to_messages()
+        messages.append(FunctionMessage(name=function_name, content=json.dumps(function_result)))
+        final_response = chat_model.invoke(messages)
+
+        print(final_response.content)
+    else:
+        # Handle direct responses
+        print(response.content)
+
+main()
+```
 
 ### 3.3 Using Functions with External APIs
 
