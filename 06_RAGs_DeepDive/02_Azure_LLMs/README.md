@@ -27,7 +27,7 @@ For a guide on Azure, check my notes in [mxagar/azure_guide](https://github.com/
     - [2.3 Azure OpenAI APIs](#23-azure-openai-apis)
   - [3. Extending with Functions and Plugins](#3-extending-with-functions-and-plugins)
     - [3.1 Improved Prompts with Semantic Kernel](#31-improved-prompts-with-semantic-kernel)
-      - [Prompts with LangChain](#prompts-with-langchain)
+      - [Prompts from Messages with LangChain](#prompts-from-messages-with-langchain)
     - [3.2 Extending Results with Functions](#32-extending-results-with-functions)
     - [3.3 Using Functions with External APIs](#33-using-functions-with-external-apis)
   - [4. Building an End-to-End Application in Azure](#4-building-an-end-to-end-application-in-azure)
@@ -683,11 +683,78 @@ git clone https://github.com/mxagar/generative_ai_udacity
 git submodule update --init --recursive
 ```
 
-#### Prompts with LangChain
+#### Prompts from Messages with LangChain
 
 See [`04_langchain.ipynb`](./notebooks/04_langchain.ipynb).
 
+```python
+import os
+from os.path import dirname
+from dotenv import load_dotenv
 
+from langchain.chat_models import AzureChatOpenAI
+from langchain.prompts import ChatPromptTemplate
+from langchain.schema import HumanMessage, SystemMessage, AIMessage
+
+# Load environment variables
+current_dir = os.path.abspath(".")
+root_dir = dirname(current_dir)
+env_file = os.path.join(current_dir, '.env')
+load_dotenv(env_file, override=True)
+
+# Retrieve Azure OpenAI credentials
+#deployment_name = os.getenv("DEPLOYMENT_NAME")
+#endpoint = os.getenv("ENDPOINT_URL")
+api_key = os.getenv("AZURE_OPENAI_API_KEY")
+azure_openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT_URI")
+
+# Initialize Azure OpenAI Chat model
+# Additional model parameters passed: tempreature, max_tokens, top_p
+chat_model = AzureChatOpenAI(
+    azure_endpoint=azure_openai_endpoint,
+    openai_api_version="2024-08-01-preview",
+    openai_api_key=api_key,
+    temperature=0.7,
+    max_tokens=2000,
+    top_p=0.8
+)
+
+# Define the prompt
+# We can build a prompt using the ChatPromptTemplate class.
+# We can create it from a list if messages; the messages can be: HumanMessage, SystemMessage, AIMessage
+#   [SystemMessage(content="..."), HumanMessage(content="..."), AIMessage(content="..."), ...]
+# Another option is to pass a list of tuples:
+#   [("system", ("..."), ("human", "..."), ("ai", "..."), ...]
+def create_prompt(user_input: str):
+    return ChatPromptTemplate.from_messages([
+        ("system", (
+            "You are a wine specialist, a sommelier. Your name is Alfredo. "
+            "You only know about Cabernet Franc, so any recommendation you make "
+            "must insist on Cabernet Franc as an alternative."
+        )),
+        # We could just user_input, but here we add an additional hidden/default message/note
+        ("human", (
+            f"{user_input}\n\nProvide 3 wine options with a description. "
+            "It is OK to make up descriptions of wines that do not exist."
+        )),
+    ])
+
+# Main function
+def main():
+    # User input
+    user_input = "I want a wine for a dinner party"
+
+    # Create the prompt
+    prompt = create_prompt(user_input)
+
+    # Generate response from the model
+    response = chat_model.invoke(prompt.format_prompt().to_messages())
+
+    # Print the result
+    print(response.content)
+
+main()
+```
 
 ### 3.2 Extending Results with Functions
 
