@@ -27,6 +27,7 @@ For a guide on Azure, check my notes in [mxagar/azure_guide](https://github.com/
     - [2.3 Azure OpenAI APIs](#23-azure-openai-apis)
   - [3. Extending with Functions and Plugins](#3-extending-with-functions-and-plugins)
     - [3.1 Improved Prompts with Semantic Kernel](#31-improved-prompts-with-semantic-kernel)
+      - [Prompts with LangChain](#prompts-with-langchain)
     - [3.2 Extending Results with Functions](#32-extending-results-with-functions)
     - [3.3 Using Functions with External APIs](#33-using-functions-with-external-apis)
   - [4. Building an End-to-End Application in Azure](#4-building-an-end-to-end-application-in-azure)
@@ -640,6 +641,12 @@ while True:
 
 ## 3. Extending with Functions and Plugins
 
+The code of this entire section is from [alfredodeza/azure-chat-demo](https://github.com/alfredodeza/azure-chat-demo).
+
+Unfortunately, an old version of [microsoft/semantic-kernel](https://github.com/microsoft/semantic-kernel) is used.
+
+Therefore, I tried to port most parts into LangChain.
+
 ### 3.1 Improved Prompts with Semantic Kernel
 
 Semantic Kernel is the Microsoft version of LangChain:
@@ -653,6 +660,33 @@ Installation:
 ```bash
 pip install semantic-kernel
 ```
+:warning: **The code examples don't work with newer versions!** Therefore, I tried to port most parts to LangChain.
+
+See [`03_semantic_kernel/`](./notebooks/03_semantic_kernel/) for the original code.
+
+See [`04_langchain.ipynb`](./notebooks/04_langchain.ipynb) for the ported code.
+
+The original code with Semantic Kernel by Alfredo Deza is added to [`notebooks/03_semantic_kernel/`](./notebooks/03_semantic_kernel/) as a git submodule.
+
+```bash
+# Add and initialize the LanChain repo as a submodule
+cd .../generative_ai_udacity
+git submodule add https://github.com/alfredodeza/azure-chat-demo.git 06_RAGs_DeepDive/02_Azure_LLMs/notebooks/03_semantic_kernel/azure-chat-demo
+git submodule init
+git submodule update
+
+# Add the automatically generated .gitmodules file to the repo
+git add .gitmodules 06_RAGs_DeepDive/02_Azure_LLMs/notebooks/03_semantic_kernel/
+
+# When my repository is cloned, initialize and update the submodule 
+git clone https://github.com/mxagar/generative_ai_udacity
+git submodule update --init --recursive
+```
+
+#### Prompts with LangChain
+
+See [`04_langchain.ipynb`](./notebooks/04_langchain.ipynb).
+
 
 
 ### 3.2 Extending Results with Functions
