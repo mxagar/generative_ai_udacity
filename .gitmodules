@@ -4,3 +4,6 @@
 [submodule "06_RAGs_DeepDive/01_RAG_from_Scratch/notebooks/langsmith-onboarding"]
 	path = 06_RAGs_DeepDive/01_RAG_from_Scratch/notebooks/langsmith-onboarding
 	url = https://github.com/nhuang-lc/langsmith-onboarding.git
+[submodule "06_RAGs_DeepDive/02_Azure_LLMs/notebooks/03_semantic_kernel/azure-chat-demo"]
+	path = 06_RAGs_DeepDive/02_Azure_LLMs/notebooks/03_semantic_kernel/azure-chat-demo
+	url = https://github.com/alfredodeza/azure-chat-demo.git
