@@ -46,9 +46,16 @@ Finally, check these additional related courses:
 A regular python environment with the usual data science packages should suffice (i.e., scikit-learn, pandas, matplotlib, etc.); any special/additional packages and their installation commands are introduced in the guides. A recipe to set up a [conda](https://docs.conda.io/en/latest/) environment with my current packages is the following:
 
 ```bash
+# Create the necessary Python environment
+# NOTE: specific folders might require their own environment
+# and have their own requirements.txt
 conda create --name ds pip python=3.10
 conda activate ds
 pip install -r requirements.txt
+
+# When the repository is cloned, initialize and update the submodules 
+git clone https://github.com/mxagar/generative_ai_udacity
+git submodule update --init --recursive
 ```
 
 ## Interesting Links

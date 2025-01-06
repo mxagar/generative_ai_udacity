@@ -1005,7 +1005,25 @@ main()
 
 ### 3.3 Using Functions with External APIs
 
-TBD.
+In this section, a locally run external API is used by the LLM, wrapped in a function.
+
+The original API code is very simple and has been cloned as a submodule from Alfredo Deza's repository [alfredodeza/historical-temperatures](https://github.com/alfredodeza/historical-temperatures).
+
+```bash
+# Add and initialize the LanChain repo as a submodule
+cd .../generative_ai_udacity
+git submodule add https://github.com/alfredodeza/historical-temperatures.git 06_RAGs_DeepDive/02_Azure_LLMs/notebooks/historical-temperatures-api
+git submodule init
+git submodule update
+
+# Add the automatically generated .gitmodules file to the repo
+git add .gitmodules 06_RAGs_DeepDive/02_Azure_LLMs/notebooks/
+
+# When my repository is cloned, initialize and update the submodule 
+git clone https://github.com/mxagar/generative_ai_udacity
+git submodule update --init --recursive
+```
+
 
 ## 4. Building an End-to-End Application in Azure
 
