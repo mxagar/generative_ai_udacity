@@ -875,6 +875,9 @@ def main():
             function_result = get_weather(**function_arguments)
 
         # Send the function result back to the model
+        # after extending the messages with the function result
+        # NOTE: We are invoking the LLM again, which incurs in more costs
+        # Another option is handle the function call locally!
         final_response = client.chat.completions.create(
             messages=[
                 {"role": "system", "content": "You are an AI assistant."},
@@ -985,6 +988,9 @@ def main():
             function_result = get_weather(**function_arguments)
 
         # Send the function result back to the model
+        # after extending the messages with the function result
+        # NOTE: We are invoking the LLM again, which incurs in more costs
+        # Another option is handle the function call locally!
         messages = create_prompt(user_query).format_prompt().to_messages()
         messages.append(FunctionMessage(name=function_name, content=json.dumps(function_result)))
         final_response = chat_model.invoke(messages)
