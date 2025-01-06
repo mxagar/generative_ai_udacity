@@ -33,6 +33,9 @@ For a guide on Azure, check my notes in [mxagar/azure_guide](https://github.com/
       - [Functions with LangChain Library](#functions-with-langchain-library)
       - [Structured Outputs with OpenAI Library](#structured-outputs-with-openai-library)
     - [3.3 Using Functions with External APIs](#33-using-functions-with-external-apis)
+      - [API Code](#api-code)
+      - [Running the API](#running-the-api)
+      - [Using the API with Azure OpenAI](#using-the-api-with-azure-openai)
   - [4. Building an End-to-End Application in Azure](#4-building-an-end-to-end-application-in-azure)
     - [4.1 Architecture](#41-architecture)
       - [Azure AI Search](#azure-ai-search)
@@ -1105,6 +1108,203 @@ git add .gitmodules 06_RAGs_DeepDive/02_Azure_LLMs/notebooks/
 # When my repository is cloned, initialize and update the submodule 
 git clone https://github.com/mxagar/generative_ai_udacity
 git submodule update --init --recursive
+```
+
+#### API Code
+
+[`notebooks/historical-temperatures-api/webapp/main.py`](./notebooks/historical-temperatures-api/webapp/main.py):
+
+```python
+import json
+from os.path import dirname, abspath, join
+from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
+
+
+current_dir = dirname(abspath(__file__))
+historical_data = join(current_dir, "weather.json")
+
+app = FastAPI()
+
+
+# Loads the historical data for Portugal cities
+with open(historical_data, "r") as f:
+    data = json.load(f)
+
+
+@app.get('/')
+def root():
+    return RedirectResponse(url='/docs', status_code=301)
+
+
+@app.get('/countries')
+def countries():
+    # Only allows Portugal for now
+    return list(data.keys())
+
+
+@app.get('/countries/{country}/{city}/{month}')
+def monthly_average(country: str, city: str, month: str):
+    return data[country][city][month]
+
+```
+
+The app uses [`weather.json`](./notebooks/historical-temperatures-api/webapp/weather.json), which contains data only for 3 cities in Portugal:
+
+```json
+{
+  "Portugal": {
+    "Lisbon": {
+      "January": { "high": 57, "low": 46 },
+      "February": { "high": 60, "low": 47 },
+      ...
+      "December": { "high": 58, "low": 48 }
+    },
+    "Porto": {
+      "January": { "high": 55, "low": 45 },
+      "February": { "high": 58, "low": 46 },
+      ...
+      "December": { "high": 56, "low": 46 }
+    },
+    "Braga": {
+      "January": { "high": 55, "low": 43 },
+      "February": { "high": 58, "low": 45 },  
+      ...
+      "December": { "high": 57, "low": 45 }
+    }
+  }
+}
+```
+
+#### Running the API
+
+In a separate Terminal, start `uvicorn`:
+
+```bash
+cd .../notebooks/historical-temperatures-api
+uvicorn --host 0.0.0.0 webapp.main:app
+```
+
+Inspect the running API at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) after you see the following output:
+
+```
+$ uvicorn --host 0.0.0.0 webapp.main:app
+INFO:     Started server process [37770]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+```
+
+FastAPI builds a Swagger UI docs where we can play with the API manually.
+
+![FastAPI Swagger UI](./assets/fast_api.png)
+
+We can now start requesting data to the API via REST calls.
+The app uses [`weather.json`](./notebooks/historical-temperatures-api/webapp/weather.json), which contains data only for 3 cities in Portugal.
+
+#### Using the API with Azure OpenAI
+
+See [`04_langchain.ipynb`](./notebooks/04_langchain.ipynb).
+
+Nothing really new is used here; the main difference is that the local function we redirect to after the LLM call is connected to the API.
+
+The FastAPI app needs to be running.
+
+```python
+import os
+import json
+import requests
+from dotenv import load_dotenv
+from langchain.chat_models import AzureChatOpenAI
+from langchain.schema import SystemMessage, HumanMessage, AIMessage, FunctionMessage
+from langchain.prompts import ChatPromptTemplate
+
+# Load environment variables
+current_dir = os.path.abspath(".")
+root_dir = dirname(current_dir)
+env_file = os.path.join(current_dir, '.env')
+load_dotenv(env_file, override=True)
+
+# Retrieve Azure OpenAI credentials
+deployment_name = os.getenv("DEPLOYMENT_NAME")
+endpoint = os.getenv("ENDPOINT_URL")
+api_key = os.getenv("AZURE_OPENAI_API_KEY")
+azure_openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT_URI")
+
+# Initialize Azure OpenAI via LangChain
+chat_model = AzureChatOpenAI(
+    azure_endpoint=azure_openai_endpoint,
+    openai_api_version="2024-08-01-preview", # API version is in the Endpoint URI
+    openai_api_key=api_key,
+    temperature=0.7
+)
+
+# Define the travel_weather function as a LangChain tool
+def travel_weather(city=None, month=None) -> str:
+    """Gets the average temperature for a city in a month using an API."""
+    microservice_url = "http://127.0.0.1:8000"
+    result = requests.get(f"{microservice_url}/countries/Portugal/{city}/{month}").json()
+    res = f"The average high temperature in {city} in {month} is {result['high']} degrees."
+    return res
+
+# Define the tool schema for LangChain
+tools = [travel_weather]
+
+# Define the function schemas for LangChain
+function_schemas = [
+    {
+        "name": "travel_weather",
+        "description": "Finds the average temperature for a city in a month.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "city": {"type": "string", "description": "The city to get the weather for."},
+                "month": {"type": "string", "description": "The month to get the weather for (e.g., 'January')."}
+            },
+            "required": ["city", "month"]
+        }
+    }
+]
+
+# Define the prompt template
+def create_prompt(user_input: str):
+    return ChatPromptTemplate.from_messages([
+        SystemMessage(content="You are a travel weather chat bot. Your name is Frederick. You are trying to help people find the average temperature in a city in a month."),
+        HumanMessage(content=user_input)
+    ])
+
+# Main function
+def main():
+    user_query = "I'm travelling to Porto, and it seems that it would happen in January. What would be the average temperature?"
+
+    # Initial response with tool metadata
+    response = chat_model.invoke(
+        create_prompt(user_query).format_prompt().to_messages(),
+        functions=function_schemas,
+        function_call="auto"  # Allow the model to decide when to call the function
+    )
+
+    # Check if the model requests a function call
+    if response.additional_kwargs.get("function_call"):
+        function_call = response.additional_kwargs["function_call"]
+        function_name = function_call["name"]
+        function_arguments = json.loads(function_call["arguments"])
+
+        # Execute the requested function
+        res = None
+        if function_name == "travel_weather":
+            res = travel_weather(**function_arguments)
+
+        if res is not None:
+            print(res)
+
+    else:
+        # Handle direct responses
+        print(response.content)
+
+main()
+# The average high temperature in Porto in January is 55 degrees.
 ```
 
 ## 4. Building an End-to-End Application in Azure
