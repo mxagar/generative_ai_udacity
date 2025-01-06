@@ -190,6 +190,7 @@ fast-pytorch-kmeans==0.2.0.1
     # via ragatouille
 fastapi==0.115.6
     # via
+    #   -r requirements.in
     #   chromadb
     #   langchain-chroma
 fastjsonschema==2.21.1
@@ -1215,7 +1216,9 @@ urllib3==2.3.0
     #   requests
     #   types-requests
 uvicorn[standard]==0.34.0
-    # via chromadb
+    # via
+    #   -r requirements.in
+    #   chromadb
 uvloop==0.21.0
     # via uvicorn
 voyager==2.1.0

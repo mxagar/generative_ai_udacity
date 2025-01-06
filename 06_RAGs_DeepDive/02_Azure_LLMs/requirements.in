@@ -56,3 +56,5 @@ nomic[local]
 onnx
 onnxruntime
 semantic-kernel
+fastapi
+uvicorn[standard]

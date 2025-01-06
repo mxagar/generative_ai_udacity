@@ -31,6 +31,7 @@ For a guide on Azure, check my notes in [mxagar/azure_guide](https://github.com/
     - [3.2 Extending Results with Functions](#32-extending-results-with-functions)
       - [Functions with OpenAI Library](#functions-with-openai-library)
       - [Functions with LangChain Library](#functions-with-langchain-library)
+      - [Structured Outputs with OpenAI Library](#structured-outputs-with-openai-library)
     - [3.3 Using Functions with External APIs](#33-using-functions-with-external-apis)
   - [4. Building an End-to-End Application in Azure](#4-building-an-end-to-end-application-in-azure)
     - [4.1 Architecture](#41-architecture)
@@ -1003,9 +1004,91 @@ def main():
 main()
 ```
 
+#### Structured Outputs with OpenAI Library
+
+```python
+import os
+from os.path import dirname
+import json
+from dotenv import load_dotenv
+from enum import Enum
+from typing import Union
+from pydantic import BaseModel
+
+from langchain.chat_models import AzureChatOpenAI
+import openai
+from openai import AzureOpenAI
+from langchain.prompts import ChatPromptTemplate
+from langchain.schema import HumanMessage, SystemMessage, AIMessage, FunctionMessage
+
+# Load environment variables
+current_dir = os.path.abspath(".")
+root_dir = dirname(current_dir)
+env_file = os.path.join(current_dir, '.env')
+load_dotenv(env_file, override=True)
+
+# Retrieve Azure OpenAI credentials
+deployment_name = os.getenv("DEPLOYMENT_NAME")
+endpoint = os.getenv("ENDPOINT_URL")
+api_key = os.getenv("AZURE_OPENAI_API_KEY")
+azure_openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT_URI")
+
+# Get the API Key from environment variable AZURE_OPENAI_API_KEY
+client = AzureOpenAI(
+    api_key=api_key,
+    # https://learn.microsoft.com/azure/ai-services/openai/reference#rest-api-versioning
+    api_version="2024-08-01-preview", # API version is in the Endpoint URI
+    # https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal#create-a-resource
+    azure_endpoint=endpoint,
+)
+
+# Define the structured output as a Pydantic model
+class GetDeliveryDate(BaseModel):
+    order_id: str
+
+# Define the tools: convert the Pydantic model to a function tool
+tools = [openai.pydantic_function_tool(GetDeliveryDate)]
+# If we are not using the SDK, we can define the tool manually
+# but we need to add the `strict: True` parameter.
+# I obtained the manual schema by printing tools[0]
+tools_ = [
+    {
+        'type': 'function',
+        'function': {
+            'name': 'GetDeliveryDate',
+            'strict': True,
+            'parameters': {
+                'properties': {
+                    'order_id': { 'title': 'Order Id', 'type': 'string' }
+                },
+                'required': ['order_id'], 
+                'title': 'GetDeliveryDate',
+                'type': 'object',
+                'additionalProperties': False
+                }
+            }
+    },
+]
+
+# Define the prompt/history
+messages = []
+messages.append({"role": "system", "content": "You are a helpful customer support assistant. Use the supplied tools to assist the user."})
+messages.append({"role": "user", "content": "Hi, can you tell me the delivery date for my order #12345?"})
+
+response = client.chat.completions.create(
+    model=deployment_name,
+    messages=messages,
+    tools=tools,
+    #tools=tools_,
+)
+
+print(response.choices[0].message.tool_calls[0].function)
+# Function(arguments='{"order_id":"12345"}', name='GetDeliveryDate')
+```
+
 ### 3.3 Using Functions with External APIs
 
-In this section, a locally run external API is used by the LLM, wrapped in a function.
+In this section, a locally run API is used by the LLM, wrapped in a function.
 
 The original API code is very simple and has been cloned as a submodule from Alfredo Deza's repository [alfredodeza/historical-temperatures](https://github.com/alfredodeza/historical-temperatures).
 
@@ -1023,7 +1106,6 @@ git add .gitmodules 06_RAGs_DeepDive/02_Azure_LLMs/notebooks/
 git clone https://github.com/mxagar/generative_ai_udacity
 git submodule update --init --recursive
 ```
-
 
 ## 4. Building an End-to-End Application in Azure
 
