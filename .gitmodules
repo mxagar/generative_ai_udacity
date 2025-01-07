@@ -10,3 +10,6 @@
 [submodule "06_RAGs_DeepDive/02_Azure_LLMs/notebooks/historical-temperatures-api"]
 	path = 06_RAGs_DeepDive/02_Azure_LLMs/notebooks/historical-temperatures-api
 	url = https://github.com/alfredodeza/historical-temperatures.git
+[submodule "06_RAGs_DeepDive/02_Azure_LLMs/notebooks/azure-rag"]
+	path = 06_RAGs_DeepDive/02_Azure_LLMs/notebooks/azure-rag
+	url = https://github.com/alfredodeza/azure-rag.git
