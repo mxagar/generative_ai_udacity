@@ -41,7 +41,7 @@ For a guide on Azure, check my notes in [mxagar/azure_guide](https://github.com/
       - [Azure AI Search](#azure-ai-search)
       - [Github Actions](#github-actions)
       - [Azure AI Document Intelligence](#azure-ai-document-intelligence)
-      - [Extra Exercises](#extra-exercises)
+      - [Suggested Extra Exercises](#suggested-extra-exercises)
     - [4.2 RAG with Azure AI Search](#42-rag-with-azure-ai-search)
     - [4.3 Deployment and Scaling with Github Action](#43-deployment-and-scaling-with-github-action)
 
@@ -1457,12 +1457,24 @@ Key ideas in the blog post:
 
 We can go to [Azure AI Document Intelligence Studio](https://documentintelligence.ai.azure.com/studio/layout), choose the Analyze options and try it!
 
+- First, create a `Document Intelligence` service instance.
+- Go to [Azure AI Document Intelligence Studio](https://documentintelligence.ai.azure.com/studio/layout) (link should appear in the deployed Doc Intelligence Resource).
+- Select any of the analysis options: OCR, Layout, General Documents.
+  - Select a RG which contains a `Document Intelligence` instance or create one.
+  - Run the analysis.
+
+![Document Intelligence Studio](./assets/doc_intelligence_studio.png)
+
+Example in which the layour of the original RAG paper by Leweis et al. is analyzed (sections are detected as bounding boxes and a JSON is generated with boudning box information, such as location, content, type of bounding box, etc.):
+
+![Document Intelligence Studio: Layout Analysis](./assets/layout_analysis.png)
+
 Additional resources:
 
 - [Quickstart: Document Intelligence SDKs](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/quickstarts/get-started-sdks-rest-api?view=doc-intel-4.0.0&pivots=programming-language-python#layout-model) – use your preferred SDK or REST API to extract content and structure from documents.
 - [Sample code of using Layout API to output in markdown format](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/documentintelligence/azure-ai-documentintelligence/samples/sample_analyze_documents_output_in_markdown.py).
 
-#### Extra Exercises
+#### Suggested Extra Exercises
 
 Azure AI Search:
 
