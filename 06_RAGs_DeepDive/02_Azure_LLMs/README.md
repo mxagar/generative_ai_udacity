@@ -44,6 +44,7 @@ For a guide on Azure, check my notes in [mxagar/azure_guide](https://github.com/
         - [Notebook](#notebook)
       - [Suggested Extra Exercises](#suggested-extra-exercises)
     - [4.2 RAG with Azure AI Search](#42-rag-with-azure-ai-search)
+      - [Azure AI Search: Upload and Search for Embeddings](#azure-ai-search-upload-and-search-for-embeddings)
     - [4.3 Deployment and Scaling with Github Action](#43-deployment-and-scaling-with-github-action)
 
 ## 0. Setup
@@ -1675,6 +1676,11 @@ Overview of the infrastructure for the RAG application:
     - Github Container Registry used for Container
 - Deployment: Using Github Actions
 
+#### Azure AI Search: Upload and Search for Embeddings
+
+Azure AI Search and OpenAI Embeddings are used via LangChain!
+
+See [`06_azure_search.ipynb`](./notebooks/06_azure_search.ipynb).
 
 
 ### 4.3 Deployment and Scaling with Github Action
