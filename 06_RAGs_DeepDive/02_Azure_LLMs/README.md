@@ -41,6 +41,7 @@ For a guide on Azure, check my notes in [mxagar/azure_guide](https://github.com/
       - [Azure AI Search](#azure-ai-search)
       - [Github Actions](#github-actions)
       - [Azure AI Document Intelligence](#azure-ai-document-intelligence)
+        - [Notebook](#notebook)
       - [Suggested Extra Exercises](#suggested-extra-exercises)
     - [4.2 RAG with Azure AI Search](#42-rag-with-azure-ai-search)
     - [4.3 Deployment and Scaling with Github Action](#43-deployment-and-scaling-with-github-action)
@@ -1459,9 +1460,17 @@ We can go to [Azure AI Document Intelligence Studio](https://documentintelligenc
 
 - First, create a `Document Intelligence` service instance.
 - Go to [Azure AI Document Intelligence Studio](https://documentintelligence.ai.azure.com/studio/layout) (link should appear in the deployed Doc Intelligence Resource).
-- Select any of the analysis options: OCR, Layout, General Documents.
+- Select any of the default analysis options: OCR, Layout, General Documents.
   - Select a RG which contains a `Document Intelligence` instance or create one.
   - Run the analysis.
+- Note that there are much more pre-built analysis models!
+  - Invoices
+  - Receipts
+  - Id documents
+  - US health insurance cards
+  - US personal tax
+  - Contracts
+  - ...
 
 ![Document Intelligence Studio](./assets/doc_intelligence_studio.png)
 
@@ -1473,6 +1482,151 @@ Additional resources:
 
 - [Quickstart: Document Intelligence SDKs](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/quickstarts/get-started-sdks-rest-api?view=doc-intel-4.0.0&pivots=programming-language-python#layout-model) – use your preferred SDK or REST API to extract content and structure from documents.
 - [Sample code of using Layout API to output in markdown format](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/documentintelligence/azure-ai-documentintelligence/samples/sample_analyze_documents_output_in_markdown.py).
+
+##### Notebook
+
+See [`05_azure_doc_intelligence.ipynb`](./notebooks/05_azure_doc_intelligence.ipynb).
+
+Sources:
+
+- [sample_analyze_documents_output_in_markdown.py](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/documentintelligence/azure-ai-documentintelligence/samples/sample_analyze_documents_output_in_markdown.py)
+- [DocumentIntelligenceClient Class](https://learn.microsoft.com/en-us/python/api/azure-ai-documentintelligence/azure.ai.documentintelligence.documentintelligenceclient?view=azure-python#azure-ai-documentintelligence-documentintelligenceclient-begin-analyze-document)
+- [AnalyzeDocumentRequest Class](https://learn.microsoft.com/en-us/python/api/azure-ai-documentintelligence/azure.ai.documentintelligence.models.analyzedocumentrequest?view=azure-python)
+- [AnalyzeResult Class](https://learn.microsoft.com/en-us/python/api/azure-ai-formrecognizer/azure.ai.formrecognizer.analyzeresult?view=azure-python)
+- [sample_analyze_layout.py](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/documentintelligence/azure-ai-documentintelligence/samples/sample_analyze_layout.py)
+
+```python
+import os
+from os.path import dirname
+from dotenv import load_dotenv
+
+from azure.core.credentials import AzureKeyCredential
+from azure.ai.documentintelligence import DocumentIntelligenceClient
+from azure.ai.documentintelligence.models import (
+    AnalyzeDocumentRequest, DocumentContentFormat, AnalyzeResult
+)
+
+# Load environment variables
+current_dir = os.path.abspath(".")
+root_dir = dirname(current_dir)
+env_file = os.path.join(current_dir, '.env')
+load_dotenv(env_file, override=True)
+
+def pdf2markdown(file_path: str):
+    # Get the endpoint and key from the environment
+    endpoint = os.environ["AZURE_DOCUMENTINTELLIGENCE_ENDPOINT"]
+    key = os.environ["AZURE_DOCUMENTINTELLIGENCE_API_KEY"]
+    # NOTE: we could also use a URL instead of the local file path
+    #url = "https://github.com/mxagar/generative_ai_udacity/blob/main/06_RAGs_DeepDive/02_Azure_LLMs/literature/Lewis_RAG_2021_one_page.pdf"
+
+    client = DocumentIntelligenceClient(endpoint=endpoint, credential=AzureKeyCredential(key))
+    with open(file_path, "rb") as file_stream:
+        poller = client.begin_analyze_document(
+            model_id="prebuilt-layout",
+            body=file_stream,  # Pass the local file stream
+            #body=AnalyzeDocumentRequest(url_source=url), # Use this line to analyze a document from a URL
+            output_content_format=DocumentContentFormat.MARKDOWN,
+            content_type="application/pdf",  # Explicitly specify content type
+        )
+        result: AnalyzeResult = poller.result()
+
+    print(f"Here's the full content in format {result.content_format}:\n")
+    print(result.content)
+
+
+def analyze_layout(file_path: str, display: bool = True):
+    def _in_span(word, spans):
+        for span in spans:
+            if word.span.offset >= span.offset and (word.span.offset + word.span.length) <= (span.offset + span.length):
+                return True
+        return False
+
+    def _format_polygon(polygon):
+        if not polygon:
+            return "N/A"
+        return ", ".join([f"[{polygon[i]}, {polygon[i + 1]}]" for i in range(0, len(polygon), 2)])
+
+    endpoint = os.environ["AZURE_DOCUMENTINTELLIGENCE_ENDPOINT"]
+    key = os.environ["AZURE_DOCUMENTINTELLIGENCE_API_KEY"]
+
+    client = DocumentIntelligenceClient(endpoint=endpoint, credential=AzureKeyCredential(key))
+    with open(file_path, "rb") as f:
+        poller = client.begin_analyze_document("prebuilt-layout", body=f)
+    result: AnalyzeResult = poller.result()
+
+    if display:
+        if result.styles and any([style.is_handwritten for style in result.styles]):
+            print("Document contains handwritten content")
+        else:
+            print("Document does not contain handwritten content")
+
+        for page in result.pages:
+            print(f"----Analyzing layout from page #{page.page_number}----")
+            print(f"Page has width: {page.width} and height: {page.height}, measured with unit: {page.unit}")
+
+            if page.lines:
+                for line_idx, line in enumerate(page.lines):
+                    words = []
+                    if page.words:
+                        for word in page.words:
+                            print(f"......Word '{word.content}' has a confidence of {word.confidence}")
+                            if _in_span(word, line.spans):
+                                words.append(word)
+                    print(
+                        f"...Line # {line_idx} has word count {len(words)} and text '{line.content}' "
+                        f"within bounding polygon '{_format_polygon(line.polygon)}'"
+                    )
+
+            if page.selection_marks:
+                for selection_mark in page.selection_marks:
+                    print(
+                        f"Selection mark is '{selection_mark.state}' within bounding polygon "
+                        f"'{_format_polygon(selection_mark.polygon)}' and has a confidence of {selection_mark.confidence}"
+                    )
+
+        if result.paragraphs:
+            print(f"----Detected #{len(result.paragraphs)} paragraphs in the document----")
+            # Sort all paragraphs by span's offset to read in the right order.
+            result.paragraphs.sort(key=lambda p: (p.spans.sort(key=lambda s: s.offset), p.spans[0].offset))
+            print("-----Print sorted paragraphs-----")
+            for paragraph in result.paragraphs:
+                if not paragraph.bounding_regions:
+                    print(f"Found paragraph with role: '{paragraph.role}' within N/A bounding region")
+                else:
+                    print(f"Found paragraph with role: '{paragraph.role}' within")
+                    print(
+                        ", ".join(
+                            f" Page #{region.page_number}: {_format_polygon(region.polygon)} bounding region"
+                            for region in paragraph.bounding_regions
+                        )
+                    )
+                print(f"...with content: '{paragraph.content}'")
+                print(f"...with offset: {paragraph.spans[0].offset} and length: {paragraph.spans[0].length}")
+
+        if result.tables:
+            for table_idx, table in enumerate(result.tables):
+                print(f"Table # {table_idx} has {table.row_count} rows and " f"{table.column_count} columns")
+                if table.bounding_regions:
+                    for region in table.bounding_regions:
+                        print(
+                            f"Table # {table_idx} location on page: {region.page_number} is {_format_polygon(region.polygon)}"
+                        )
+                for cell in table.cells:
+                    print(f"...Cell[{cell.row_index}][{cell.column_index}] has text '{cell.content}'")
+                    if cell.bounding_regions:
+                        for region in cell.bounding_regions:
+                            print(
+                                f"...content on page {region.page_number} is within bounding polygon '{_format_polygon(region.polygon)}'"
+                            )
+
+        print("----------------------------------------")
+    
+    return result
+
+
+pdf2markdown("../literature/Lewis_RAG_2021_one_page.pdf")
+result = analyze_layout("../literature/Lewis_RAG_2021_one_page.pdf")
+```
 
 #### Suggested Extra Exercises
 
@@ -1486,8 +1640,8 @@ Azure AI Search:
 
 Azure Document Intelligence:
 
-- [ ] Analyze a document via the portal.
-- [ ] Convert a document into Markdown with the SDK.
+- [x] Analyze a document via the portal.
+- [x] Convert a document into Markdown with the SDK.
 
 ### 4.2 RAG with Azure AI Search
 
