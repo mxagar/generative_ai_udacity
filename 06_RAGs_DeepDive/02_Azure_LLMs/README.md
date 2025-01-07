@@ -1645,7 +1645,21 @@ Azure Document Intelligence:
 
 ### 4.2 RAG with Azure AI Search
 
-TBD.
+Sources:
+
+- Interesting blog post: [Retrieval-Augmented Generation (RAG) - Bea Stollnitz](https://bea.stollnitz.com/blog/rag/). It shows how to create a RAG application on Azure.
+- Repository of the section: [alfredodeza/azure-rag](https://github.com/alfredodeza/azure-rag).
+
+Overview of the infrastructure:
+
+- Resources created manually:
+  - Azure AI Search
+  - Azure OpenAI
+    - gpt-40-mini
+    - text-embedding-ada-002
+  - Azure Container App: Backend - FastAPI with all the code
+    - Github Container Registry used for Container
+- Deployment: Using Github Actions
 
 ### 4.3 Deployment and Scaling with Github Action
 
