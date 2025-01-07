@@ -58,3 +58,4 @@ onnxruntime
 semantic-kernel
 fastapi
 uvicorn[standard]
+azure-ai-documentintelligence

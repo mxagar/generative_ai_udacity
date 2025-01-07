@@ -54,8 +54,12 @@ attrs==24.3.0
     #   referencing
 autopep8==2.3.1
     # via -r requirements.in
+azure-ai-documentintelligence==1.0.0
+    # via -r requirements.in
 azure-core==1.32.0
-    # via azure-identity
+    # via
+    #   azure-ai-documentintelligence
+    #   azure-identity
 azure-identity==1.19.0
     # via semantic-kernel
 babel==2.16.0
@@ -314,7 +318,9 @@ ipython==8.31.0
 ipywidgets==8.1.5
     # via jupyter
 isodate==0.7.2
-    # via openapi-core
+    # via
+    #   azure-ai-documentintelligence
+    #   openapi-core
 isoduration==20.11.0
     # via jsonschema
 itsdangerous==2.2.0
@@ -1189,6 +1195,7 @@ typing-extensions==4.12.2
     #   anyio
     #   asgiref
     #   async-lru
+    #   azure-ai-documentintelligence
     #   azure-core
     #   azure-identity
     #   chromadb
