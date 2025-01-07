@@ -1645,21 +1645,37 @@ Azure Document Intelligence:
 
 ### 4.2 RAG with Azure AI Search
 
-Sources:
+**Important source: [Retrieval-Augmented Generation (RAG) - Bea Stollnitz](https://bea.stollnitz.com/blog/rag/). It shows how to create a RAG application on Azure.**
 
-- Interesting blog post: [Retrieval-Augmented Generation (RAG) - Bea Stollnitz](https://bea.stollnitz.com/blog/rag/). It shows how to create a RAG application on Azure.
-- Repository of the section: [alfredodeza/azure-rag](https://github.com/alfredodeza/azure-rag).
+The section code is from Alfredo Deza's repository [alfredodeza/azure-rag](https://github.com/alfredodeza/azure-rag), and it's added as a submodule.
 
-Overview of the infrastructure:
+```bash
+# Add and initialize the LanChain repo as a submodule
+cd .../generative_ai_udacity
+git submodule add https://github.com/alfredodeza/azure-rag.git 06_RAGs_DeepDive/02_Azure_LLMs/notebooks/azure-rag
+git submodule init
+git submodule update
 
-- Resources created manually:
-  - Azure AI Search
-  - Azure OpenAI
-    - gpt-40-mini
-    - text-embedding-ada-002
+# Add the automatically generated .gitmodules file to the repo
+git add .gitmodules 06_RAGs_DeepDive/02_Azure_LLMs/notebooks/
+
+# When my repository is cloned, initialize and update the submodule 
+git clone https://github.com/mxagar/generative_ai_udacity
+git submodule update --init --recursive
+```
+
+Overview of the infrastructure for the RAG application:
+
+- Resources created manually (Azure Portal):
+  - Azure AI Search (France Central): `rg-demo-coursera-ai-search/demo-coursera-ai-search`
+  - Azure OpenAI (East US, access from everywhere): `rg-demo-coursera-azure-openai/demo-coursera-azure-openai`
+    - Chat: `gpt-4o-mini`
+    - Embeddings: `text-embedding-ada-002`
   - Azure Container App: Backend - FastAPI with all the code
     - Github Container Registry used for Container
 - Deployment: Using Github Actions
+
+
 
 ### 4.3 Deployment and Scaling with Github Action
 

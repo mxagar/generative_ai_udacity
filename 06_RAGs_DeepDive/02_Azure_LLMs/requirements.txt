@@ -56,12 +56,19 @@ autopep8==2.3.1
     # via -r requirements.in
 azure-ai-documentintelligence==1.0.0
     # via -r requirements.in
+azure-common==1.1.28
+    # via azure-search-documents
 azure-core==1.32.0
     # via
     #   azure-ai-documentintelligence
     #   azure-identity
+    #   azure-search-documents
 azure-identity==1.19.0
-    # via semantic-kernel
+    # via
+    #   -r requirements.in
+    #   semantic-kernel
+azure-search-documents==11.5.2
+    # via -r requirements.in
 babel==2.16.0
     # via jupyterlab-server
 backoff==2.2.1
@@ -320,6 +327,7 @@ ipywidgets==8.1.5
 isodate==0.7.2
     # via
     #   azure-ai-documentintelligence
+    #   azure-search-documents
     #   openapi-core
 isoduration==20.11.0
     # via jsonschema
@@ -1198,6 +1206,7 @@ typing-extensions==4.12.2
     #   azure-ai-documentintelligence
     #   azure-core
     #   azure-identity
+    #   azure-search-documents
     #   chromadb
     #   fastapi
     #   gpt4all
