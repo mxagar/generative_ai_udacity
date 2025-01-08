@@ -1683,7 +1683,7 @@ Overview of the infrastructure for the RAG application:
 
 Azure AI Search and OpenAI Embeddings are used via LangChain!
 
-See [`06_azure_search.ipynb`](./notebooks/06_azure_search.ipynb).
+See [`06_azure_search_rag.ipynb`](./notebooks/06_azure_search_rag.ipynb).
 
 **This notebook is ver important, as it shows all the basic steps of a RAG application:**
 
@@ -1717,7 +1717,7 @@ Links to documentation of used objects:
 - [AzureAISearchRetriever](https://python.langchain.com/docs/integrations/retrievers/azure_ai_search/)
 - [AzureAISearchRetriever API Reference (langchain_community)](https://python.langchain.com/api_reference/community/retrievers/langchain_community.retrievers.azure_ai_search.AzureAISearchRetriever.html)
 
-Notebook [`06_azure_search.ipynb`](./notebooks/06_azure_search.ipynb) contents:
+Notebook [`06_azure_search_rag.ipynb`](./notebooks/06_azure_search_rag.ipynb) contents:
 
 ```python
 import os
