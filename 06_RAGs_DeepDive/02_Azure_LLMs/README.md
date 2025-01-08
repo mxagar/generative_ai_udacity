@@ -1648,6 +1648,8 @@ Azure Document Intelligence:
 
 **Important source: [Retrieval-Augmented Generation (RAG) - Bea Stollnitz](https://bea.stollnitz.com/blog/rag/). It shows how to create a RAG application on Azure.**
 
+**This section is very important, bevcause in its notebook a basic RAG application is built using Azure Services.**
+
 The section code is from Alfredo Deza's repository [alfredodeza/azure-rag](https://github.com/alfredodeza/azure-rag), and it's added as a submodule.
 
 ```bash
@@ -1669,9 +1671,10 @@ Overview of the infrastructure for the RAG application:
 
 - Resources created manually (Azure Portal):
   - Azure AI Search (France Central): `rg-demo-coursera-ai-search/demo-coursera-ai-search`
+    - It will contain and index, created programmatically.
   - Azure OpenAI (East US, access from everywhere): `rg-demo-coursera-azure-openai/demo-coursera-azure-openai`
-    - Chat: `gpt-4o-mini`
-    - Embeddings: `text-embedding-ada-002`
+    - Chat model, deployed beforehand: `gpt-4o-mini`
+    - Embeddings model, deployed beforehand: `text-embedding-ada-002`
   - Azure Container App: Backend - FastAPI with all the code
     - Github Container Registry used for Container
 - Deployment: Using Github Actions
@@ -1682,6 +1685,227 @@ Azure AI Search and OpenAI Embeddings are used via LangChain!
 
 See [`06_azure_search.ipynb`](./notebooks/06_azure_search.ipynb).
 
+**This notebook is ver important, as it shows all the basic steps of a RAG application:**
+
+- Loading Documents with LangChain: PDF and CSV
+- Splitting Documents with LangChain: RecursiveCharacterTextSplitter, CharacterTextSplitter
+- Creating Embeddings, Creating Index and Uploading Documents and Search of Documents
+  - Chunk and Index Data with Embeddings Service: AzureSearch, AzureOpenAIEmbeddings
+  - Retrieve Data: AzureSearch, AzureAISearchRetriever
+  - Retrieving with a Chain: RAG Chain!
+
+These resources need to be created beforehand:
+
+- Azure OpenAI
+  - Chat model
+  - Embeddings model
+- Azure AI Search
+
+The Azure AI Search service contains indexes with searchable documents.
+When we instantiate the Azure AI Search service it has no index; we programmatically create and populate it when we add documents.
+Then, those documents are searchable: programmatically and also in the Azure Portal:
+
+    RG > Search service > Search management > Indexes > index_name
+
+![Search Explorer](./assets/search_explorer.png)
+
+Links to documentation of used objects:
+
+- [AzureOpenAIEmbeddings](https://python.langchain.com/docs/integrations/text_embedding/azureopenai/)
+- [AzureOpenAIEmbeddings API Reference](https://python.langchain.com/api_reference/openai/embeddings/langchain_openai.embeddings.azure.AzureOpenAIEmbeddings.html)
+- [AzureSearch](https://python.langchain.com/docs/integrations/vectorstores/azuresearch/)
+- [AzureAISearchRetriever](https://python.langchain.com/docs/integrations/retrievers/azure_ai_search/)
+- [AzureAISearchRetriever API Reference (langchain_community)](https://python.langchain.com/api_reference/community/retrievers/langchain_community.retrievers.azure_ai_search.AzureAISearchRetriever.html)
+
+Notebook [`06_azure_search.ipynb`](./notebooks/06_azure_search.ipynb) contents:
+
+```python
+import os
+from os.path import dirname
+from pprint import pprint
+from dotenv import load_dotenv
+
+# Load environment variables
+current_dir = os.path.abspath(".")
+root_dir = dirname(current_dir)
+env_file = os.path.join(current_dir, '.env')
+load_dotenv(env_file, override=True)
+
+## -- Loading Documents with LangChain: PDF and CSV
+
+from langchain.document_loaders import PyPDFLoader
+
+# The PyPDFLoader loads each page into a document
+loader = PyPDFLoader("../literature/Lewis_RAG_2021.pdf")
+pages = loader.load_and_split()  # Same effect as .load()
+print(pages[0].page_content)
+
+from langchain.document_loaders import CSVLoader
+
+# The CSVLoader loads each row into a separate document, similar to a page in a PDF
+loader = CSVLoader("./azure-rag/wine-ratings.csv")
+rows = loader.load()
+rows
+# [Document(metadata={'source': './azure-rag/wine-ratings.csv', 'row': 0}, page_content=': 0\nname: 1000 Stories Bourbon Barrel Aged Batch Blue Carignan...'), ...]
+
+## -- Splitting Documents with LangChain: RecursiveCharacterTextSplitter, CharacterTextSplitter
+
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+# Splitting text by recursively look at characters.
+# Recursively tries to split by different characters to find one that works.
+# Attempts to split text hierarchically, respecting semantic boundaries (e.g., sentences, paragraphs)?
+text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+    chunk_size=300, 
+    chunk_overlap=50)
+
+splits = text_splitter.split_documents(pages)
+
+from langchain.text_splitter import CharacterTextSplitter
+
+text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+docs = text_splitter.split_documents(rows)
+
+## -- Creating Embeddings, Creating Index and Uploading Documents and Search of Documents
+
+import openai
+#from langchain.embeddings import OpenAIEmbeddings
+from langchain_openai import AzureOpenAIEmbeddings
+from langchain.vectorstores import AzureSearch
+
+# Retrieve Azure credentials and variables
+load_dotenv(env_file, override=True)
+azure_openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+azure_openai_endpoint_uri = os.getenv("AZURE_OPENAI_ENDPOINT_URI")
+embedding_deployment_name = os.getenv("EMBEDDING_DEPLOYMENT_NAME")
+chat_deployment_name = os.getenv("CHAT_DEPLOYMENT_NAME")
+azure_openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
+azure_openai_api_version = os.getenv("AZURE_OPENAI_API_VERSION")
+azure_search_api_key = os.getenv("AZURE_SEARCH_API_KEY")
+azure_search_endpoint = os.getenv("AZURE_SEARCH_ENDPOINT")
+azure_search_index_name = os.getenv("AZURE_SEARCH_INDEX_NAME")
+
+embeddings = AzureOpenAIEmbeddings(
+    deployment=embedding_deployment_name,
+    azure_endpoint=azure_openai_endpoint,
+    api_version=azure_openai_api_version,
+    api_key=azure_openai_api_key,
+    chunk_size=1
+)
+
+# Connect to Azure AI Search
+# The first time an index is created, with the name index_name
+# We can check that in Azure Portal
+acs = AzureSearch(
+    azure_search_endpoint=azure_search_endpoint,
+    azure_search_key=azure_search_api_key,
+    index_name=azure_search_index_name,
+    embedding_function=embeddings.embed_query
+)
+
+### -- Chunk and Index Data with Embeddings Service: AzureSearch, AzureOpenAIEmbeddings
+
+from langchain.document_loaders import CSVLoader
+from langchain.text_splitter import CharacterTextSplitter
+
+# The CSVLoader loads each row into a separate document, similar to a page in a PDF
+loader = CSVLoader("./azure-rag/wine-ratings.csv")
+rows = loader.load()
+# Splitter
+text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+docs = text_splitter.split_documents(rows)
+
+# Upload the splitted docs to the Azure AI Search Index!
+# Returns list of IDs of the added texts
+# NOTE: It takes a lot of time, depending on the number of documents & tier of the service
+# After it is done, we should be able to check the indexed data in teh Azure Portal
+#   RG > Search service > Search explorer: we can even test the search queries there
+# The index should be filled too
+#   RG > Search service > Search management > Indexes > index_name
+#   Here, we can activate to get the content_vector field, i.e., the embedding: tab Fields > content_vector retrievable
+# NOTE: After teh indexing, it might take some minutes until the index is searchable/available
+ids = acs.add_documents(documents=docs[:7])
+
+### -- Retrieve Data: AzureSearch, AzureAISearchRetriever
+
+# Perform a similarity search
+docs = acs.similarity_search(
+    query="wine",
+    k=3,
+    search_type="similarity",
+)
+print(docs[0].page_content)
+
+# Perform a similarity search with relevance scores
+docs = acs.similarity_search_with_relevance_scores(
+    query="What is the best Bourbon Barrel wine?",
+    k=3,
+)
+print(docs[0][0].page_content)
+print(dir(docs[0][0]))
+
+# Each returned document is a tuple with single element
+# and the element is a Pydantic model
+docs[0][0].model_dump()
+
+from langchain_community.retrievers import AzureAISearchRetriever
+
+retriever = AzureAISearchRetriever(
+    content_key="content",
+    api_key=azure_search_api_key,
+    index_name=azure_search_index_name,
+    service_name=azure_search_endpoint,
+    top_k=1,
+)
+
+# The AzureAISearchRetriever returns a list of documents.
+# The documents are Pydantic models.
+# These documents contain, among others:
+# - @search.score
+# - index id
+# - content_vector
+# - metadata
+# - page_content
+docs = retriever.invoke("What is the best Bourbon Barrel wine?")
+pprint(docs[0].model_dump())
+
+### -- Retrieving with a Chain: RAG Chain!
+
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_openai import AzureChatOpenAI
+
+prompt = ChatPromptTemplate.from_template(
+    """Answer the question based only on the context provided.
+
+Context: {context}
+
+Question: {question}"""
+)
+
+# Initialize Azure OpenAI via LangChain
+chat_model = AzureChatOpenAI(
+    azure_endpoint=azure_openai_endpoint_uri, # Long URI, not the base
+    openai_api_version=azure_openai_api_version,
+    openai_api_key=azure_openai_api_key,
+    temperature=0.7
+)
+
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
+
+chain = (
+    {"context": retriever | format_docs, "question": RunnablePassthrough()}
+    | prompt
+    | chat_model
+    | StrOutputParser()
+)
+
+chain.invoke("What is the best Bourbon Barrel wine?")
+# 'Based on the provided context, the best Bourbon Barrel wine is the 1000 Stories Bourbon Barrel Aged Zinfandel 2013, which has a rating of 91.0.'
+
+```
 
 ### 4.3 Deployment and Scaling with Github Action
 
