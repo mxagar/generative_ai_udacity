@@ -2029,8 +2029,10 @@ The Container App will have running the container of the app defined in [mxagar/
 Some important points to consider in `.github/workflows/main.yaml`:
 
 - `AZURE_CONTAINER_APP_NAME`, `AZURE_CONTAINER_RG_NAME`: These are the names related to the deployed Container App.
-  - We can either define the variables in the YAML or also in Github Web UI: 
-  - BUT: The secrets need to be entered in the Github Web UI: 
+  - We can either define the variables in the YAML or also in Github Web UI: Repo > Settings > Secrets and variables: Actions > Repository variables
+    - Then, they are accessible in the YAML as `${{ env.VARIABLE_NAME }}`
+  - BUT: The secrets need to be entered in the Github Web UI: Repo > Settings > Secrets and variables: Actions > Repository secrets
+    - Then, they are accessible in the YAML as `${{ secrets.VARIABLE_NAME }}`
 - `on: workflow_dispatch`: This allows to trigger the workflow manually.
 - We have two `jobs`: `build` and `deploy`:
   - `jobs: build`: This is the job of the workflow that builds the container:
@@ -2078,7 +2080,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GH_PAT }}
 
       - name: Lowercase the repo name and username
         run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
@@ -2108,7 +2110,7 @@ jobs:
         with:
           inlineScript: |
             az config set extension.use_dynamic_install=yes_without_prompt
-            az containerapp registry set -n ${{ env.AZURE_CONTAINER_APP_NAME }} -g ${{ env.AZURE_CONTAINER_RG_NAME }} --server ghcr.io --username  ${{ github.actor }} --password ${{ secrets.GITHUB_PAT }}
+            az containerapp registry set -n ${{ env.AZURE_CONTAINER_APP_NAME }} -g ${{ env.AZURE_CONTAINER_RG_NAME }} --server ghcr.io --username  ${{ github.actor }} --password ${{ secrets.GH_PAT }}
             az containerapp update \
               -n ${{ env.AZURE_CONTAINER_APP_NAME }} \
               -g ${{ env.AZURE_CONTAINER_RG_NAME }} \
@@ -2130,7 +2132,7 @@ What's happening during the deployment?
 # Configure the Azure CLI to automatically install required extensions without asking for user confirmation.
 az config set extension.use_dynamic_install=yes_without_prompt
 # Configure an Azure Container App to authenticate with a container image registry (e.g., GitHub Container Registry) to pull container images.
-az containerapp registry set -n ${{ env.AZURE_CONTAINER_APP_NAME }} -g ${{ env.AZURE_CONTAINER_RG_NAME }} --server ghcr.io --username  ${{ github.actor }} --password ${{ secrets.GITHUB_PAT }}
+az containerapp registry set -n ${{ env.AZURE_CONTAINER_APP_NAME }} -g ${{ env.AZURE_CONTAINER_RG_NAME }} --server ghcr.io --username  ${{ github.actor }} --password ${{ secrets.GH_PAT }}
 # Update the environment variables for the specified Azure Container App
 # These variables would be usually in our .env
 # We can add here all the variables we need, BUT NO secrets!
@@ -2181,13 +2183,20 @@ The access token will need to be added as an Action secret.
 It is needed because Azure will need to authenticate against the GitHub Container Registry to pull the image.
 
 - [Create one Gihub Personal Access Token (PAT)](https://github.com/settings/tokens/new?description=Azure+Container+Apps+access&scopes=write:packages) with enough permissions to write to packages. Manual access in Github web UI: `Profile > Developer settings (left menu) > Personal access tokens > Tokens (classic)`. Use scope: `write:packages`.
-- Save it in `.env` for now as `GITHUB_PAT`.
+- Save it in `.env` for now as `GH_PAT`.
 
-![Github PAT](./assets/github_pat.png)
+![Github PAT](./assets/GH_PAT.png)
 
 #### Setting the Variables and Secrets of the Github Action/Workflow
 
 Now, we can insert all the variable and secret values into our Github repository, i.e., [mxagar/azure-rag-app](https://github.com/mxagar/azure-rag-app).
+
+- We can either define the variables in the YAML or also in Github Web UI: Repo > Settings > Secrets and variables: Actions > Repository variables
+  - Then, they are accessible in the YAML as `${{ env.VARIABLE_NAME }}`
+- BUT: The secrets need to be entered in the Github Web UI: Repo > Settings > Secrets and variables: Actions > Repository secrets
+  - Then, they are accessible in the YAML as `${{ secrets.VARIABLE_NAME }}`
+
+![Github Variables and Secrets](./assets/github_variables_secrets.png)
 
 The values must have been collected so far, and they have been referenced in the workflow `.github/workflows/main.yaml`.
 
@@ -2210,7 +2219,6 @@ AZURE_CONTAINER_RG_NAME=<>
 # --- NOT USED:
 # Azure Document Intelligence (PDF parser)
 AZURE_DOCUMENTINTELLIGENCE_ENDPOINT=https://<azure-document-intelligence-name>.cognitiveservices.azure.com/
-AZURE_DOCUMENTINTELLIGENCE_API_KEY=xxx
 ```
 
 Secrets:
@@ -2223,11 +2231,13 @@ AZURE_SEARCH_API_KEY=xxx
 # Azure Credential (JSON obtained when creating Service Principal)
 AZURE_CREDENTIALS=xxx
 # Github Credential (PAT, obtained from Github)
-GITHUB_PAT=xxx
+GH_PAT=xxx
 
 # --- NOT USED:
 # Azure Subscription ID
 AZURE_SUBSCRIPTION_ID=xxx
+# Azure Document Intelligence (Obtainable from Azure Portal - Keys)
+AZURE_DOCUMENTINTELLIGENCE_API_KEY=xxx
 ```
 
 #### Application Code
