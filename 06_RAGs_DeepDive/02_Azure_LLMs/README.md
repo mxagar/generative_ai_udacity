@@ -46,6 +46,9 @@ For a guide on Azure, check my notes in [mxagar/azure_guide](https://github.com/
     - [4.2 RAG with Azure AI Search](#42-rag-with-azure-ai-search)
       - [Azure AI Search: Upload and Search for Embeddings](#azure-ai-search-upload-and-search-for-embeddings)
     - [4.3 Deployment and Scaling with Github Action](#43-deployment-and-scaling-with-github-action)
+      - [Azure Container App Deployment](#azure-container-app-deployment)
+      - [Deployment Architectural Overview](#deployment-architectural-overview)
+      - [Github Actions Workflow](#github-actions-workflow)
 
 ## 0. Setup
 
@@ -1911,7 +1914,7 @@ chain.invoke("What is the best Bourbon Barrel wine?")
 
 **This section is also very important, because everything is put into an application on the cloud!**
 
-The final example code is in [mxagar/azure-rag-app](https://github.com/mxagar/azure-rag-app.git). This section is about building and describing the steps necessary to create that respository folder.
+The final example code is in [mxagar/azure-rag-app](https://github.com/mxagar/azure-rag-app). This section is about building and describing the steps necessary to create that respository folder.
 
 As in the previous section, the original code (although modified here by me) is from Alfredo Deza's repository [alfredodeza/azure-rag](https://github.com/alfredodeza/azure-rag).
 
@@ -1933,3 +1936,118 @@ git clone https://github.com/mxagar/generative_ai_udacity
 git submodule update --init --recursive
 ```
 
+#### Azure Container App Deployment
+
+To deploy the app in [mxagar/azure-rag-app](https://github.com/mxagar/azure-rag-app) we need to deploy an [Azure Container App](https://azure.microsoft.com/en-us/products/container-apps); another option would have been an [Azure Web App or App Service](https://azure.microsoft.com/en-us/products/app-service/web). Check this link:
+
+[Azure App Service vs Azure Container Apps - which to use?](https://learn.microsoft.com/en-us/answers/questions/1337789/azure-app-service-vs-azure-container-apps-which-to); TLDR; both are scalable and very similar, but Azure Container Apps seem to offer more control on the container image we want to use and the overal configuration.
+
+    Azure Portal: Search Container App > Create
+      Subscription: Azure subscription 1
+      Resource group: (new) rg-demo-coursera-rag-backend
+      Container app name: demo-coursera-rag-backend
+        We need this name later!
+      Deployment source: Container image
+      Region: France Central
+    Container: we can select the Quickstart image for now: Simple hello world container
+
+![Create Container App](./assets/create_container_app.png)
+
+We can select the Quickstart image in the beginning (Simple hello world container); alternatively, if we already have pushed our image to a registry, we can define it in the Container tab. Once deployed, if we go to our resource, we see it has an URL we can visit.
+
+![Container App](./assets/container_app.png)
+
+Interesting links:
+
+- [Quickstart: Build and deploy from local source code to Azure Container Apps](https://learn.microsoft.com/en-us/azure/container-apps/quickstart-code-to-cloud?tabs=bash%2Cpython)
+- [Azure Container Apps samples](https://learn.microsoft.com/en-us/azure/container-apps/samples)
+
+#### Deployment Architectural Overview
+
+Deployment occurs following these steps:
+
+1. Our code is pushed to Github
+2. Github Actions packages he code into an image (Dockerfile) 
+3. Github Actions triggers the building the Container
+4. The resulting Container is pushed to the Github Container Registry
+5. Github Actions triggers the pulling of the Container on Azure
+
+![Github Actions](./assets/rag_app_github_actions.png)
+
+Even though we have deployed one container, Azure takes care of the scaling automatically performing horizontal scaling: if more users request/use the app, more replicas are deployed.
+
+![Horizontal Scaling](./assets/app_horizontal_scaling.png)
+
+#### Github Actions Workflow
+
+The Container App will have running the container of the app defined in [mxagar/azure-rag-app](https://github.com/mxagar/azure-rag-app); that app will be packaged into an image which will be stored in the Github Container Registry, as a package. All that happens in the Github Actions Workflow `main.yaml` from the app repository. Note that we could also use another registry, though, e.g., an Azure registry.
+
+```yaml
+name: Trigger auto deployment for demo-container
+
+env:
+  AZURE_CONTAINER_APP_NAME: demo-container
+  AZURE_GROUP_NAME: demo-container
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo. Remove comments to enable
+  #push:
+  #  branches:
+  #    [ main ]
+
+  # Allow mannually trigger
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Log in to GitHub container registry
+        uses: docker/login-action@v1.10.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lowercase the repo name and username
+        run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
+
+      - name: Build and push container image to registry
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: ghcr.io/${{ env.REPO }}:${{ github.sha }}
+          file: ./Dockerfile
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Lowercase the repo name and username
+        run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
+
+      - name: Deploy to containerapp
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az config set extension.use_dynamic_install=yes_without_prompt
+            az containerapp registry set -n ${{ env.AZURE_CONTAINER_APP_NAME }} -g ${{ env.AZURE_GROUP_NAME }} --server ghcr.io --username  ${{ github.actor }} --password ${{ secrets.PAT }}
+            az containerapp update -n ${{ env.AZURE_CONTAINER_APP_NAME }} -g ${{ env.AZURE_GROUP_NAME }} --set-env-vars OPENAI_API_TYPE=azure OPENAI_API_BASE=https://demo-alfredo-openai.openai.azure.com/ OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} OPENAI_API_VERSION="2023-07-01-preview" SEARCH_SERVICE_NAME="https://demo-alfredo.search.windows.net" SEARCH_API_KEY=${{ secrets.SEARCH_SERVICE_API_KEY }} SEARCH_INDEX_NAME="demo-alfredo"
+            az containerapp update -n demo-container -g demo-container --cpu 2 --memory 4Gi
+            az containerapp update -n ${{ env.AZURE_CONTAINER_APP_NAME }} -g ${{ env.AZURE_GROUP_NAME }} --image ghcr.io/${{ env.REPO }}:${{ github.sha }}
+
+```
