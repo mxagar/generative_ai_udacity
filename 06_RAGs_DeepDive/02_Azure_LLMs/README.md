@@ -1909,4 +1909,22 @@ chain.invoke("What is the best Bourbon Barrel wine?")
 
 ### 4.3 Deployment and Scaling with Github Action
 
-TBD.
+**This section is also very important, because everything is put into an application on the cloud!**
+
+As in the previous section, the code is from Alfredo Deza's repository [alfredodeza/azure-rag](https://github.com/alfredodeza/azure-rag), and it's added as a submodule; if already added, you can skip these setup commands:
+
+```bash
+# Add and initialize the LanChain repo as a submodule
+cd .../generative_ai_udacity
+git submodule add https://github.com/alfredodeza/azure-rag.git 06_RAGs_DeepDive/02_Azure_LLMs/notebooks/azure-rag
+git submodule init
+git submodule update
+
+# Add the automatically generated .gitmodules file to the repo
+git add .gitmodules 06_RAGs_DeepDive/02_Azure_LLMs/notebooks/
+
+# When my repository is cloned, initialize and update the submodule 
+git clone https://github.com/mxagar/generative_ai_udacity
+git submodule update --init --recursive
+```
+
