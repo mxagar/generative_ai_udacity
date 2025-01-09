@@ -54,6 +54,7 @@ For a guide on Azure, check my notes in [mxagar/azure_guide](https://github.com/
       - [Github Personal Access Token](#github-personal-access-token)
       - [Setting the Variables and Secrets of the Github Action/Workflow](#setting-the-variables-and-secrets-of-the-github-actionworkflow)
       - [Application Code](#application-code)
+      - [Running Locally](#running-locally)
       - [Triggering the Deployment](#triggering-the-deployment)
 
 ## 0. Setup
@@ -2242,6 +2243,9 @@ AZURE_DOCUMENTINTELLIGENCE_API_KEY=xxx
 
 #### Application Code
 
+
+
+#### Running Locally
 
 
 
