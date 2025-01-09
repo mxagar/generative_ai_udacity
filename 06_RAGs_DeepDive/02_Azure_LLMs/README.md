@@ -1911,14 +1911,17 @@ chain.invoke("What is the best Bourbon Barrel wine?")
 
 **This section is also very important, because everything is put into an application on the cloud!**
 
-The final example code is in [`notebooks/07_azure_rag/`](./notebooks/07_azure_rag/). This section is about building and describing the steps necessary to create that example folder.
+The final example code is in [mxagar/azure-rag-app](https://github.com/mxagar/azure-rag-app.git). This section is about building and describing the steps necessary to create that respository folder.
 
-As in the previous section, the original code (although modified here by me) is from Alfredo Deza's repository [alfredodeza/azure-rag](https://github.com/alfredodeza/azure-rag), and it's added as a submodule; if already added, you can skip these setup commands:
+As in the previous section, the original code (although modified here by me) is from Alfredo Deza's repository [alfredodeza/azure-rag](https://github.com/alfredodeza/azure-rag).
+
+Both repositories are added here as submodules:
 
 ```bash
 # Add and initialize the LanChain repo as a submodule
 cd .../generative_ai_udacity
 git submodule add https://github.com/alfredodeza/azure-rag.git 06_RAGs_DeepDive/02_Azure_LLMs/notebooks/azure-rag
+git submodule add https://github.com/mxagar/azure-rag-app.git 06_RAGs_DeepDive/02_Azure_LLMs/notebooks/azure-rag-app
 git submodule init
 git submodule update
 
