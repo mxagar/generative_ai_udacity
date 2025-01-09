@@ -1911,7 +1911,9 @@ chain.invoke("What is the best Bourbon Barrel wine?")
 
 **This section is also very important, because everything is put into an application on the cloud!**
 
-As in the previous section, the code is from Alfredo Deza's repository [alfredodeza/azure-rag](https://github.com/alfredodeza/azure-rag), and it's added as a submodule; if already added, you can skip these setup commands:
+The final example code is in [`notebooks/07_azure_rag/`](./notebooks/07_azure_rag/). This section is about building and describing the steps necessary to create that example folder.
+
+As in the previous section, the original code (although modified here by me) is from Alfredo Deza's repository [alfredodeza/azure-rag](https://github.com/alfredodeza/azure-rag), and it's added as a submodule; if already added, you can skip these setup commands:
 
 ```bash
 # Add and initialize the LanChain repo as a submodule
