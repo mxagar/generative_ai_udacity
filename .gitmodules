@@ -13,3 +13,6 @@
 [submodule "06_RAGs_DeepDive/02_Azure_LLMs/notebooks/azure-rag"]
 	path = 06_RAGs_DeepDive/02_Azure_LLMs/notebooks/azure-rag
 	url = https://github.com/alfredodeza/azure-rag.git
+[submodule "06_RAGs_DeepDive/02_Azure_LLMs/notebooks/azure-rag-app"]
+	path = 06_RAGs_DeepDive/02_Azure_LLMs/notebooks/azure-rag-app
+	url = https://github.com/mxagar/azure-rag-app.git
