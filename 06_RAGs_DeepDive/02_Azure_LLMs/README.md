@@ -4,6 +4,8 @@ This folder includes my notes on the course [Operationalizing LLMs on Azure](htt
 
 For a guide on Azure, check my notes in [mxagar/azure_guide](https://github.com/mxagar/azure_guide).
 
+The final project of this course is in [mxagar/azure-rag-app](https://github.com/mxagar/azure-rag-app).
+
 ## Table of Contents
 
 - [Operationalizing LLMs on Azure](#operationalizing-llms-on-azure)
