@@ -130,7 +130,11 @@ Then, the resulting models are able to generate new in-distribution information.
 
 Notebook: [`lab/Exercise2-generating-one-token-at-a-time.ipynb`](./lab/Exercise2-generating-one-token-at-a-time.ipynb).
 
-Given an initial prompt/text, the next 100 tokens are generated; also, the probabilities of the next most likely tokens are shown.
+* Loads a pretrained causal language model and tokenizer using Hugging Face Transformers.
+* Demonstrates how input text is tokenized into subword tokens.
+* Computes next-token probabilities manually and appends the most likely token step-by-step.
+* Allows interactive token-by-token generation to observe how text evolves.
+* Compares manual generation with the model's built-in `.generate()` method for multi-token output.
 
 ### Other Generative AI Architectures
 
@@ -177,6 +181,13 @@ See these resources of mine for deeper explanations:
 - 
 
 ### Notebooks: Machine Learning + Pytorch
+
+Notebook: [`lab/Exercise1-classification-of-handwritten-digits-using-an-mlp.ipynb`](./lab/Exercise1-classification-of-handwritten-digits-using-an-mlp.ipynb)
+
+* Loads the MNIST digit dataset using `sklearn.datasets.fetch_openml`.
+* Trains a Multi-Layer Perceptron (MLP) classifier using `sklearn.neural_network.MLPClassifier`.
+* Evaluates the model on both training and test datasets, reporting accuracy.
+* Visualizes predictions on a sample of test images to manually inspect results.
 
 
 ### Hugging Face
