@@ -1,0 +1,11 @@
+# conda env create -f conda.yaml
+# conda remove --name genai --all
+name: genai
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+    - pip-tools
