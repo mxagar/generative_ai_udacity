@@ -24,7 +24,14 @@ Overview of Contents:
       - [Links of Examples](#links-of-examples)
     - [AI and Machine Learning Timeline](#ai-and-machine-learning-timeline)
     - [Training Generative AI Models](#training-generative-ai-models)
+    - [Generation Algorithms](#generation-algorithms)
+    - [Exercise: Generate Text using HuggingFace + GPT2](#exercise-generate-text-using-huggingface--gpt2)
+    - [Other Generative AI Architectures](#other-generative-ai-architectures)
   - [2. Deep Learning Fundamentals](#2-deep-learning-fundamentals)
+    - [Machine Learning and Deep Learning](#machine-learning-and-deep-learning)
+    - [Notebooks: Machine Learning + Pytorch](#notebooks-machine-learning--pytorch)
+    - [Hugging Face](#hugging-face)
+    - [Notebooks: Hugging Face](#notebooks-hugging-face)
   - [3. Adapting Foundation Models](#3-adapting-foundation-models)
   - [4. Project: Applying Lightweight Fine-Tuning to a Foundation Model](#4-project-applying-lightweight-fine-tuning-to-a-foundation-model)
 
@@ -50,10 +57,10 @@ Examples of Generative AI:
 
 ### Applications of Generative AI
 
-In general, Generative AI has accelerate the ease to produce some content that previously required much more time. That implies people have become more productive; however, we should use it responsible to avoid destroying jobs, among other risks.
+In general, Generative AI has accelerated the ease to produce some content that previously required much more time. That implies people have become more productive; however, we should use it responsibly to avoid destroying jobs, among other risks.
 
 - Creative content generation
-  - Artowrk synthesis: visual art pieces
+  - Artwork synthesis: visual art pieces
   - Music composition: original musical pieces
   - Literary creation: written content
 - Product development
@@ -87,7 +94,6 @@ Also, LLMs often avoid saying a simple *I don't know*, instead they try to hallu
 - [Paper: May the force of text data analysis be with you: Unleashing the power of generative AI for social psychology research](https://www.sciencedirect.com/science/article/pii/S2949882123000063)
 - [Udacity Course on Small Datasets and Synthetic Data](https://www.udacity.com/course/small-data--cd12528)
 
-
 ### AI and Machine Learning Timeline
 
 [Video: AI And Machine Learning Timeline](https://www.youtube.com/watch?v=W_n7kXdaC1Q)
@@ -105,13 +111,79 @@ There are many ways to train generative AI models; we focus on two:
 - LLMs: given a sequence of words (context) predict the next one; we reward the correct word and penalize the rest.
 - Image generation models (e.g., diffusion models): they use the techniques in Variational Autoencoders; images are encoded into a latent space and then decoded back to reconstructued images. Bad reconstructions are penalized, good ones rewarded. Then, we use only the decoder part to generate new images feeding a latent vector.
 
+### Generation Algorithms
 
+Some generation algorithms:
+
+- **Autoregression** for text generation: predict next word in a sequence, based on an initial seed and the previously detected words.
+  - For each sequence, the probability of the words in a vocabulary to be the next word is predicted.
+  - The models are trained to predict the next word or a word in between; i.e., we mask or remove some part of information and the model needs to find the original piece of information.
+- **Latent Space Decoding**: we have trained an encoder and a decoder. We use the decoder to input random or manual vectors (latent vectors) and the decoder generates an expanded human-understandable representation.
+- **Diffusion** models, often for images: they remove noise from a noisy (random) map. They iteratively remove noise to create a noise-free image.
+  - The training consists in learning how to remove small steps of noise.
+  - Again, we introduce small pieces of noise and try to find out the original piece of information without noise.
+
+Common theme: we often take some information and add noise or mask it, and force the model to learn the obscured piece of information.
+Then, the resulting models are able to generate new in-distribution information.
+
+### Exercise: Generate Text using HuggingFace + GPT2
+
+Notebook: [`lab/Exercise2-generating-one-token-at-a-time.ipynb`](./lab/Exercise2-generating-one-token-at-a-time.ipynb).
+
+Given an initial prompt/text, the next 100 tokens are generated; also, the probabilities of the next most likely tokens are shown.
+
+### Other Generative AI Architectures
+
+- **Generative Adversarial Networks (GANs)**
+  - Generator + Discriminator.
+  - Generator is trained to create new data samples; it takes random noise as input.
+  - Discriminator is trained to discriminate whether the input is a real or generated sample.
+  - They are able to generate very realistic images.
+- **Recurrent Neural Networks (RNNs)**:
+  - They predict the next element for an input sequence.
+  - With each input, the RNN updates a hidden inner state, which is a combination of long and short-term memory.
+- **Transformers**:
+  - Text generation, translation.
+  - They learn long-range dependencies in sequential data, and can generate new data, too.
+  - Main difference & benefit of Transformers wrt. RNNs: they can work with the entire sequence in parallel! Thus, their training is much faster and scalable.
 
 ## 2. Deep Learning Fundamentals
 
-TBD.
+See these resources of mine for deeper explanations:
 
-:construction:
+- [mxagar/deep_learning_udacity](https://github.com/mxagar/deep_learning_udacity)
+- [mxagar/machine_learning_coursera](https://github.com/mxagar/machine_learning_coursera)
+- [mxagar/machine_learning_ibm](https://github.com/mxagar/machine_learning_ibm)
+- [mxagar/tool_guides/hugging_face](https://github.com/mxagar/tool_guides/tree/master/hugging_face)
+
+### Machine Learning and Deep Learning
+
+**Machine Learning** concepts introduced in the videos of the GenAI course:
+
+- Binary classifier
+- Perceptron
+- Weights and biases
+- Activation function: sigmoid, ReLU
+- Multi-Layer Perceptron
+- Input, output and hidden layers
+- Labeling a dataset
+- Cost function
+- Gradient descend
+- Backpropagation
+- Learning rate
+
+**Pytorch** concepts introduced in the videos:
+
+- 
+
+### Notebooks: Machine Learning + Pytorch
+
+
+### Hugging Face
+
+
+### Notebooks: Hugging Face
+
 
 ## 3. Adapting Foundation Models
 
