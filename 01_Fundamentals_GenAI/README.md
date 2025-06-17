@@ -34,8 +34,11 @@ Overview of Contents:
       - [Example: Sentiment Analysis, IMDB Dataset](#example-sentiment-analysis-imdb-dataset)
       - [Example: Trainer](#example-trainer)
     - [Notebooks: Pytorch + Hugging Face](#notebooks-pytorch--hugging-face)
-  - [3. Adapting Foundation Models](#3-adapting-foundation-models)
-  - [4. Project: Applying Lightweight Fine-Tuning to a Foundation Model](#4-project-applying-lightweight-fine-tuning-to-a-foundation-model)
+    - [Transfer Learning](#transfer-learning)
+    - [Notebook: Transfer Learning with MobileNetV3](#notebook-transfer-learning-with-mobilenetv3)
+  - [3. Foundation Models](#3-foundation-models)
+  - [4. Adapting Foundation Models](#4-adapting-foundation-models)
+  - [5. Project: Applying Lightweight Fine-Tuning to a Foundation Model](#5-project-applying-lightweight-fine-tuning-to-a-foundation-model)
 
 
 ## 1. Introduction to Generative AI
@@ -415,13 +418,39 @@ Here is a summary of the notebook **“Exercise: PyTorch and HuggingFace scaveng
 * Demonstrates how to use Hugging Face's Transformers library to tokenize text, run inference, and interpret sentiment predictions.
 * Shows how to load a dataset from the Hugging Face `datasets` library for further experimentation.
 
-## 3. Adapting Foundation Models
+### Transfer Learning
+
+**Transfer Learning** concepts introduced in the videos of the GenAI course:
+
+- Trasnfer learning: we train a model in a large domain dataset and then we train the head of that model on a smaller task-specific dataset.
+  - The new head has the number of outputs we require for our task.
+- Example large datasets: Common Crawl, ImageNet, LibriSpeech
+
+![Transfer Learning](./assets/transfer_learning.jpg)
+
+### Notebook: Transfer Learning with MobileNetV3
+
+Paper: [MobileNetV3](https://paperswithcode.com/method/mobilenetv3)
+
+Notebook: [`lab/Exercise3-transfer-learning-using-mobilenetv3.ipynb`](./lab/Exercise3-transfer-learning-using-mobilenetv3.ipynb)
+
+* Loads the **Fashion-MNIST** dataset and defines helper functions to map label indices to names.
+* Visualizes example training images to verify dataset integrity before training.
+* Loads a **pretrained MobileNetV3 model** and modifies its classifier head for the Fashion-MNIST classification task.
+* Trains the model using PyTorch, with device support for GPU, MPS, or CPU.
+* Evaluates the trained model and visualizes correct and incorrect predictions on the test set.
+
+## 3. Foundation Models
+
+
+
+## 4. Adapting Foundation Models
 
 TBD.
 
 :construction:
 
-## 4. Project: Applying Lightweight Fine-Tuning to a Foundation Model
+## 5. Project: Applying Lightweight Fine-Tuning to a Foundation Model
 
 TBD.
 
