@@ -37,6 +37,7 @@ Overview of Contents:
     - [Transfer Learning](#transfer-learning)
     - [Notebook: Transfer Learning with MobileNetV3](#notebook-transfer-learning-with-mobilenetv3)
   - [3. Foundation Models](#3-foundation-models)
+    - [Notebook: Foundation Model as Email Spam Classifier](#notebook-foundation-model-as-email-spam-classifier)
   - [4. Adapting Foundation Models](#4-adapting-foundation-models)
   - [5. Project: Applying Lightweight Fine-Tuning to a Foundation Model](#5-project-applying-lightweight-fine-tuning-to-a-foundation-model)
 
@@ -442,6 +443,37 @@ Notebook: [`lab/Exercise3-transfer-learning-using-mobilenetv3.ipynb`](./lab/Exer
 
 ## 3. Foundation Models
 
+Characteristics of **Foundation Models**:
+
+- Trained on several tasks
+- Large/huge datasets used
+- They require large amounts of resources to be trained
+- They can generalize to new, unseen data
+- They can perform tasks they were not trained for
+- They can be adapted to specific domains and tasks
+- Example: (Chat-) GPT model family, Bard/Gemini model family, etc.
+
+In contrast, **traditional models** are trained on smaller and task-specific datasets, and require less resources.
+
+The Foundation Model architecture is based on the **Transformer**:
+
+- They handle sequential data in parallel, all at once, in contrast to previous RNNs.
+- They have the novel **self-attention** mechanism, which is important for language modeling, where the relationship between words in a sequence are important to understand the sentence/sequence.
+
+Some sizes of foundation models:
+
+- Llama (2023) was trained on 4.7 TB of data
+- Llama (2023) parameters: 6.7B - 65.2B
+
+### Notebook: Foundation Model as Email Spam Classifier
+
+Notebook: [`lab/Exercise1-use-a-foundation-model-to-build-a-spam-email-classifier.ipynb`](./lab/Exercise1-use-a-foundation-model-to-build-a-spam-email-classifier.ipynb)
+
+* Loads a spam dataset (e.g., SMS spam) from Hugging Face using the `datasets` library.
+* Defines label mappings and helper functions to preprocess and format SMS messages.
+* Builds a **prompt-based classifier using a large language model (LLM)** to identify spam vs. ham.
+* Evaluates classifier accuracy by comparing model outputs to true labels from the dataset.
+* Iteratively improves the prompt and reruns evaluation to check for better accuracy and analyze misclassifications. **The improvement comes by adding some examples in the query/prompt, which increases the performance!**
 
 
 ## 4. Adapting Foundation Models
