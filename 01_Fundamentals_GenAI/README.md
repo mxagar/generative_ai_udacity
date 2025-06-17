@@ -29,9 +29,11 @@ Overview of Contents:
     - [Other Generative AI Architectures](#other-generative-ai-architectures)
   - [2. Deep Learning Fundamentals](#2-deep-learning-fundamentals)
     - [Machine Learning and Deep Learning](#machine-learning-and-deep-learning)
-    - [Notebooks: Machine Learning + Pytorch](#notebooks-machine-learning--pytorch)
+    - [Notebooks: Machine Learning](#notebooks-machine-learning)
     - [Hugging Face](#hugging-face)
-    - [Notebooks: Hugging Face](#notebooks-hugging-face)
+      - [Example: Sentiment Analysis, IMDB Dataset](#example-sentiment-analysis-imdb-dataset)
+      - [Example: Trainer](#example-trainer)
+    - [Notebooks: Pytorch + Hugging Face](#notebooks-pytorch--hugging-face)
   - [3. Adapting Foundation Models](#3-adapting-foundation-models)
   - [4. Project: Applying Lightweight Fine-Tuning to a Foundation Model](#4-project-applying-lightweight-fine-tuning-to-a-foundation-model)
 
@@ -178,9 +180,115 @@ See these resources of mine for deeper explanations:
 
 **Pytorch** concepts introduced in the videos:
 
-- 
+- Tensors
+  - Multidimensional arrays: vectors, matrices, etc.
+  - Several types
+  - Linear algebra operations can be performed
+- Neural nets as derived classes: `nn.Module`
+- Loss functions: error computation between target/expected and model output
+  - Classification: cross-entropy loss
+  - Regression: Mean-Squared Error (MSE)
+- Optimizers: adjust model parameters to minimize the cost/error
+  - Gradients
+  - Stochastic Gradient Descend
+  - Learning rate
+  - Momentum: add past weights
+  - Adam: very good results, without much hyperparameter tuning
+- Datasets and Data Loaders
+  - Dataset class: represents and enables access to data in disk
+  - Dataset loader class: loads samples from Dataset, e.g., in batches, shuffled, in parallel, etc.
+- Training loop
+  - Epochs, batches
+  - 
 
-### Notebooks: Machine Learning + Pytorch
+Simple code examples:
+
+```python
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import Dataset, DataLoader
+
+
+class MLP(nn.Module):
+    def __init__(self, input_size):
+        super(MLP, self).__init__()
+        self.hidden_layer = nn.Linear(input_size, 64)
+        self.output_layer = nn.Linear(64, 2)
+        self.activation = nn.ReLU()
+
+    def forward(self, x):
+        x = self.activation(self.hidden_layer(x))
+        return self.output_layer(x)
+
+# Loss functions
+ce_loss_function = nn.CrossEntropyLoss()
+target_tensor = torch.tensor([1])
+predicted_tensor = torch.tensor([[2.0, 6.0]])
+loss_value = ce_loss_function(predicted_tensor, target_tensor)  # tensor(0.0181)
+
+mse_loss_function = nn.MSELoss()
+predicted_tensor = torch.tensor([320000.0])
+actual_tensor = torch.tensor([300000.0])
+loss_value = mse_loss_function(predicted_tensor, actual_tensor)
+print(loss_value.item())  # 400000000.0
+
+# Optimizers
+sgd_optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+adam_optimizer = optim.Adam(model.parameters(), lr=0.01)
+
+# Create a toy dataset
+class NumberProductDataset(Dataset):
+    def __init__(self, data_range=(1, 10)):
+        self.numbers = list(range(data_range[0], data_range[1]))
+
+    def __getitem__(self, index):
+        number1 = self.numbers[index]
+        number2 = self.numbers[index] + 1
+        return (number1, number2), number1 * number2
+
+    def __len__(self):
+        return len(self.numbers)
+
+# Instantiate the dataset
+dataset = NumberProductDataset(
+    data_range=(0, 11)
+)
+
+# Access a data sample
+data_sample = dataset[3]
+print(data_sample)
+# ((3, 4), 12)
+
+# Instantiate the dataset
+dataset = NumberProductDataset(data_range=(0, 5))
+
+# Create a DataLoader instance
+dataloader = DataLoader(dataset, batch_size=3, shuffle=True)
+
+# Iterating over batches
+for (num_pairs, products) in dataloader:
+    print(num_pairs, products)
+# [tensor([4, 3, 1]), tensor([5, 4, 2])] tensor([20, 12, 2])
+# [tensor([2, 0]), tensor([3, 1])] tensor([6, 0])
+
+# Training loop
+for epoch in range(10):
+    total_loss = 0.0
+    for number_pairs, sums in dataloader:  # Iterate over the batches
+        predictions = model(number_pairs)  # Compute the model output
+        loss = loss_function(predictions, sums)  # Compute the loss
+        loss.backward()  # Perform backpropagation
+        optimizer.step()  # Update the parameters
+        optimizer.zero_grad()  # Zero the gradients
+
+        total_loss += loss.item()  # Add the loss for all batches
+
+    # Print the loss for this epoch
+    print("Epoch {}: Sum of Batch Losses = {:.5f}".format(epoch, total_loss))
+```
+
+### Notebooks: Machine Learning
 
 Notebook: [`lab/Exercise1-classification-of-handwritten-digits-using-an-mlp.ipynb`](./lab/Exercise1-classification-of-handwritten-digits-using-an-mlp.ipynb)
 
@@ -189,12 +297,123 @@ Notebook: [`lab/Exercise1-classification-of-handwritten-digits-using-an-mlp.ipyn
 * Evaluates the model on both training and test datasets, reporting accuracy.
 * Visualizes predictions on a sample of test images to manually inspect results.
 
-
 ### Hugging Face
 
+**Hugging Face** concepts introduced in the videos of the GenAI course:
 
-### Notebooks: Hugging Face
+- Tokenizers
+  - BERT
+  - cased/uncased
+  - Vocabulary
+  - Subword tokenization
+- Models
+- Datasets
+- Trainers
+  - Truncating: shortening longer pieces of text to fit a certain size limit.
+  - Padding: Adding filler data to shorter texts to reach a uniform length.
+  - Batches: small, evenly divided parts of data.
 
+#### Example: Sentiment Analysis, IMDB Dataset
+
+```python
+from IPython.display import HTML, display
+from datasets import load_dataset
+from transformers import BertForSequenceClassification, BertTokenizer
+import torch
+
+# Load the IMDB dataset, which contains movie reviews
+# and sentiment labels (positive or negative)
+dataset = load_dataset("imdb")
+
+# Fetch a review from the training set
+review_number = 42
+sample_review = dataset["train"][review_number]
+
+display(HTML(sample_review["text"][:450] + "..."))
+# WARNING: This review contains SPOILERS. Do not read if you don't want some points revealed to you before you watch the
+# film.
+# 
+# With a cast like this, you wonder whether or not the actors and actresses knew exactly what they were getting into. Did they
+# see the script and say, `Hey, Close Encounters of the Third Kind was such a hit that this one can't fail.' Unfortunately, it does.
+# Did they even think to check on the director's credentials...
+
+if sample_review["label"] == 1:
+    print("Sentiment: Positive")
+else:
+    print("Sentiment: Negative")
+# Sentiment: Negative
+
+# Load a pre-trained sentiment analysis model
+# IMPORTANT: the model was fine-tuned specifically for binary sentiment classification
+# If we pass num_labels != 2 to it, it delivers random values, because the head needs to be re-trained
+model_name = "textattack/bert-base-uncased-imdb"
+model = BertForSequenceClassification.from_pretrained(model_name, num_labels=2)
+
+# Tokenize the input sequence
+tokenizer = BertTokenizer.from_pretrained(model_name)
+inputs = tokenizer("I love Generative AI", return_tensors="pt")
+
+# Make prediction
+with torch.no_grad():
+    outputs = model(**inputs).logits
+    probabilities = torch.nn.functional.softmax(outputs, dim=1)
+    predicted_class = torch.argmax(probabilities)
+
+# Display sentiment result
+if predicted_class == 1:
+    print(f"Sentiment: Positive ({probabilities[0][1] * 100:.2f}%)")
+else:
+    print(f"Sentiment: Negative ({probabilities[0][0] * 100:.2f}%)")
+# Sentiment: Positive (88.68%)
+```
+
+#### Example: Trainer
+
+```python
+from transformers import (DistilBertForSequenceClassification,
+    DistilBertTokenizer,
+    TrainingArguments,
+    Trainer
+)
+from datasets import load_dataset
+
+model = DistilBertForSequenceClassification.from_pretrained(
+    "distilbert-base-uncased", num_labels=2
+)
+tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+
+def tokenize_function(examples):
+    return tokenizer(examples["text"], padding="max_length", truncation=True)
+
+dataset = load_dataset("imdb")
+tokenized_datasets = dataset.map(tokenize_function, batched=True)
+
+training_args = TrainingArguments(
+    per_device_train_batch_size=64,
+    output_dir="./results",
+    learning_rate=2e-5,
+    num_train_epochs=3,
+)
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized_datasets["train"],
+    eval_dataset=tokenized_datasets["test"],
+)
+trainer.train()
+```
+
+### Notebooks: Pytorch + Hugging Face
+
+Notebook: [`lab/Exercise2-pytorch-and-hugging-face-scavenger-huntscavenger-hunt.ipynb`](./lab/Exercise2-pytorch-and-hugging-face-scavenger-huntscavenger-hunt.ipynb)
+
+Here is a summary of the notebook **“Exercise: PyTorch and HuggingFace scavenger hunt!”** in 5 bullet points:
+
+* Introduces **basic PyTorch concepts**, including tensor creation, neural network layers (`torch.nn`), loss functions, and optimizers.
+* Walks through constructing a simple training loop using PyTorch, with practice exercises and solutions.
+* Transitions to **Hugging Face**, guiding the user to load a pretrained sentiment analysis model.
+* Demonstrates how to use Hugging Face's Transformers library to tokenize text, run inference, and interpret sentiment predictions.
+* Shows how to load a dataset from the Hugging Face `datasets` library for further experimentation.
 
 ## 3. Adapting Foundation Models
 
