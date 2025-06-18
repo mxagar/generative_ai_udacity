@@ -20,7 +20,7 @@ The Nanodegree asssumes basic data analysis skills with data science python libr
 
 Additionally, it is necessary to submit and pass some projects to get the certification:
 
-- Project 1: Apply Lightweight Fine-Tuning to a Foundation Model - TBD.
+- Project 1: Apply Lightweight Fine-Tuning to a Foundation Model: [mxagar/llm_peft_fine_tuning_example](https://github.com/mxagar/llm_peft_fine_tuning_example).
 - Project 2: Build Your Own Custom Chatbot - TBD.
 - Project 3: AI Photo Editing with Inpainting - TBD.
 - Project 4: Personalized Real Estate Agent - TBD.
@@ -67,11 +67,6 @@ pip-sync requirements.txt
 git clone https://github.com/mxagar/generative_ai_udacity
 git submodule update --init --recursive
 ```
-
-## Interesting Links
-
-- [microsoft/generative-ai-for-beginners](https://github.com/microsoft/generative-ai-for-beginners)
-- ...
 
 ## Credits
 

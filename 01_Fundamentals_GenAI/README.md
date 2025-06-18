@@ -1032,6 +1032,6 @@ df
 
 ## 5. Project: Applying Lightweight Fine-Tuning to a Foundation Model
 
-TBD.
+This section contains my notes regarding the concepts necessary to accomplish the project &mdash; which are not provided in the videos.
 
-:construction:
+The project itself can be found here: [mxagar/llm_peft_fine_tuning_example](https://github.com/mxagar/llm_peft_fine_tuning_example).
