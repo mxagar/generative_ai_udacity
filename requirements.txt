@@ -7,6 +7,7 @@
 accelerate==1.7.0
     # via
     #   -r requirements.in
+    #   peft
     #   transformers
 aiohappyeyeballs==2.6.1
     # via aiohttp
@@ -71,6 +72,8 @@ bert-score==0.3.13
     # via -r requirements.in
 bitarray==3.4.2
     # via colbert-ai
+bitsandbytes==0.46.0
+    # via -r requirements.in
 bleach[css]==6.2.0
     # via nbconvert
 blinker==1.9.0
@@ -260,6 +263,7 @@ huggingface-hub==0.33.0
     #   datasets
     #   diffusers
     #   evaluate
+    #   peft
     #   sentence-transformers
     #   tokenizers
     #   transformers
@@ -589,6 +593,7 @@ numpy==2.2.6
     #   -r requirements.in
     #   accelerate
     #   bert-score
+    #   bitsandbytes
     #   chromadb
     #   contourpy
     #   datasets
@@ -606,6 +611,7 @@ numpy==2.2.6
     #   onnx
     #   onnxruntime
     #   pandas
+    #   peft
     #   scikit-learn
     #   scipy
     #   torchtext
@@ -705,6 +711,7 @@ packaging==24.2
     #   nbconvert
     #   onnxruntime
     #   opentelemetry-instrumentation
+    #   peft
     #   pytest
     #   transformers
 pandas==2.2.3
@@ -719,6 +726,8 @@ pandocfilters==1.5.1
     # via nbconvert
 parso==0.8.4
     # via jedi
+peft==0.15.2
+    # via -r requirements.in
 pillow==10.4.0
     # via
     #   diffusers
@@ -757,6 +766,7 @@ psutil==7.0.0
     # via
     #   accelerate
     #   ipykernel
+    #   peft
 pure-eval==0.2.3
     # via stack-data
 pyarrow==20.0.0
@@ -863,6 +873,7 @@ pyyaml==6.0.2
     #   langchain-community
     #   langchain-core
     #   llama-index-core
+    #   peft
     #   transformers
     #   uvicorn
 pyzmq==27.0.0
@@ -940,6 +951,7 @@ safetensors==0.5.3
     #   -r requirements.in
     #   accelerate
     #   diffusers
+    #   peft
     #   transformers
 scikit-learn==1.7.0
     # via
@@ -1032,7 +1044,9 @@ torch==2.7.1
     #   -r requirements.in
     #   accelerate
     #   bert-score
+    #   bitsandbytes
     #   fast-pytorch-kmeans
+    #   peft
     #   ragatouille
     #   sentence-transformers
     #   torchaudio
@@ -1066,6 +1080,7 @@ tqdm==4.67.1
     #   nltk
     #   nomic
     #   openai
+    #   peft
     #   sentence-transformers
     #   torchtext
     #   transformers
@@ -1091,6 +1106,7 @@ transformers[torch]==4.51.3
     #   -r requirements.in
     #   bert-score
     #   colbert-ai
+    #   peft
     #   sentence-transformers
 typer==0.16.0
     # via

@@ -7,6 +7,7 @@ pip
 requests
 accelerate
 autopep8
+bitsandbytes
 beautifulsoup4
 bert-score
 chromadb
@@ -29,6 +30,7 @@ lxml
 numexpr
 ollama
 openai
+peft
 pydantic
 pypdf
 pytest
