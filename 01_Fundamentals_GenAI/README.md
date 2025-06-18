@@ -51,6 +51,7 @@ Overview of Contents:
       - [Prompt Tuning](#prompt-tuning)
       - [Exercises, Examples: Improving Prompts](#exercises-examples-improving-prompts)
     - [Using Probing to Train a Classifier](#using-probing-to-train-a-classifier)
+    - [Exercise: Train a BERT Sentiment Classifier](#exercise-train-a-bert-sentiment-classifier)
   - [5. Project: Applying Lightweight Fine-Tuning to a Foundation Model](#5-project-applying-lightweight-fine-tuning-to-a-foundation-model)
 
 
@@ -727,7 +728,156 @@ More on soft-prompting: [Hugging Face PEFT conceptual guide - Soft prompts](http
 
 ### Using Probing to Train a Classifier
 
+In machine learning, especially in natural language processing (NLP) and representation learning, probing refers to a technique for investigating what kind of information is encoded in model representations — typically, in hidden layers or embeddings.
 
+**Linear Probing** is the most common probing technique and involves 
+
+> attaching a linear classifier to a pre-trained model to adapt it to a new task without modifying the original model.
+
+Example: we take a BERT encoder and we attach a **classification head**, e.g., a classifier trained on the IMDB sentiment analysis dataset.
+
+### Exercise: Train a BERT Sentiment Classifier
+
+Notebook: [`lab/Exercise2-create-a-bert-sentiment-classifier.ipynb`](./lab/Exercise2-create-a-bert-sentiment-classifier.ipynb)
+
+* Imports and prepares the sentiment analysis dataset IMDB using Hugging Face’s `datasets` and `transformers` libraries.
+* Tokenizes the text data using a pretrained BERT tokenizer. Padding and truncation are used.
+* Loads a BERT-based model `distilbert-base-uncased` into a `AutoModelForSequenceClassification` class, and it is configured for binary classification. We basically apply linear probing by attaching a classification head to the BERT-based encoder.
+* Trains the model on the dataset and evaluates its performance on a test set.
+* Analyzes results by inspecting prediction accuracy and reviewing correct and incorrect classifications.
+
+Code:
+
+```python
+# Import the datasets and transformers packages
+from datasets import load_dataset
+
+# Load the train and test splits of the imdb dataset
+splits = ["train", "test"]
+ds = {split: ds for split, ds in zip(splits, load_dataset("imdb", split=splits))}
+
+# Shuffle and thin out the dataset to make it run faster for this example
+# If we wanted a correct training, we could use the complete dataset
+for split in splits:
+    ds[split] = ds[split].shuffle(seed=42).select(range(500))
+
+# Show the dataset
+ds
+
+### -- Preprocess datasets
+
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+
+def preprocess_function(examples):
+    """Preprocess the imdb dataset by returning tokenized examples."""
+    # Pad shorted sentences to the max length the model can take
+    # and truncate longer sentences
+    return tokenizer(examples["text"], padding="max_length", truncation=True)
+
+# Tokenize the dataset using the preprocess function:
+# we map() the processing function to each split of the dataset
+tokenized_ds = {}
+for split in splits:
+    tokenized_ds[split] = ds[split].map(preprocess_function, batched=True)
+
+# Check that we tokenized the examples properly
+assert tokenized_ds["train"][0]["input_ids"][:5] == [101, 2045, 2003, 2053, 7189]
+
+# Show the first example of the tokenized training set
+print(tokenized_ds["train"][0]["input_ids"])
+
+### -- Load and setup the model
+
+from transformers import AutoModelForSequenceClassification
+
+# DistilBERT is a distilled version of BERT, which is smaller and faster
+# Here, since we are using AutoModelForSequenceClassification on the distilbert-base-uncased model,
+# we are basically adding a classification head on top of the DistilBERT foundation model.
+model = AutoModelForSequenceClassification.from_pretrained(
+    "distilbert-base-uncased",
+    num_labels=2,
+    id2label={0: "NEGATIVE", 1: "POSITIVE"},  # For converting predictions to strings
+    label2id={"NEGATIVE": 0, "POSITIVE": 1},
+)
+
+# Freeze all the parameters of the base model
+# Hint: Check the documentation at https://huggingface.co/docs/transformers/training
+for param in model.base_model.parameters():
+    param.requires_grad = False
+
+# Show the classifier architecture:
+# Linear(in_features=768, out_features=2, bias=True)
+model.classifier
+
+print(model)
+
+
+### -- Training
+
+import numpy as np
+from transformers import DataCollatorWithPadding, Trainer, TrainingArguments
+
+def compute_metrics(eval_pred):
+    predictions, labels = eval_pred
+    predictions = np.argmax(predictions, axis=1)
+    return {"accuracy": (predictions == labels).mean()}
+
+# The HuggingFace Trainer class handles the training and eval loop for PyTorch for us
+# Rather than a loop, it looks like a configuration + function call
+# Read more about it here https://huggingface.co/docs/transformers/main_classes/trainer
+# We train only for one epoch to make this example run fast
+trainer = Trainer(
+    model=model,
+    args=TrainingArguments(
+        output_dir="./data/sentiment_analysis",
+        learning_rate=2e-3,
+        # Reduce the batch size if you don't have enough memory
+        per_device_train_batch_size=4,
+        per_device_eval_batch_size=4,
+        num_train_epochs=1,
+        weight_decay=0.01,
+        eval_strategy="epoch",
+        save_strategy="epoch",
+        load_best_model_at_end=True,
+    ),
+    train_dataset=tokenized_ds["train"],
+    eval_dataset=tokenized_ds["test"],
+    tokenizer=tokenizer,
+    # Data collators are used to dynamically form batches of data
+    # using the previously defined tokenizer/preprocessing
+    data_collator=DataCollatorWithPadding(tokenizer=tokenizer),
+    compute_metrics=compute_metrics,
+)
+
+trainer.train()
+
+### -- Evaluation
+
+# Show the performance of the model on the test set
+trainer.evaluate()
+
+import pandas as pd
+
+df = pd.DataFrame(tokenized_ds["test"])
+df = df[["text", "label"]]
+
+# Replace <br /> tags in the text with spaces
+df["text"] = df["text"].str.replace("<br />", " ")
+
+# Add the model predictions to the dataframe
+predictions = trainer.predict(tokenized_ds["test"])
+df["predicted_label"] = np.argmax(predictions[0], axis=1)
+
+df.head(2)
+
+# Show full cell output
+pd.set_option("display.max_colwidth", None)
+
+# Incorrect predictions
+df[df["label"] != df["predicted_label"]].head(2)
+```
 
 
 ## 5. Project: Applying Lightweight Fine-Tuning to a Foundation Model
