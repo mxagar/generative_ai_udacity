@@ -50,8 +50,10 @@ Overview of Contents:
     - [Prompt Design Techniques](#prompt-design-techniques)
       - [Prompt Tuning](#prompt-tuning)
       - [Exercises, Examples: Improving Prompts](#exercises-examples-improving-prompts)
-    - [Using Probing to Train a Classifier](#using-probing-to-train-a-classifier)
+    - [Using Probing to Train a Classifier Head](#using-probing-to-train-a-classifier-head)
     - [Exercise: Train a BERT Sentiment Classifier](#exercise-train-a-bert-sentiment-classifier)
+    - [Fine-Tuning](#fine-tuning)
+    - [Exercise: Fine-Tuning a BERT Model on New Data](#exercise-fine-tuning-a-bert-model-on-new-data)
   - [5. Project: Applying Lightweight Fine-Tuning to a Foundation Model](#5-project-applying-lightweight-fine-tuning-to-a-foundation-model)
 
 
@@ -726,7 +728,7 @@ More on soft-prompting: [Hugging Face PEFT conceptual guide - Soft prompts](http
 
 > The presenter then explores different prompting techniques, including providing task descriptions, examples, and chain-of-thought prompts. They highlight that sometimes giving too much information can confuse the model, leading to worse performance. The video emphasizes the importance of experimenting with various prompt designs to find the most effective approach for specific tasks, illustrating how prompt design can significantly impact the model's output. 
 
-### Using Probing to Train a Classifier
+### Using Probing to Train a Classifier Head
 
 In machine learning, especially in natural language processing (NLP) and representation learning, probing refers to a technique for investigating what kind of information is encoded in model representations — typically, in hidden layers or embeddings.
 
@@ -879,6 +881,154 @@ pd.set_option("display.max_colwidth", None)
 df[df["label"] != df["predicted_label"]].head(2)
 ```
 
+### Fine-Tuning
+
+Fine-tuning is a type of **transfer learning**: we re-train the weights of a pre-trained model on new data.
+
+Traditionally, all layers are re-trained, but we actually can choose what to freeze or not.
+
+Challenges of fine-tuning:
+
+- Computationally expensive, if but re-train all layers/parameters.
+- We need to gather labeled data: expensive and time consuming.
+- Storage: we need to store the model many times.
+- Out-of-distribution data: **catastrophic forgetting** can occur if the new data is very different; the model learns new things, but forgets older stuff it knew.
+
+### Exercise: Fine-Tuning a BERT Model on New Data
+
+Notebook: [`lab/Exercise3-full-fine-tuning-bert.ipynb`](./lab/Exercise3-full-fine-tuning-bert.ipynb)
+
+It is a very similar notebook as the previous one, but:
+
+- We use the SMS spam dataset for binary classification instead of the IMDB dataset.
+- All weights of the DistilBERT model with an attached classification head are trained.
+
+This model reaches a 99% accuracy after one epoch, whereas the previous IMBD classifier reached 78% after one epoch (with limited data).
+
+Code:
+
+```python
+### --- Dataset: SMS
+
+from datasets import load_dataset
+
+# Load the sms_spam dataset
+# See: https://huggingface.co/datasets/sms_spam
+# The sms_spam dataset only has a train split, so we use the train_test_split method to split it into train and test
+dataset = load_dataset("sms_spam", split="train").train_test_split(
+    test_size=0.2, shuffle=True, seed=23
+)
+
+splits = ["train", "test"]
+
+# View the dataset characteristics
+dataset["train"]
+
+# Inspect the first example. Do you think this is spam or not?
+dataset["train"][0]
+
+### --- Preprocess dataset
+
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+
+# Let's use a lambda function to tokenize all the examples
+# We could also define a function which is then mapped
+tokenized_dataset = {}
+for split in splits:
+    tokenized_dataset[split] = dataset[split].map(
+        lambda x: tokenizer(x["sms"], truncation=True), batched=True
+    )
+
+# Inspect the available columns in the dataset
+tokenized_dataset["train"]
+
+### --- Model: Unfreeze all parameters
+
+from transformers import AutoModelForSequenceClassification
+
+# We use a distilled version of the BERT encoder
+# and attach a classification head to it
+# However, we will train all the weights, not only the ones of the classifier
+# We see that when AutoModelForSequenceClassification is loaded,
+# we get a warning saying that the last layers are not trained
+model = AutoModelForSequenceClassification.from_pretrained(
+    "distilbert-base-uncased",
+    num_labels=2,
+    id2label={0: "not spam", 1: "spam"},
+    label2id={"not spam": 0, "spam": 1},
+)
+
+# Unfreeze all the model parameters
+# Check the documentation at https://huggingface.co/docs/transformers/main_classes/trainer
+for param in model.parameters():
+    param.requires_grad = True
+
+
+### --- Training
+
+import numpy as np
+from transformers import DataCollatorWithPadding, Trainer, TrainingArguments
+
+def compute_metrics(eval_pred):
+    predictions, labels = eval_pred
+    predictions = np.argmax(predictions, axis=1)
+    return {"accuracy": (predictions == labels).mean()}
+
+# The HuggingFace Trainer class handles the training and eval loop for PyTorch for us.
+# Read more about it here https://huggingface.co/docs/transformers/main_classes/trainer
+trainer = Trainer(
+    model=model,
+    args=TrainingArguments(
+        output_dir="./data/spam_not_spam",
+        # Set the learning rate
+        learning_rate=2e-5,
+        # Set the per device train batch size and eval batch size
+        per_device_train_batch_size=16,
+        per_device_eval_batch_size=16,
+        # Evaluate and save the model after each epoch
+        evaluation_strategy="epoch",
+        save_strategy="epoch",
+        num_train_epochs=2,
+        weight_decay=0.01,
+        load_best_model_at_end=True,
+    ),
+    train_dataset=tokenized_dataset["train"],
+    eval_dataset=tokenized_dataset["test"],
+    tokenizer=tokenizer,
+    data_collator=DataCollatorWithPadding(tokenizer=tokenizer),
+    compute_metrics=compute_metrics,
+)
+
+trainer.train()
+
+### --- EValuation
+
+# Show the performance of the model on the test set
+# What do you think the evaluation accuracy will be?
+trainer.evaluate()
+
+# Make a dataframe with the predictions and the text and the labels
+import pandas as pd
+
+items_for_manual_review = tokenized_dataset["test"].select(
+    [0, 1, 22, 31, 43, 292, 448, 487]
+)
+
+results = trainer.predict(items_for_manual_review)
+df = pd.DataFrame(
+    {
+        "sms": [item["sms"] for item in items_for_manual_review],
+        "predictions": results.predictions.argmax(axis=1),
+        "labels": results.label_ids,
+    }
+)
+# Show all the cell
+pd.set_option("display.max_colwidth", None)
+df
+
+```
 
 ## 5. Project: Applying Lightweight Fine-Tuning to a Foundation Model
 
