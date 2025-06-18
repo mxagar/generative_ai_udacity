@@ -55,6 +55,10 @@ Overview of Contents:
     - [Fine-Tuning](#fine-tuning)
     - [Exercise: Fine-Tuning a BERT Model on New Data](#exercise-fine-tuning-a-bert-model-on-new-data)
   - [5. Project: Applying Lightweight Fine-Tuning to a Foundation Model](#5-project-applying-lightweight-fine-tuning-to-a-foundation-model)
+  - [Introduction to PEFT](#introduction-to-peft)
+    - [LoRA = Low Rank Adaptation](#lora--low-rank-adaptation)
+    - [Training with PEFT-LoRA](#training-with-peft-lora)
+  - [Project Requirements](#project-requirements)
 
 
 ## 1. Introduction to Generative AI
@@ -1027,7 +1031,6 @@ df = pd.DataFrame(
 # Show all the cell
 pd.set_option("display.max_colwidth", None)
 df
-
 ```
 
 ## 5. Project: Applying Lightweight Fine-Tuning to a Foundation Model
@@ -1035,3 +1038,90 @@ df
 This section contains my notes regarding the concepts necessary to accomplish the project &mdash; which are not provided in the videos.
 
 The project itself can be found here: [mxagar/llm_peft_fine_tuning_example](https://github.com/mxagar/llm_peft_fine_tuning_example).
+
+The notebooks and trials related to the learning part of the project can be found here: [`project/`](./project/).
+
+## Introduction to PEFT
+
+> Hugging Face PEFT allows you to fine-tune a model without having to fine-tune all of its parameters.
+
+> Training a model using Hugging Face PEFT requires two additional steps beyond traditional fine-tuning:
+
+> - Creating a PEFT config
+> - Converting the model into a PEFT model using the PEFT config
+
+> Inference using a PEFT model is almost identical to inference using a non-PEFT model. The only difference is that it must be loaded as a PEFT model.
+
+Installation:
+
+```bash
+# LoRA
+pip install peft
+
+# QLoRA
+pip install bitsandbytes
+```
+
+Links, HuggingFace resources:
+
+- [HuggingFace: Trainer Fine-Tuning](https://huggingface.co/docs/transformers/training)
+- [HuggingFace: `peft`](https://huggingface.co/docs/peft/en/index)
+- [HuggingFace: `bitsandbytes`](https://huggingface.co/docs/bitsandbytes/index)
+- [LoRA: Low-Rank Adaptation of Large Language Models (Hu et al., 2021)](https://arxiv.org/abs/2106.09685)
+- [Hugging Face LoRA conceptual guide](https://huggingface.co/docs/peft/main/en/conceptual_guides/lora)
+
+### LoRA = Low Rank Adaptation
+
+With Low-Rank Adaptation, we basically decompose a weights matrix into a multiplication of low rank matrices:
+
+    W = W + dW, where
+      W: weight matrix (d, d)
+      dW: weight offset to be learned (d,d)
+    dW = A*B, where
+      A is (d, r)
+      and B (r, f)
+      and r << d
+
+The idea is that we freeze `W` while we learn `dW`, but instead of learning the full sized `dW`, we learn the much smaller `A` and `B`; the size of these low-rank matrices is controlled by `r`.
+
+    y = x * W
+    y = x * (W + dW) = x * (W + A*B), where
+      x*W is frozen
+      x*A*B is trainable
+
+Additional notes:
+
+- LoRA is not applied to all weight matrices, but the library (`peft`) decides where to apply it; e.g.: projection matrices Q and V in attention blocks, MLP layers, etc.
+- We dramatically reduce the number of parameters by controlling `r`.
+- LoRA can be used in combination with other methods.
+- Performance is comparable to fully fine-tuned models!
+- After training, we can merge `W + dW`, so there is no latency added!
+
+More information:
+
+- [LoRA: Low-Rank Adaptation of Large Language Models (Hu et al., 2021)](https://arxiv.org/abs/2106.09685)
+- [Hugging Face LoRA conceptual guide](https://huggingface.co/docs/peft/main/en/conceptual_guides/lora)
+
+### Training with PEFT-LoRA
+
+
+
+
+## Project Requirements
+
+- [ ] Load a pretrained HF model.
+- [ ] Load and preprocess a dataset; a subset of the full dataset can be used.
+- [ ] Evaluate the pretrained model; at least one classification metric.
+- [ ] Create a PEFT model.
+- [ ] Train the PEFT model.
+- [ ] Save the PEFT model.
+- [ ] Load the saved PEFT model.
+- [ ] Evaluate the fine-tuned model.
+
+Ideas to extend the project:
+
+- [ ] Try using the `bitsandbytes` package to combine quantization and LoRA. This is also known as QLoRA.
+- [ ] Try training the model using different PEFT configurations and compare the results.
+- [ ] Try using our own dataset.
+- [ ] Export the PEFT model as ONNX.
+- [ ] Prepare an inference interface for production.
