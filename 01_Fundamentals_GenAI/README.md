@@ -38,7 +38,19 @@ Overview of Contents:
     - [Notebook: Transfer Learning with MobileNetV3](#notebook-transfer-learning-with-mobilenetv3)
   - [3. Foundation Models](#3-foundation-models)
     - [Notebook: Foundation Model as Email Spam Classifier](#notebook-foundation-model-as-email-spam-classifier)
+    - [GLUE and SuperGLUE Benchmarks](#glue-and-superglue-benchmarks)
+      - [GLUE](#glue)
+      - [SuperGLUE](#superglue)
+    - [Training Data](#training-data)
+      - [Biases](#biases)
+      - [Links to Some Data Sources](#links-to-some-data-sources)
+    - [Risks and the Bad Side of LLMs](#risks-and-the-bad-side-of-llms)
   - [4. Adapting Foundation Models](#4-adapting-foundation-models)
+    - [RAG = Retrieval Augmented Generation](#rag--retrieval-augmented-generation)
+    - [Prompt Design Techniques](#prompt-design-techniques)
+      - [Prompt Tuning](#prompt-tuning)
+      - [Exercises, Examples: Improving Prompts](#exercises-examples-improving-prompts)
+    - [Using Probing to Train a Classifier](#using-probing-to-train-a-classifier)
   - [5. Project: Applying Lightweight Fine-Tuning to a Foundation Model](#5-project-applying-lightweight-fine-tuning-to-a-foundation-model)
 
 
@@ -475,12 +487,248 @@ Notebook: [`lab/Exercise1-use-a-foundation-model-to-build-a-spam-email-classifie
 * Evaluates classifier accuracy by comparing model outputs to true labels from the dataset.
 * Iteratively improves the prompt and reruns evaluation to check for better accuracy and analyze misclassifications. **The improvement comes by adding some examples in the query/prompt, which increases the performance!**
 
+### GLUE and SuperGLUE Benchmarks
+
+Key points:
+
+- GLUE = General Language Understanding Evaluation
+- It is a collection of tests/tasks
+- SuperGLUE is the successor of GLUE: it's more advanced and it appeared when models started achieving human parity in GLUE
+
+#### GLUE
+
+*Alex Wang, Amanpreet Singh, Julian Michael, Felix Hill, Omer Levy & Samuel R. Bowman.*  
+[**GLUE: A Multi-Task Benchmark and Analysis Platform for Natural Language Understanding** (April 2018).](https://arxiv.org/abs/1804.07461)
+
+
+| Short Name | Full Name                              | Description                                                           | Example                                                                                                                                  |
+| ---------- | -------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **CoLA**   | Corpus of Linguistic Acceptability     | Determine if a sentence is grammatically acceptable.                  | ✅ *"The boy is playing outside."*<br>❌ *"The boy playing is outside."*                                                                   |
+| **SST-2**  | Stanford Sentiment Treebank            | Predict sentiment of a sentence (positive/negative).                  | *"This movie was fantastic!"* → **Positive**<br>*"The plot was boring and predictable."* → **Negative**                                  |
+| **MRPC**   | Microsoft Research Paraphrase Corpus   | Classify if two sentences are paraphrases.                            | *"He is a doctor."* / *"He works as a medical professional."* → **Paraphrase**                                                           |
+| **STS-B**  | Semantic Textual Similarity Benchmark  | Score how semantically similar two sentences are (0–5).               | *"A man is playing guitar."* / *"A person plays a musical instrument."* → **4.8**                                                        |
+| **QQP**    | Quora Question Pairs                   | Determine if two questions are semantically equivalent.               | *"How can I learn Python?"* / *"What's the best way to study Python?"* → **Duplicate**                                                   |
+| **MNLI**   | Multi-Genre Natural Language Inference | Decide if hypothesis is *entailment*, *neutral*, or *contradiction*.  | Premise: *"A man is playing a piano."*<br>Hypothesis: *"A man is making music."* → **Entailment**                                        |
+| **QNLI**   | Question Natural Language Inference    | Determine if a passage answers a given question.                      | Question: *"Where is the Eiffel Tower?"*<br>Sentence: *"The Eiffel Tower is located in Paris, France."* → **Entailment**                 |
+| **RTE**    | Recognizing Textual Entailment         | Binary entailment task: does one sentence logically follow the other? | Sentence1: *"Dogs bark loudly."*<br>Sentence2: *"Dogs make noise."* → **Entailment**                                                     |
+| **WNLI**   | Winograd Natural Language Inference    | Resolve pronoun references based on nuanced context.                  | *"The city council refused the demonstrators a permit because they feared violence."*<br>**Who feared violence?** → **The city council** |
+
+#### SuperGLUE
+
+*Alex Wang, Yada Pruksachatkun, Nikita Nangia, Amanpreet Singh, Julian Michael, Felix Hill, Omer Levy & Samuel R. Bowman.*
+[**SuperGLUE: A Stickier Benchmark for General-Purpose Language Understanding Systems** (May 2019)](https://arxiv.org/abs/1905.00537)
+
+
+| Short Name  | Full Name                                        | Description                                                                           | Example                                                                                                                                                              |
+| ----------- | ------------------------------------------------ | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **BoolQ**   | Boolean Questions                                | Answer a *yes/no* question given a passage.                                           | Passage: *"The Great Wall of China is over 13,000 miles long."*<br>Q: *"Is the Great Wall in Japan?"* → **No**                                                       |
+| **CB**      | CommitmentBank                                   | Classify entailment, contradiction, or neutral based on a premise and hypothesis.     | Premise: *"John might go to the party."*<br>Hypothesis: *"John will definitely go to the party."* → **Contradiction**                                                |
+| **COPA**    | Choice of Plausible Alternatives                 | Choose the more plausible cause or effect.                                            | Premise: *"The man broke his toe."*<br>Q: *"What was the cause?"*<br>A1: *"He dropped a hammer on his foot."*<br>A2: *"He got a promotion."* → **A1**                |
+| **MultiRC** | Multi-Sentence Reading Comprehension             | Answer multi-choice questions from a passage, possibly with multiple correct answers. | Passage: *"...Alice and Bob went hiking... Bob packed food, Alice brought water..."*<br>Q: *"Who brought supplies?"*<br>Answers: ✅ **Alice**, ✅ **Bob**              |
+| **ReCoRD**  | Reading Comprehension with Commonsense Reasoning | Fill in a blank with the correct entity from the passage.                             | Passage: *"...Marie Curie won two Nobel Prizes for her work on radioactivity..."*<br>Q: *"\_\_\_ won two Nobel Prizes for work on radioactivity."* → **Marie Curie** |
+| **RTE**     | Recognizing Textual Entailment                   | Decide whether one sentence entails the other.                                        | Sentence1: *"A man is playing a piano."*<br>Sentence2: *"A man is making music."* → **Entailment**                                                                   |
+| **WiC**     | Words in Context                                 | Determine if a word has the same meaning in two different contexts.                   | Sentence1: *"She gave him a ring."*<br>Sentence2: *"The phone began to ring."*<br>Word: *"ring"* → **Different**                                                     |
+| **WSC**     | Winograd Schema Challenge                        | Resolve pronoun references using commonsense reasoning.                               | *"Emma thanked Julie because she helped her with the project."*<br>Q: *"Who helped Emma?"* → **Julie**                                                               |
+| **AX-b**    | Broad Coverage Diagnostic                        | Diagnostic test for evaluating linguistic capabilities.                               | No fixed format — includes tasks like coreference, negation, and quantifiers to probe model behavior.                                                                |
+| **AX-g**    | Winogender Schema Diagnostics                    | Diagnostic set to assess gender bias in coreference resolution. Coreference: when two words refer to the same concept.                      | *"The doctor hired the nurse because she was experienced."*<br>Tests whether “she” is wrongly assumed to be the nurse due to gender bias.                            |
+
+### Training Data
+
+LLMs and Foundation Models need to be trained with high quality data to perform nicely; these include:
+
+- Websites (CommonCrawl): any kind of topic, text style, etc.
+- Scientific papers (Arxiv): technical language and complex concepts
+- Encyclopedias: general knowledge
+- Books and literature: rich vocabulary and complex sentence structures
+- Conversational posts: dialogues from TV scripts, colloquial speech
+- Social media posts: modern jargon
+- Legal documents: complex texts
+- Multilingual texts: to allow for several languages
+
+Texts are not used as they are; instead, they need to be preprocessed: cleaned, anonymized, filtered (for biases), formatted.
+
+Some reference data points:
+
+- 1GB text data = 1000 Books
+- Llama v1 was trained with 4.7TB text data
+
+#### Biases
+
+**Biases** in the data can shape the model in an invisible yet impactful manner. These biases are often a reflection of historical data/events and can lead to the perpetuation of past errors.
+
+Here are some biases:
+
+| Bias Type                         | Description                                                                                | Example                                                                                              |
+| --------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| **Selection Bias**                | Data used for training doesn’t represent the target population due to how it was selected. | A facial recognition model trained mostly on light-skinned individuals performs poorly on others.    |
+| **Historical Bias**               | Biases present in society that are carried into the dataset and model.                     | A hiring algorithm trained on past resumes favors male applicants due to biased hiring history.      |
+| **Confirmation Bias**             | Favoring data or patterns that align with preexisting beliefs or hypotheses.               | A sentiment classifier trained only on product reviews labeled by enthusiasts overstates positivity. |
+| **Discriminatory Outcomes**       | Outputs that unfairly harm or disadvantage specific groups.                                | A loan approval model disproportionately denies applications from certain zip codes.                 |
+| **Echo Chambers**                 | Feedback loops where biased outputs reinforce similar biased inputs.                       | A recommendation system keeps suggesting extreme political content based on initial clicks.          |
+| **Measurement Bias**                     | Occurs when the tools or processes used to collect data systematically distort it. | Using outdated medical sensors that underreport symptoms in women compared to men.                |
+| **Labeling Bias**                        | Introduced when human annotators apply inconsistent or subjective labels.          | Crowdworkers label images of “boss” as men more often than women, skewing downstream predictions. |
+| **Simpson’s Paradox / Aggregation Bias** | Statistical trend visible in subgroups is hidden or reversed when combined.        | A model shows high accuracy overall but performs poorly on minority subgroups due to aggregation. |
+
+Increasing organization diversity automatically decreases biases, because the environment becomes more tolerant to different views.
+
+#### Links to Some Data Sources
+
+- [https://commoncrawl.org/](https://commoncrawl.org/): Over 250 billion pages spanning 18 years, free. Greater than 1 PB. Unstructured and noisy.
+- [https://www.githubarchive.org/](https://www.githubarchive.org/): Public repositories.
+- [https://dumps.wikimedia.org/](https://dumps.wikimedia.org/): Available in many formats.
+- [https://www.gutenberg.org/](https://www.gutenberg.org/): 75000 free eBooks.
+
+### Risks and the Bad Side of LLMs
+
+**Disinformation and misinformation** are both false or inaccurate information, but:
+
+- Disinformation: intentional
+- Misinformation: inadvertent
+
+LLMs hallucinate and can help spread misinformation.
+
+Additional risks:
+
+- [AI has high data center energy costs](https://mitsloan.mit.edu/ideas-made-to-matter/ai-has-high-data-center-energy-costs-there-are-solutions)
+- [Generative AI Has a Massive E-Waste Problem](https://spectrum.ieee.org/e-waste)
+- [Exploring privacy issues in the age of AI ](https://www.ibm.com/think/insights/ai-privacy)
+- **Over-reliance**
 
 ## 4. Adapting Foundation Models
 
-TBD.
+Adaptation consists in customizing a pretrained Foundation Model to domain-specific tasks.
 
-:construction:
+![Adaptation](./assets/adaptation.jpg)
+
+Examples:
+
+- Chatbot adaptation to banking
+- LLM to structure medical records
+- Specific instruction-based adaptation: translation of texts
+- Fine-tuning of the model to be able to use private/corporate data
+
+Relevant paper: [On the Opportunities and Risks of Foundation Models, Bommasani et al. (2021)](https://arxiv.org/abs/2108.07258)
+
+* Coined and popularized the term **“foundation model.”**
+* Proposed that foundation models represent a **paradigm shift** in AI, akin to general-purpose technologies.
+* Laid groundwork for efforts like **model cards, data sheets**, and critical audits of large models.
+* Opportunities:
+  * Cross-task generalization
+  * Rapid development of applications (e.g., via transfer learning)
+  * Unifying architectures for vision, language, etc.
+* Risks:
+  * Bias, toxicity, and misinformation propagation
+  * Environmental costs of training
+  * Centralization of power (few labs controlling massive models)
+  * Misuse (e.g., surveillance, manipulation)
+
+### RAG = Retrieval Augmented Generation
+
+We can fine-tune an LLM to adapt it to the domain or we can plug current information to its context using **Retrieval Augmented Generation (RAG)**.
+
+For more information, see the co-located [mxagar/generative_ai_udacity/06_RAGs_DeepDive](https://github.com/mxagar/generative_ai_udacity/tree/main/06_RAGs_DeepDive).
+
+![RAG Concept](./assets/rag_concept.jpg)
+
+Concepts related to RAG:
+
+- Context
+- Semantic embeddings
+- Cosine similarity
+- Vector databases
+- Keyword-based search in index tables
+- Prompts
+
+### Prompt Design Techniques
+
+Key concepts:
+
+- Prompt Tuning
+  - The selection of words matters
+  - The order in which we place the information matters
+  - Usually, better putting the question at the end
+- One/Few-shot prompting
+  - We show a few examples (1-5) of what needs to be done
+  - The model will try to copy out pattern
+  - This is some kind of paradigm shift
+- Zero-shot prompting: no examples provided, model requested directly
+  - This is a kind of emergent property
+  - We can use to classify texts, for instance
+  - This is the most common way of interacting with LLMs, it seems normal, but it is actually incredible
+- In-Context Learning: 
+  - We provide information to be used in the context, e.g., 
+    - task examples: mini labeled datasets
+    - task descriptions: more abstract
+  - Literature shows larger models are better in-context learners
+- Chain-of-Thought
+  - We display/show a series of logical steps to be followed
+  - Example: we want to solve a logical problem, e.g.: "I bake 60 cookies, eat 10%, sell 20 from the rest, how many do I have?"
+    - We provide a similar example in the prompt and ask a question to the example
+    - We provide a step by step guide on how to compute the answer with the numbers
+    - We finally add our question and ask the LLM
+  - We can even add "think step by step"
+
+Sometimes the boundaries between these concepts are not clear.
+
+#### Prompt Tuning
+
+A typical prompt template would be:
+
+```python
+f"""
+{review}. In summary, the restaurant is
+"""
+```
+
+But we can tune the prompt with several techniques, for instance **soft-prompting**. That consists in **learning** pre-pended tokens to optimize a task performance.
+
+The result is a sequence of non human understandable tokens which is preprended to our prompt, which results in better performance!
+
+![Soft Prompting](./assets/soft_prompting.jpg)
+
+How soft-prompt header tokens can be obtained:
+
+```python
+# Define a small number n of learnable embeddings,
+# e.g., 20 vectors of the same dimensionality as the model’s input embeddings
+soft_prompt = torch.nn.Parameter(torch.randn(n, hidden_size))  # n x d
+
+# For each input sequence (e.g., "Translate: Hello"),
+# convert it to embeddings using the frozen model’s tokenizer and embedding layer.
+# Concatenate the soft prompt embeddings in front of the input embeddings
+input_embeds = model.embeddings(input_ids)  # shape: [batch, seq_len, d]
+prompted_input = torch.cat([soft_prompt.expand(batch_size, -1, -1), input_embeds], dim=1)
+
+# Feed the concatenated embeddings into the model.
+# We may need to adjust the attention mask to include the soft tokens.
+output = model(inputs_embeds=prompted_input, attention_mask=modified_mask)
+
+# Freeze model params, only soft_prompt is learnable
+for param in model.parameters():
+    param.requires_grad = False
+optimizer = torch.optim.Adam([soft_prompt], lr=1e-3)
+
+# Compute loss + backpropagate
+loss.backward()
+optimizer.step()
+```
+
+In contrast to soft prompts, we have **hard prompting**: human trial/error to improve prompts.
+
+More on soft-prompting: [Hugging Face PEFT conceptual guide - Soft prompts](https://huggingface.co/docs/peft/en/conceptual_guides/prompting)
+
+#### Exercises, Examples: Improving Prompts
+
+[Improve Your Queries Using Prompt Design Techniques](https://www.youtube.com/watch?v=awulyLb7v74)
+
+> The video discusses an exercise focused on improving queries using prompt design techniques with a large language model. It begins by presenting a task where the model is asked to fill in missing answers based on specific rules for combining letters from a list of words. The initial attempts show that the model struggles with the task, sometimes providing incorrect answers.
+
+> The presenter then explores different prompting techniques, including providing task descriptions, examples, and chain-of-thought prompts. They highlight that sometimes giving too much information can confuse the model, leading to worse performance. The video emphasizes the importance of experimenting with various prompt designs to find the most effective approach for specific tasks, illustrating how prompt design can significantly impact the model's output. 
+
+### Using Probing to Train a Classifier
+
+
+
 
 ## 5. Project: Applying Lightweight Fine-Tuning to a Foundation Model
 
