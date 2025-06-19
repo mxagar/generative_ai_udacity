@@ -38,6 +38,7 @@ pytest
 python-dotenv
 safetensors
 scikit-learn
+seaborn
 sentence-transformers
 setuptools
 tensorboard
@@ -49,6 +50,7 @@ transformers
 transformers[torch]
 wheel
 wikipedia
+wordcloud
 tiktoken
 youtube-transcript-api
 pytube
