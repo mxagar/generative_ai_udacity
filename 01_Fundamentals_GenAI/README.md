@@ -65,6 +65,7 @@ Overview of Contents:
     - [Tasks, Suggested Models and Configurations](#tasks-suggested-models-and-configurations)
     - [Text Classification Datasets](#text-classification-datasets)
     - [Useful Links](#useful-links)
+    - [Notebooks](#notebooks)
   - [Project Requirements](#project-requirements)
 
 
@@ -1487,6 +1488,13 @@ Text classification datasets: [https://huggingface.co/datasets?sort=trending](ht
 - [Hugging Face Text Generation](https://huggingface.co/docs/transformers/main_classes/text_generation)
 - [Image classification using LoRA](https://huggingface.co/docs/peft/main/en/task_guides/image_classification_lora)
 - [Semantic segmentation using LoRA](https://huggingface.co/docs/peft/main/en/task_guides/semantic_segmentation_lora)
+
+### Notebooks
+
+Notebooks:
+
+- Guide: [project/peft_howto.ipynb](./project/peft_howto.ipynb)
+- Project: [mxagar/llm_peft_fine_tuning_example](https://github.com/mxagar/llm_peft_fine_tuning_example)
 
 ## Project Requirements
 
