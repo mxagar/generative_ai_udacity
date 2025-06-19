@@ -530,6 +530,8 @@ matplotlib==3.10.3
     # via
     #   -r requirements.in
     #   bert-score
+    #   seaborn
+    #   wordcloud
 matplotlib-inline==0.1.7
     # via
     #   ipykernel
@@ -619,12 +621,14 @@ numpy==2.2.6
     #   peft
     #   scikit-learn
     #   scipy
+    #   seaborn
     #   tensorboard
     #   torchtext
     #   torchvision
     #   transformers
     #   umap-learn
     #   voyager
+    #   wordcloud
 oauthlib==3.2.2
     # via
     #   kubernetes
@@ -731,6 +735,7 @@ pandas==2.2.3
     #   evaluate
     #   llama-index-readers-file
     #   nomic
+    #   seaborn
 pandocfilters==1.5.1
     # via nbconvert
 parso==0.8.4
@@ -746,6 +751,7 @@ pillow==10.4.0
     #   nomic
     #   sentence-transformers
     #   torchvision
+    #   wordcloud
 platformdirs==4.3.8
     # via
     #   banks
@@ -976,6 +982,8 @@ scipy==1.15.3
     #   scikit-learn
     #   sentence-transformers
     #   umap-learn
+seaborn==0.13.2
+    # via -r requirements.in
 send2trash==1.8.3
     # via jupyter-server
 sentence-transformers==4.1.0
@@ -1219,6 +1227,8 @@ wikipedia==1.4.0
     # via -r requirements.in
 win32-setctime==1.2.0
     # via loguru
+wordcloud==1.9.4
+    # via -r requirements.in
 wrapt==1.17.2
     # via
     #   deprecated
