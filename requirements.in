@@ -29,6 +29,7 @@ langchain_experimental
 lxml
 numexpr
 ollama
+onnxruntime
 openai
 peft
 pydantic
@@ -39,6 +40,7 @@ safetensors
 scikit-learn
 sentence-transformers
 setuptools
+tensorboard
 torch
 torchaudio
 torchtext
