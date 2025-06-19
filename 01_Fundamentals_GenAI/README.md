@@ -62,6 +62,7 @@ Overview of Contents:
       - [ONNX](#onnx)
       - [Tensorboard](#tensorboard)
       - [Custom Datasets](#custom-datasets)
+      - [Pushing to the HuggingFace Hub](#pushing-to-the-huggingface-hub)
     - [Tasks, Suggested Models and Configurations](#tasks-suggested-models-and-configurations)
     - [Text Classification Datasets](#text-classification-datasets)
     - [Useful Links](#useful-links)
@@ -786,8 +787,10 @@ tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
 
 def preprocess_function(examples):
     """Preprocess the imdb dataset by returning tokenized examples."""
-    # Pad shorted sentences to the max length the model can take
-    # and truncate longer sentences
+    # We can also use padding="max_length", which pads to tokenizer.model_max_length
+    # or padding=True, which pads to the longest sequence in the batch
+    # Truncation is always tokenizer.model_max_length
+    # NOTE: Padding slows the training considerably
     return tokenizer(examples["text"], padding="max_length", truncation=True)
 
 # Tokenize the dataset using the preprocess function:
@@ -865,13 +868,13 @@ trainer = Trainer(
         per_device_eval_batch_size=4,
         num_train_epochs=1,
         weight_decay=0.01,
-        eval_strategy="epoch",
+        eval_strategy="epoch",  # alternatively "steps" and add argument eval_steps=200
         save_strategy="epoch",
         load_best_model_at_end=True,
     ),
     train_dataset=tokenized_ds["train"],
     eval_dataset=tokenized_ds["test"],
-    tokenizer=tokenizer,
+    processing_class=tokenizer,
     # Data collators are used to dynamically form batches of data
     # using the previously defined tokenizer/preprocessing
     data_collator=DataCollatorWithPadding(tokenizer=tokenizer),
@@ -962,6 +965,10 @@ tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
 # We could also define a function which is then mapped
 tokenized_dataset = {}
 for split in splits:
+    # We can also use padding="max_length", which pads to tokenizer.model_max_length
+    # or padding=True, which pads to the longest sequence in the batch
+    # Truncation is always tokenizer.model_max_length
+    # NOTE: Padding slows the training considerably
     tokenized_dataset[split] = dataset[split].map(
         lambda x: tokenizer(x["sms"], truncation=True), batched=True
     )
@@ -1025,7 +1032,7 @@ trainer = Trainer(
         per_device_train_batch_size=16,
         per_device_eval_batch_size=16,
         # Evaluate and save the model after each epoch
-        evaluation_strategy="epoch",
+        eval_strategy="epoch",  # alternatively "steps" and add argument eval_steps=200
         save_strategy="epoch",
         num_train_epochs=2,
         weight_decay=0.01,
@@ -1033,7 +1040,7 @@ trainer = Trainer(
     ),
     train_dataset=tokenized_dataset["train"],
     eval_dataset=tokenized_dataset["test"],
-    tokenizer=tokenizer,
+    processing_class=tokenizer,
     data_collator=DataCollatorWithPadding(tokenizer=tokenizer),
     compute_metrics=compute_metrics,
 )
@@ -1146,8 +1153,16 @@ More information:
 ```python
 ### -- Configuration
 
-from peft import LoraConfig
-config = LoraConfig()
+from peft import LoraConfig, TaskType
+# LoRA configuration: parameters can vary, see below
+lora_config = LoraConfig(
+    r=8,                                    # Low-rank dimensionality
+    lora_alpha=16,                          # Scaling factor
+    target_modules=["query", "value"],      # Which submodules to apply LoRA to (depends on model)
+    lora_dropout=0.1,                       # Dropout for LoRA layers
+    bias="none",                            # Do not train bias
+    task_type=TaskType.SEQ_CLS              # Task type: sequence classification
+)
 
 ### -- Load model with transformers
 
@@ -1218,6 +1233,8 @@ lora_model.save_pretrained("gpt-lora-merged")
 # pip install bitsandbytes accelerate
 from transformers import AutoModelForCausalLM, BitsAndBytesConfig
 
+# WARNING: This requires the `bitsandbytes` library to be installed 
+# and Intel CPU and/or 'cuda', 'mps', 'hpu', 'xpu', 'npu'
 bnb_config = BitsAndBytesConfig(
     load_in_4bit=True,                # Load model in 4-bit precision vs 8 or 16 bit (saves memory)
     bnb_4bit_quant_type="nf4",        # Type of 4-bit quantization: "fp4" (NormalFloat4) or "nf4" (more accurate)
@@ -1351,6 +1368,10 @@ from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 
 def tokenize_fn(batch):
+    # We can also use padding="max_length", which pads to tokenizer.model_max_length
+    # or padding=True, which pads to the longest sequence in the batch
+    # Truncation is always tokenizer.model_max_length
+    # NOTE: Padding slows the training considerably
     return tokenizer(batch["text"],
                      truncation=True,
                      padding="max_length")
@@ -1416,6 +1437,36 @@ trainer = Trainer(
 
 trainer.train()
 
+```
+
+#### Pushing to the HuggingFace Hub
+
+We can push our trained models to the HuggingFace Hub after loging in.
+
+```python
+# Login
+from huggingface_hub import login
+login()
+# Alternatively: huggingface-cli login
+
+# Merge LoRA weights with base model
+merged_model = lora_model.merge_and_unload()
+
+# Now PUSH the (full merged) model
+merged_model.push_to_hub("my-username/my-model-name")
+tokenizer.push_to_hub("my-username/my-model-name")
+# Now, we should see our model in
+# https://huggingface.co/my-username/my-model-name
+
+# Check we can load it
+# We can also push the LoRA adapter without merging,
+# but the we need to load the base_model pretrained model
+#   base_model = AutoModelForSequenceClassification.from_pretrained("distilbert-base-uncased")
+# and convert it to PEFT with
+#   model = PeftModel.from_pretrained(base_model, "your-username/your-model-name")
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+model = AutoModelForSequenceClassification.from_pretrained("my-username/my-model-name")
+tokenizer = AutoTokenizer.from_pretrained("my-username/myr-model-name")
 ```
 
 ### Tasks, Suggested Models and Configurations
