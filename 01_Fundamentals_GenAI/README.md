@@ -58,6 +58,13 @@ Overview of Contents:
   - [Introduction to PEFT](#introduction-to-peft)
     - [LoRA = Low Rank Adaptation](#lora--low-rank-adaptation)
     - [Training with PEFT-LoRA](#training-with-peft-lora)
+    - [Additional Functionalities](#additional-functionalities)
+      - [ONNX](#onnx)
+      - [Tensorboard](#tensorboard)
+      - [Custom Datasets](#custom-datasets)
+    - [Tasks, Suggested Models and Configurations](#tasks-suggested-models-and-configurations)
+    - [Text Classification Datasets](#text-classification-datasets)
+    - [Useful Links](#useful-links)
   - [Project Requirements](#project-requirements)
 
 
@@ -824,11 +831,24 @@ print(model)
 
 import numpy as np
 from transformers import DataCollatorWithPadding, Trainer, TrainingArguments
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
-    predictions = np.argmax(predictions, axis=1)
-    return {"accuracy": (predictions == labels).mean()}
+    preds = np.argmax(predictions, axis=1)
+
+    acc = accuracy_score(labels, preds)
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        labels, preds, average="macro", zero_division=0
+    )
+
+    return {
+        "accuracy": acc,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1
+    }
+
 
 # The HuggingFace Trainer class handles the training and eval loop for PyTorch for us
 # Rather than a loop, it looks like a configuration + function call
@@ -974,11 +994,23 @@ for param in model.parameters():
 
 import numpy as np
 from transformers import DataCollatorWithPadding, Trainer, TrainingArguments
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
-    predictions = np.argmax(predictions, axis=1)
-    return {"accuracy": (predictions == labels).mean()}
+    preds = np.argmax(predictions, axis=1)
+
+    acc = accuracy_score(labels, preds)
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        labels, preds, average="macro", zero_division=0
+    )
+
+    return {
+        "accuracy": acc,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1
+    }
 
 # The HuggingFace Trainer class handles the training and eval loop for PyTorch for us.
 # Read more about it here https://huggingface.co/docs/transformers/main_classes/trainer
@@ -1047,7 +1079,7 @@ The notebooks and trials related to the learning part of the project can be foun
 
 > Training a model using Hugging Face PEFT requires two additional steps beyond traditional fine-tuning:
 
-> - Creating a PEFT config
+> - Creating a PEFT config: `LoraConfig`
 > - Converting the model into a PEFT model using the PEFT config
 
 > Inference using a PEFT model is almost identical to inference using a non-PEFT model. The only difference is that it must be loaded as a PEFT model.
@@ -1089,6 +1121,12 @@ The idea is that we freeze `W` while we learn `dW`, but instead of learning the 
       x*W is frozen
       x*A*B is trainable
 
+So, if `W` is `(d, d)` and `A` and `B` have rank `r`, the proportion of weights in `dW` as compared to `W` is:
+
+    Weights W: d^2
+    Weights A and B: 2 * (r*d)
+    Proportion: 2*r/d
+
 Additional notes:
 
 - LoRA is not applied to all weight matrices, but the library (`peft`) decides where to apply it; e.g.: projection matrices Q and V in attention blocks, MLP layers, etc.
@@ -1104,15 +1142,358 @@ More information:
 
 ### Training with PEFT-LoRA
 
+```python
+### -- Configuration
+
+from peft import LoraConfig
+config = LoraConfig()
+
+### -- Load model with transformers
+
+from transformers import AutoModelForCausalLM
+model = AutoModelForCausalLM.from_pretrained("gpt2")
+
+### -- Convert tarnsformers model into a PEFT model
+
+# This PEFT model can be used in the Trainer, as if it were a regular model
+
+from peft import get_peft_model
+lora_model = get_peft_model(model, config)
+
+### -- Check parameters
+
+lora_model.print_trainable_parameters()
+
+### -- Train
+
+# With Trainer and TrainingArguments, as always
+
+### -- Save LoRA weights
+
+# If transformers model: full model weights + config + tokenizer saved to ./model_dir/
+# If PEFT LoRA model: only /model_dir/adapter_model.bin
+# If PEFT LoRA merged with merge_and_unload(): all weights in ./model_dir/
+lora_model.save_pretrained("gpt-lora")
+
+### -- Load
+
+# If we don't merge the adapter matrices to the original weights
+# we basically save the adapter weights only, so we need to
+# load the model as a peft.AutoPeftModelForCausalLM
+
+from peft import AutoPeftModelForCausalLM
+lora_model = AutoPeftModelForCausalLM.from_pretrained("gpt-lora")
+
+# We can also save the tokenizer:
+tokenizer.save_pretrained("gpt-lora")
+
+### -- Inference
+
+from transformers import AutoTokenizer
+tokenizer = AutoTokenizer.from_pretrained("gpt2")
+inputs = tokenizer("Hello, my name is ", return_tensors="pt")
+outputs = lora_model.generate(input_ids=inputs["input_ids"], max_new_tokens=10)
+print(tokenizer.batch_decode(outputs))
+
+### -- Merging/Unmerging the adapter weights
+
+# Merge/Unmerge adpater weights to base model
+# BUT the adapter weights remain in memory, so we can unmerge them
+lora_model.merge_adapter()
+lora_model.unmerge_adapter()
+
+# Merge LoRA weights into the base model and remove adapter weights
+# In this case, unmerging is not possible
+lora_model.merge_and_unload()
+
+# Save merged model (fully merged into base weights)
+# If transformers model: full model weights + config + tokenizer saved to ./model_dir/
+# If PEFT LoRA model: only /model_dir/adapter_model.bin
+# If PEFT LoRA merged with merge_and_unload(): all weights in ./model_dir/
+lora_model.save_pretrained("gpt-lora-merged")
+
+### -- Using quantization with bitsandbytes
+
+# pip install bitsandbytes accelerate
+from transformers import AutoModelForCausalLM, BitsAndBytesConfig
+
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,                # Load model in 4-bit precision vs 8 or 16 bit (saves memory)
+    bnb_4bit_quant_type="nf4",        # Type of 4-bit quantization: "fp4" (NormalFloat4) or "nf4" (more accurate)
+    bnb_4bit_use_double_quant=True,   # Adds second quantization layer (better compression, slightly slower)
+    llm_int8_threshold=6.0            # Only quantize layers with high activation magnitude (> threshold); stabilizes training
+)
+
+model = AutoModelForCausalLM.from_pretrained(
+    "gpt2",
+    quantization_config=bnb_config,
+    device_map="auto"
+)
+# Then apply LoRA on top of this quantized model as usual
+
+```
+
+Parameters of the `LoraConfig`:
+
+>- `r`: the rank of the update matrices, expressed in int. Lower rank results in smaller update matrices with fewer trainable parameters.
+>- `target_modules`: The modules (for example, attention blocks) to apply the LoRA update matrices.
+>- `lora_alpha`: LoRA scaling factor.
+>- `bias`: Specifies if the bias parameters should be trained. Can be 'none', 'all' or 'lora_only'.
+>- `use_rslora`: When set to True, uses Rank-Stabilized LoRA which sets the adapter scaling factor to lora_alpha/math.sqrt(r), since it was proven to work better. >- Otherwise, it will use the original default value of lora_alpha/r.
+>- `modules_to_save`: List of modules apart from LoRA layers to be set as trainable and saved in the final checkpoint. These typically include model’s custom head that is randomly initialized for the fine-tuning task.
+>- `layers_to_transform`: List of layers to be transformed by LoRA. If not specified, all layers in target_modules are transformed.
+>- `layers_pattern`: Pattern to match layer names in target_modules, if layers_to_transform is specified. By default PeftModel will look at common layer pattern (layers, h, blocks, etc.), use it for exotic and custom models.
+>- `rank_pattern`: The mapping from layer names or regexp expression to ranks which are different from the default rank specified by r.
+>- `alpha_pattern`: The mapping from layer names or regexp expression to alphas which are different from the default alpha specified by lora_alpha.
+
+### Additional Functionalities
+
+#### ONNX
+
+```python
+### -- Export
+
+from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers.onnx import export
+from pathlib import Path
+from transformers.onnx.features import FeaturesManager
+
+model = AutoModelForCausalLM.from_pretrained("gpt2")
+tokenizer = AutoTokenizer.from_pretrained("gpt2")
+
+onnx_path = Path("onnx_model")
+onnx_path.mkdir(exist_ok=True)
+
+export(
+    preprocessor=tokenizer,
+    model=model,
+    config=FeaturesManager.get_supported_features_for_model_type("gpt2")["causal-lm"],
+    opset=13,
+    output=onnx_path / "model.onnx",
+)
 
 
+### -- Import and Inference
+
+# pip install onnxruntime
+import onnxruntime as ort
+import numpy as np
+
+session = ort.InferenceSession("onnx_model/model.onnx")
+outputs = session.run(None, {"input_ids": np.array([[50256, 42]])})
+# LoRA-specific adapters are not automatically included in ONNX exports,
+# we must merge LoRA into the base model first via lora_model.merge_and_unload()
+
+```
+
+#### Tensorboard
+
+```python
+from transformers import TrainingArguments
+
+training_args = TrainingArguments(
+    output_dir="./checkpoints",
+    logging_dir="./logs",              # Required for TensorBoard
+    logging_steps=10,                  # Log every N steps
+    evaluation_strategy="steps",       # Optional: to log eval metrics
+    eval_steps=50,                     # Eval every 50 steps
+    report_to="tensorboard",           # Enables TensorBoard
+)
+```
+
+Launch tensorboard:
+
+```bash
+tensorboard --logdir=./logs
+# Then open http://localhost:6006 in the browser
+```
+
+#### Custom Datasets
+
+```python
+# --------------------------------------
+# 1. Load / create the dataset
+# --------------------------------------
+from datasets import Dataset, load_dataset
+
+# OPTION A: in-memory Python list
+data = [
+    {"text": "I'm so happy!", "label": "joy"},
+    {"text": "This is awful",    "label": "anger"},
+]
+dataset = Dataset.from_list(data)
+
+# OPTION B: from CSV file
+dataset = load_dataset("csv", data_files="data.csv")["train"]
+
+# Train / test split
+dataset = dataset.train_test_split(test_size=0.2)
+
+# --------------------------------------
+# 2. Map string labels -> integer IDs
+# --------------------------------------
+label_list = sorted(set(dataset["train"]["label"]))
+label2id = {lbl: i for i, lbl in enumerate(label_list)}
+id2label = {i: lbl for lbl, i in label2id.items()}
+
+def encode_labels(ex):
+    ex["label"] = label2id[ex["label"]]
+    return ex
+
+dataset = dataset.map(encode_labels)
+
+# --------------------------------------
+# 3. Tokenize
+# --------------------------------------
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+
+def tokenize_fn(batch):
+    return tokenizer(batch["text"],
+                     truncation=True,
+                     padding="max_length")
+
+# Removing the old text column is not necessary, but recommended
+tokenized_ds = dataset.map(tokenize_fn,
+                           batched=True,
+                           remove_columns=["text"])  # drops raw text
+tokenized_ds.set_format("torch")
+
+# --------------------------------------
+# 4. Model
+# --------------------------------------
+from transformers import AutoModelForSequenceClassification
+
+model = AutoModelForSequenceClassification.from_pretrained(
+    "bert-base-uncased",
+    num_labels=len(label_list),
+    id2label=id2label,
+    label2id=label2id,
+)
+
+# --------------------------------------
+# 5. Training setup
+# --------------------------------------
+from transformers import TrainingArguments, Trainer
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+
+def compute_metrics(eval_pred):
+    predictions, labels = eval_pred
+    preds = np.argmax(predictions, axis=1)
+
+    acc = accuracy_score(labels, preds)
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        labels, preds, average="macro", zero_division=0
+    )
+
+    return {
+        "accuracy": acc,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1
+    }
+
+training_args = TrainingArguments(
+    output_dir="./checkpoints",
+    per_device_train_batch_size=8,
+    per_device_eval_batch_size=8,
+    num_train_epochs=3,
+    evaluation_strategy="epoch",
+    #logging_dir="./logs",
+    #report_to="tensorboard",   # enable TensorBoard, if desired
+)
+
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized_ds["train"],
+    eval_dataset=tokenized_ds["test"],
+    tokenizer=tokenizer,
+    compute_metrics=compute_metrics,
+)
+
+trainer.train()
+
+```
+
+### Tasks, Suggested Models and Configurations
+
+Tasks with text:
+
+| **`TaskType`**                  | **AutoModel Class**                  | **What the Task Covers**                                                                                                                                              | **Typical Example IO**                                                                   |
+| ------------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `SEQ_CLS`                       | `AutoModelForSequenceClassification` | **Single-sentence or sentence-pair classification.** Covers sentiment, topic, spam detection, (dis)similarity, hate-speech, etc. Output is a discrete label or score. | *Text*: “I love this phone.” → **Positive**                                              |
+| `CAUSAL_LM`                     | `AutoModelForCausalLM`               | **Left-to-right language generation.** Produces free-form continuations, code, chat replies. Used for ChatGPT-style dialogue and story writing.                       | “The cat is on the” → “mat.”                                                             |
+| `SEQ_2_SEQ_LM`                  | `AutoModelForSeq2SeqLM`              | **Sequence-to-sequence generation.** Encodes a source sequence and decodes a target sequence. Core for translation, summarization, style transfer, data-to-text.      | “Translate **Hello** to French” → “Bonjour.”                                             |
+| `QUESTION_ANS`                  | `AutoModelForQuestionAnswering`      | **Extractive QA.** Given a context paragraph and a question, return the answer span inside the context. Powers FAQ bots and search-QA.                                | Context: “…The Eiffel Tower is in Paris…” <br> Q: “Where is the Eiffel Tower?” → “Paris” |
+| `TOKEN_CLS`                     | `AutoModelForTokenClassification`    | **Per-token labeling.** Named-entity recognition, part-of-speech, chunking, medical taggers. Output shape = sequence length × label set.                              | “Barack Obama lives in Washington.” → `PER`, `LOC` tags                                  |
+| `ENTAILMENT` (`SEQ_CLS`)        | `AutoModelForSequenceClassification` | **Natural-language inference / entailment.** Decide whether premise entails, contradicts, or is neutral to hypothesis. Core of MNLI, RTE, CB.                         | P: “He bought a car.” <br>H: “He owns a vehicle.” → **Entailment**                       |
+| `MULTIPLE_CHOICE`               | `AutoModelForMultipleChoice`         | **Choose best option among k candidates.** Used in exams, reading-comprehension sets, safety guardrails.                                                              | Q: “Why did she smile?” • A1: *Happy* • A2: *Hungry* → **A1**                            |
+| `QQP`  / Paraphrase (`SEQ_CLS`) | `AutoModelForSequenceClassification` | **Paraphrase or duplicate-question detection.** Two texts → yes/no (or score).                                                                                        | Q1: “How to learn Python?” Q2: “Best way to study Python?” → **Duplicate**               |
+| `STSB` (`SEQ_CLS`)              | `AutoModelForSequenceClassification` | **Semantic similarity regression.** Output a real-valued similarity score (0–5, 0–1).                                                                                 | “A man is playing guitar.” / “Someone makes music.” → 4.6                                |
+| `BOOL_Q` (`SEQ_CLS`)            | `AutoModelForSequenceClassification` | **Yes/No QA over a passage.** Model predicts boolean answer given context.                                                                                            | P: “…Fish have gills…” Q: “Can fish breathe underwater?” → **Yes**                       |
+| `WIC` (`SEQ_CLS`)               | `AutoModelForSequenceClassification` | **Word-sense disambiguation.** Decide if the same word in two sentences has identical meaning.                                                                        | “He sat by the **bank** (river).” / “Deposit money in the **bank**.” → **Different**     |
+| `WSC` (`SEQ_CLS`)               | `AutoModelForSequenceClassification` | **Pronoun/coreference reasoning (Winograd).** Requires world knowledge to pick the right referent.                                                                    | “The suitcase would not fit in the car because **it** was too small.” → **suitcase**     |
+| `COPA` (`MULTIPLE_CHOICE`)      | `AutoModelForMultipleChoice`         | **Causal reasoning.** Pick the more plausible cause/effect for a premise.                                                                                             | “The ground was wet.” Why? → (A) *Rained* ✔ (B) *Sunny* ✖                                |
+
+
+Typical models for text tasks:
+
+| **Size**  | **Model ID**              | **Suitable Tasks**              | **Approx Size (MB)** |
+|-----------|---------------------------|----------------------------------|----------------------|
+| Small     | `distilbert-base-uncased` | Text classification, NER        | 250                  |
+| Medium    | `bert-base-uncased`       | Classification, QA              | 420                  |
+| Medium    | `roberta-base`            | Sentiment, entailment           | 500                  |
+| Large     | `gpt2`                    | Generation, summarization       | 500                  |
+| Large     | `gpt2-medium`             | Generation, summarization       | 1400                 |
+| Large     | `t5-base`                 | Translation, summarization      | 850                  |
+| XL        | `llama-7b-hf`             | Chat, RAG, story generation     | 13600                |
+| XL        | `mistral-7b`              | Chat, RAG, story generation     | 13600                |
+
+
+Typical LoRA configuration for each text task:
+
+| Task                     | Key Params                                                    |
+| ------------------------ | ------------------------------------------------------------- |
+| **Text classification**  | `task_type=TaskType.SEQ_CLS`, `r=8`, `lora_alpha=32`          |
+| **Causal LM (e.g. GPT)** | `task_type=TaskType.CAUSAL_LM`, `r=4–16`, `alpha=16–64`       |
+| **Seq2Seq (e.g. T5)**    | `task_type=TaskType.SEQ_2_SEQ_LM`, `target_modules=["q","v"]` |
+| **NER**                  | `task_type=TaskType.TOKEN_CLS`, smaller `r` (e.g., 4 or 8)    |
+| **QA / Retrieval**       | `r=16`, `lora_dropout=0.1`, `bias="none"`                     |
+
+
+### Text Classification Datasets
+
+Text classification datasets: [https://huggingface.co/datasets?sort=trending](https://huggingface.co/datasets?sort=trending)
+
+| **Dataset**         | **Task Type**                 | **Size**  | **Labels**                             | **Notes**                                             | **Recommended For**                                 |
+|---------------------|-------------------------------|-----------|-----------------------------------------|--------------------------------------------------------|------------------------------------------------------|
+| `emotion`           | Multi-class classification     | ~20k      | joy, sadness, anger, etc. (6 total)     | Ideal, well-balanced, short tweets                     | LoRA, GPT-2, fast training, short texts              |
+| `sst2`              | Binary sentiment               | ~70k      | positive, negative                      | Simple, standard GLUE task                             | Binary sentiment, quick experiments                  |
+| `ag_news`           | News topic classification      | ~120k     | world, sports, business, sci/tech       | Four-class news categorization                         | Topic classification, balanced set                   |
+| `tweet_eval`        | Multiple subtasks              | varies    | depends on subtask                      | Includes subtasks like `emotion`, `hate`, `irony`      | Task-specific classification experiments             |
+| `imdb`              | Binary sentiment               | ~50k      | positive, negative                      | Long-form movie reviews                                | Binary classification, movie review benchmarks       |
+| `sms_spam`          | Binary spam classification     | ~5.5k     | spam, ham                               | Small, fast-to-train, classic spam dataset             | Spam filtering, ideal for LoRA + small models        |
+| `yelp_polarity`     | Binary sentiment               | ~560k     | positive, negative                      | Scalable sentiment task                                | Large-scale fine-tuning, slower without GPU          |
+| `yelp_review_full`  | Multi-class (1–5 star rating)  | ~650k     | 1, 2, 3, 4, 5 stars                     | Fine-grained sentiment, longer texts                   | Requires compute; great for rating prediction tasks  |
+
+
+### Useful Links
+
+- [Hugging Face PEFT configuration](https://huggingface.co/docs/peft/package_reference/config)
+- [Hugging Face LoRA adapter](https://huggingface.co/docs/peft/package_reference/lora)
+- [Hugging Face Models save_pretrained](https://huggingface.co/docs/transformers/main/en/main_classes/model#transformers.PreTrainedModel.save_pretrained)
+- [Hugging Face Text Generation](https://huggingface.co/docs/transformers/main_classes/text_generation)
+- [Image classification using LoRA](https://huggingface.co/docs/peft/main/en/task_guides/image_classification_lora)
+- [Semantic segmentation using LoRA](https://huggingface.co/docs/peft/main/en/task_guides/semantic_segmentation_lora)
 
 ## Project Requirements
 
-- [ ] Load a pretrained HF model.
+- [ ] Load a pretrained HF model: Sequence classification
 - [ ] Load and preprocess a dataset; a subset of the full dataset can be used.
 - [ ] Evaluate the pretrained model; at least one classification metric.
-- [ ] Create a PEFT model.
+- [ ] Create a PEFT model; use LoRA or another method
 - [ ] Train the PEFT model.
 - [ ] Save the PEFT model.
 - [ ] Load the saved PEFT model.
@@ -1125,3 +1506,4 @@ Ideas to extend the project:
 - [ ] Try using our own dataset.
 - [ ] Export the PEFT model as ONNX.
 - [ ] Prepare an inference interface for production.
+- [ ] User Tensorboard for logging.
