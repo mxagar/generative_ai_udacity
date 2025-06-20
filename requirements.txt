@@ -1092,6 +1092,7 @@ tornado==6.5.1
     #   terminado
 tqdm==4.67.1
     # via
+    #   -r requirements.in
     #   bert-score
     #   chromadb
     #   colbert-ai

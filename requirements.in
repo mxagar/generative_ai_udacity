@@ -46,6 +46,7 @@ torch
 torchaudio
 torchtext
 torchvision
+tqdm
 transformers
 transformers[torch]
 wheel
