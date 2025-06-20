@@ -1544,7 +1544,7 @@ Text classification datasets: [https://huggingface.co/datasets?sort=trending](ht
 
 Notebooks:
 
-- Guide: [project/peft_howto.ipynb](./project/peft_howto.ipynb)
+- **Guide, very important (summary of module): [project/peft_howto.ipynb](./project/peft_howto.ipynb)**
 - Project: [mxagar/llm_peft_fine_tuning_example](https://github.com/mxagar/llm_peft_fine_tuning_example)
 
 ## Project Requirements
