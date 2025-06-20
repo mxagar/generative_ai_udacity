@@ -1213,7 +1213,7 @@ print(tokenizer.batch_decode(outputs))
 
 ### -- Merging/Unmerging the adapter weights
 
-# Merge/Unmerge adpater weights to base model
+# Merge/Unmerge adapter weights to base model
 # BUT the adapter weights remain in memory, so we can unmerge them
 lora_model.merge_adapter()
 lora_model.unmerge_adapter()
