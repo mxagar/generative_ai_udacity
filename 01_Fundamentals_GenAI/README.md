@@ -67,7 +67,7 @@ Overview of Contents:
     - [Text Classification Datasets](#text-classification-datasets)
     - [Useful Links](#useful-links)
     - [Notebooks](#notebooks)
-  - [Project Requirements](#project-requirements)
+    - [Project Requirements](#project-requirements)
 
 
 ## 1. Introduction to Generative AI
@@ -1547,7 +1547,7 @@ Notebooks:
 - **Guide, very important (summary of module): [project/peft_howto.ipynb](./project/peft_howto.ipynb)**
 - Project: [mxagar/llm_peft_fine_tuning_example](https://github.com/mxagar/llm_peft_fine_tuning_example)
 
-## Project Requirements
+### Project Requirements
 
 - [x] Load a pretrained HF model: Sequence classification
 - [x] Load and preprocess a dataset; a subset of the full dataset can be used.
