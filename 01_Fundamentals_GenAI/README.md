@@ -1549,20 +1549,20 @@ Notebooks:
 
 ## Project Requirements
 
-- [ ] Load a pretrained HF model: Sequence classification
-- [ ] Load and preprocess a dataset; a subset of the full dataset can be used.
-- [ ] Evaluate the pretrained model; at least one classification metric.
-- [ ] Create a PEFT model; use LoRA or another method
-- [ ] Train the PEFT model.
-- [ ] Save the PEFT model.
-- [ ] Load the saved PEFT model.
-- [ ] Evaluate the fine-tuned model.
+- [x] Load a pretrained HF model: Sequence classification
+- [x] Load and preprocess a dataset; a subset of the full dataset can be used.
+- [x] Evaluate the pretrained model; at least one classification metric.
+- [x] Create a PEFT model; use LoRA or another method
+- [x] Train the PEFT model.
+- [x] Save the PEFT model.
+- [x] Load the saved PEFT model.
+- [x] Evaluate the fine-tuned model.
 
 Ideas to extend the project:
 
-- [ ] Try using the `bitsandbytes` package to combine quantization and LoRA. This is also known as QLoRA.
+- [x] Try using the `bitsandbytes` package to combine quantization and LoRA. This is also known as QLoRA.
 - [ ] Try training the model using different PEFT configurations and compare the results.
 - [ ] Try using our own dataset.
-- [ ] Export the PEFT model as ONNX.
-- [ ] Prepare an inference interface for production.
-- [ ] User Tensorboard for logging.
+- [x] Export the PEFT model as ONNX.
+- [x] Prepare an inference interface for production.
+- [x] User Tensorboard for logging.
