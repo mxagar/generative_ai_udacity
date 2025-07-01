@@ -68,6 +68,7 @@ Overview of Contents:
     - [Useful Links](#useful-links)
     - [Notebooks](#notebooks)
     - [Project Requirements](#project-requirements)
+    - [Reviewer Links, Papers](#reviewer-links-papers)
 
 
 ## 1. Introduction to Generative AI
@@ -1566,3 +1567,16 @@ Ideas to extend the project:
 - [x] Export the PEFT model as ONNX.
 - [x] Prepare an inference interface for production.
 - [x] User Tensorboard for logging.
+
+### Reviewer Links, Papers
+
+- [An Empirical Investigation of Catastrophic Forgetting in Gradient-Based Neural Networks](https://arxiv.org/abs/1312.6211)
+- [8 Tactics to Combat Imbalanced Classes in Your Machine Learning Dataset](https://machinelearningmastery.com/tactics-to-combat-imbalanced-classes-in-your-machine-learning-dataset/)
+- [Parameter-Efficient Fine-Tuning Methods for Pretrained Language Models: A Critical Review and Assessment](https://arxiv.org/abs/2312.12148)
+- [Parameter-efficient Fine-tuning (PEFT): Overview, benefits, techniques and model training](https://www.leewayhertz.com/parameter-efficient-fine-tuning/)
+- [A Prompt Pattern Catalog to Enhance Prompt Engineering with ChatGPT](https://arxiv.org/abs/2302.11382)
+- [ChatGPT Prompt Patterns for Improving Code Quality, Refactoring, Requirements Elicitation, and Software Design](https://arxiv.org/abs/2303.07839)
+- [Chain-of-Thought Prompting Elicits Reasoning in Large Language Models](https://arxiv.org/abs/2201.11903)
+- [ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629)
+- [Amazon: What are Foundation Models?](https://aws.amazon.com/what-is/foundation-models/)
+- [NVIDIA: What Are Foundation Models?](https://blogs.nvidia.com/blog/what-are-foundation-models/)
