@@ -50,6 +50,7 @@ See my additional notes in [mxagar/nlp_with_transformers_nbs](https://github.com
     - Masked words need to be predicted during training
     - A classification head is added to the encoder output
     - The training is bidirectional because we have one/several masked words in a sequence and we need to attend both the previous and posterior words/tokens for each masked token.
+    - The training process is called *masked language modeling*.
     - Only 15% of the words are used for training, but the model performs well in downstream discriminative tasks: classification, etc.
   - GPT: Decoder-only
     - The next word is masked
@@ -63,8 +64,35 @@ See my additional notes in [mxagar/nlp_with_transformers_nbs](https://github.com
 
 ![Decoder Model](./assets/decoder_only.jpg)
 
+Links:
+
+- [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
+- **[The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)**
+- **[The Annotated Transformer](https://nlp.seas.harvard.edu/annotated-transformer/)**
+- [BERT](https://arxiv.org/abs/1810.04805)
+- [GPT](https://openai.com/index/language-unsupervised/)
+
 ### Completion vs. Instruction Models
 
+Basic Generative models perform *text completion*: they predict successively the next word/token and the text is completed.
+Example use cases:
+
+- Finish emails
+- Fill in forms
+- etc.
+
+We can adapt those generative models to *instruction following*, so that we instruct them to perform a task and they carry it out (e.g., ChatGPT).
+Example use cases:
+
+- Translate
+- Extract information
+- Summarize
+- etc.
+
+Links:
+
+- [Training language models to follow instructions with human feedback](https://arxiv.org/abs/2203.02155)
+- [Instruction Tuning for Large Language Models: A Survey](https://arxiv.org/abs/2308.10792)
 
 ## 2. NLP Fundamentals
 
