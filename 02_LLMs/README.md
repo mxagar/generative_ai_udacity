@@ -29,6 +29,7 @@ Overview of Contents:
     - [Open vs. Closed Models](#open-vs-closed-models)
     - [OpenAI Keys](#openai-keys)
     - [Exercise: Chatbot Memory](#exercise-chatbot-memory)
+    - [LLM Limitations](#llm-limitations)
   - [2. NLP Fundamentals](#2-nlp-fundamentals)
   - [3. Transformers and Attention Mechanism](#3-transformers-and-attention-mechanism)
   - [4. Retrieval Augmented Generation](#4-retrieval-augmented-generation)
@@ -221,7 +222,7 @@ We can control the weights of open models, but often their performance is not as
 
 We have 5 USD for OpenAI usage via [Vocareum](https://www.vocareum.com/).
 
-Our budget can be checked in the `Cloud resources` tab.
+Our budget can be checked in the `Cloud Resources` tab.
 
 ```python
 import os
@@ -242,7 +243,55 @@ client = OpenAI(
 
 ### Exercise: Chatbot Memory
 
+Notebook: [`lab/chatbot_memory_management.ipynb`](./lab/chatbot_memory_management.ipynb).
 
+The new OpenAI completions interface was missing, so I updated it.
+
+Key contents:
+
+- **Implements a chatbot with memory**: The notebook builds a conversational agent that keeps track of conversation history across multiple turns.
+- **Manages the attention window**: It demonstrates strategies to truncate conversation history dynamically to avoid exceeding the model's token limit.
+- **Uses OpenAI GPT models via `OpenAI.chat.completions.create` API**
+- **Provides truncation strategies**: Includes two truncation modes: 
+  - Simple truncation (dropping oldest messages) 
+  - and more selective truncation (removing the oldest user/assistant exchanges while preserving the system prompt).
+- **Includes error handling and retry logic**: When prompts exceed the model's capacity, the code captures errors, adjusts the prompt, and retries until successful.
+
+Insights:
+
+- **Memory management is essential** when building chatbots that preserve context—without truncation, prompts will eventually exceed token limits.
+- **Different truncation strategies** have different trade-offs: simpler approaches are easier to implement, while more sophisticated ones better preserve important context.
+- **Clear separation of system prompts, user inputs, and model responses** improves maintainability and interpretability of conversation history.
+
+Caveat: In the notebook, the conversation is flattened to a single string which contains the entire conversation history. That was necessary in the old API, but now it's possible to pass a list of messages, without any flattening:
+
+```python
+messages=[
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "Hello, how are you?"},
+    {"role": "assistant", "content": "I'm fine, how can I help?"},
+    {"role": "user", "content": "Tell me a joke."}
+]
+```
+
+### LLM Limitations
+
+Recall what LLMs do: They predict the next token/word probabilities (`y`) given the input sequence (`x`) and the constant model weights (`theta`):
+
+    p(y|x, theta)
+
+Therefore: The more specific and rich the input `x` the more the model will rely on it, otherwise the more will it rely on its weights.
+
+Challenging tasks:
+
+- Avoiding hallucinations
+- Repeating/using difficult to tokenize texts, such as URLs 
+- Maths problems
+
+Approaches to overcome these limitations:
+
+- Rich context
+- Using tools: calculators, etc.
 
 ## 2. NLP Fundamentals
 
