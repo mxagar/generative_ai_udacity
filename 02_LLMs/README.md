@@ -27,6 +27,8 @@ Overview of Contents:
     - [Prompts](#prompts)
     - [Demo: Prompts Using Chain-of-Thought](#demo-prompts-using-chain-of-thought)
     - [Open vs. Closed Models](#open-vs-closed-models)
+    - [OpenAI Keys](#openai-keys)
+    - [Exercise: Chatbot Memory](#exercise-chatbot-memory)
   - [2. NLP Fundamentals](#2-nlp-fundamentals)
   - [3. Transformers and Attention Mechanism](#3-transformers-and-attention-mechanism)
   - [4. Retrieval Augmented Generation](#4-retrieval-augmented-generation)
@@ -177,6 +179,16 @@ The prompt is composed by several parts:
   - Giving some examples
   - etc.
 
+```python
+[
+  {"role": "system", "content": "You are an AI assistant..."},  # system prompt
+  {"role": "user", "content": "Can you..."},  # chat history
+  {"role": "assistant", "content": "Sure..."},  # chat history
+  {"role": "user", "content": "Why did you..."},  # user prompt
+  
+]
+```
+
 ### Demo: Prompts Using Chain-of-Thought
 
 Create an account at [https://api.together.xyz/](https://api.together.xyz/).
@@ -201,6 +213,36 @@ Links (mainly on Chain-of-Thought):
 - [Gemini: A Family of Highly Capable Multimodal Models](https://arxiv.org/abs/2312.11805)
 
 ### Open vs. Closed Models
+
+Closed models are like black boxes, accessed via API.
+We can control the weights of open models, but often their performance is not as good as the one of the closed models.
+
+### OpenAI Keys
+
+We have 5 USD for OpenAI usage via [Vocareum](https://www.vocareum.com/).
+
+Our budget can be checked in the `Cloud resources` tab.
+
+```python
+import os
+from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv(".env", override=True)
+# Set a .env file with the credentials
+# OPENAI_API_KEY=xxx
+# OPENAI_BASE_URL=https://openai.vocareum.com/v1
+# OPENAI_BASE_URL=https://api.openai.com/v1
+
+client = OpenAI(
+    base_url = os.getenv("OPENAI_BASE_URL"),
+    api_key = os.getenv("OPENAI_API_KEY"),
+)
+```
+
+### Exercise: Chatbot Memory
+
+
 
 ## 2. NLP Fundamentals
 
