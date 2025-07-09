@@ -31,6 +31,8 @@ Overview of Contents:
     - [Exercise: Chatbot Memory](#exercise-chatbot-memory)
     - [LLM Limitations](#llm-limitations)
   - [2. NLP Fundamentals](#2-nlp-fundamentals)
+    - [Introduction](#introduction)
+    - [Encoding Text: Tokenization and Embeddings](#encoding-text-tokenization-and-embeddings)
   - [3. Transformers and Attention Mechanism](#3-transformers-and-attention-mechanism)
   - [4. Retrieval Augmented Generation](#4-retrieval-augmented-generation)
   - [5. Build Custom Datasets for LLMs](#5-build-custom-datasets-for-llms)
@@ -295,9 +297,133 @@ Approaches to overcome these limitations:
 
 ## 2. NLP Fundamentals
 
-TBD.
+I knew already many concepts, so I just collect the concept names/topics.
 
-:construction:
+For a deeper explanation of them, see:
+
+- [mxagar/nlp_guide](https://github.com/mxagar/nlp_guide)
+- [mxagar/nlp_with_transformers_nbs](https://github.com/mxagar/nlp_with_transformers_nbs)
+
+### Introduction
+
+Key ideas:
+
+- NLP = Natural Language Processing
+- Natural Language: ambiguity is a feature, in contrast to structured languages (e.g., programming languages).
+- NLP applications
+  - Speech recognition
+  - Text classification
+  - Machine language translation
+  - Text summarization: extractive vs. abstractive summaries
+  - QA: Question-Answering (similar to summarization), also extractive and/or abstractive
+  - Chatbots, conversational agents
+- Challenges in NLP
+  - Relies on context
+  - Nuanced: idioms, sarcasm
+  - Ambiguity, references within the text
+  - Misspelling
+  - Biases
+  - Labeling
+
+### Encoding Text: Tokenization and Embeddings
+
+Key ideas:
+
+- Tokenization and embeddings are used to encode text
+  - Tokens: unitary and discrete chunks
+  - Embeddings: continuous vectors which encode meaning and context
+- Tokenization steps
+  - Normalization: clean, lowercase, remove punctualization, etc. We can decide the degree
+  - Pretokenization: split by spaces, i.e., we words and symbols
+  - Tokenization: split words and symbols into tokens (sub-word tokenization)
+  - Postprocessing
+- HuggingFace tokenizer: see usage in notebook and code summary below.
+  - Encoding and decoding: words <-> tokens <-> ids
+  - Maximum model length: 512 (tokens) for BERT
+  - Special tokens: unknown, B/EOS, padding, classification, etc.
+- Embeddings
+  - Vectorization methods: Bag-of-words, one-hot encoding, TF-IDF
+    - All of these lack of meaning capturing, context awareness
+  - Embeddings are vectors which capture meaning: similar tokens have similar vectors
+    - We can perform math operations with meanings!
+
+![Tokenization and Embeddings](./assets/tokenization_embeddings.jpg)
+
+![Embeddings Operations](./assets/embeddings_operations.jpeg)
+
+Notebooks: 
+
+- [`lab/hugging-face-tokenizer.ipynb`](./lab/hugging-face-tokenizer.ipynb)
+- [`lab/hugging-face-tokenizer-properties.ipynb`](./lab/hugging-face-tokenizer-properties.ipynb)
+
+**HuggingFace Tokenizer** code summary:
+
+```python
+# Choose & download a pretrained tokenizer to use
+# BERT (encoder-only) and CASED: it cares about capitalization
+my_tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
+
+# Simple method getting tokens from text
+raw_text = '''Rory's shoes are magenta and so are Corey's but they aren't nearly as dark!'''
+tokens = my_tokenizer.tokenize(raw_text)
+print(tokens)
+# Sub-word tokenization: words are split into sub-words
+# In the case of the BERT tokenizer, the successive split parts are prefixed with '##'
+# ['Rory', "'", 's', 'shoes', 'are', 'mage', '##nta', 'and', 'so', 'are', 'Corey', "'", 's', 'but', 'they', 'aren', "'", 't', 'nearly', 'as', 'dark', '!']
+
+# This method also returns special tokens depending on the pretrained tokenizer
+# Special tokens are used to mark the beginning and end of a sequence, etc.
+# BERT uses [CLS] for the start of a sequence and [SEP] for the end
+# [UNK] is used for unknown tokens or words/tokens out-of-vocabulary (e.g., often emojis)
+detailed_tokens = my_tokenizer(raw_text).tokens()
+print(detailed_tokens)
+# ['[CLS]', 'Rory', "'", 's', 'shoes', 'are', 'mage', '##nta', 'and', ..., [SEP]']
+
+# Way to get tokens as integer IDs
+print(my_tokenizer.encode(raw_text))
+# [101, 14845, 112, 188, 5743, 1132, 27595, 13130, 1105, 1177, 1132, 19521, 112, 188, 1133, 1152, 4597, 112, 189, 2212, 1112, 1843, 106, 102]
+
+# Tokenizer method to get the IDs if we already have the tokens as strings
+detailed_ids = my_tokenizer.convert_tokens_to_ids(detailed_tokens)
+print(detailed_ids)
+# [101, 14845, 112, 188, 5743, 1132, 27595, 13130, 1105, 1177, 1132, 19521, 112, 188, 1133, 1152, 4597, 112, 189, 2212, 1112, 1843, 106, 102]
+
+# Returns an object that has a few different keys available
+# It returns a dictionary/object
+my_tokenizer(raw_text)
+# {'input_ids': [101, 14845, 112, 188, ...], 'token_type_ids': [0, 0, 0, 0, ...], 'attention_mask': [1, 1, 1, 1, ...]}
+
+# Typical call:
+print(my_tokenizer(raw_text).input_ids)
+# [101, 14845, 112, 188, ...]
+
+# Integer IDs for tokens
+ids = my_tokenizer.encode(raw_text)
+# The inverse of the .encode() method: .decode()
+my_tokenizer.decode(ids)
+# "[CLS] Rory ' s shoes are magenta and so are Corey ' s but they aren ' t nearly as dark! [SEP]"
+
+# To ignore special tokens (depending on pretrained tokenizer)
+my_tokenizer.decode(ids, skip_special_tokens=True)
+# "Rory ' s shoes are magenta and so are Corey ' s but they aren ' t nearly as dark!"
+
+# List of tokens as strings instead of one long string
+my_tokenizer.convert_ids_to_tokens(ids)
+# ['[CLS]', 'Rory', "'", 's', 'shoes', ...
+
+# tokenizer.model_max_length: the maximum amount of tokens that the tokenizer/model takes per input
+my_tokenizer.model_max_length # 512
+
+# tokenizer.all_special_tokens: the special tokens used by the tokenizer
+my_tokenizer.all_special_tokens # ['[UNK]', '[SEP]', '[PAD]', '[CLS]', '[MASK]']
+
+# tokenizer.unk_token: the unknown token used by the tokenizer
+# tokenizer.bos_token: the beginning of sequence token used by the tokenizer
+# tokenizer.eos_token: the end of sequence token used by the tokenizer
+# tokenizer.pad_token: the padding token used by the tokenizer
+# tokenizer.cls_token: the classification token (aka. class of input) used by the tokenizer
+my_tokenizer.unk_token # '[UNK]'
+```
 
 ## 3. Transformers and Attention Mechanism
 
