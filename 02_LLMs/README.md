@@ -33,6 +33,8 @@ Overview of Contents:
   - [2. NLP Fundamentals](#2-nlp-fundamentals)
     - [Introduction](#introduction)
     - [Encoding Text: Tokenization and Embeddings](#encoding-text-tokenization-and-embeddings)
+      - [Exercise: Encoding Text](#exercise-encoding-text)
+    - [NLP Models](#nlp-models)
   - [3. Transformers and Attention Mechanism](#3-transformers-and-attention-mechanism)
   - [4. Retrieval Augmented Generation](#4-retrieval-augmented-generation)
   - [5. Build Custom Datasets for LLMs](#5-build-custom-datasets-for-llms)
@@ -336,7 +338,7 @@ Key ideas:
   - Normalization: clean, lowercase, remove punctualization, etc. We can decide the degree
   - Pretokenization: split by spaces, i.e., we words and symbols
   - Tokenization: split words and symbols into tokens (sub-word tokenization)
-  - Postprocessing
+  - Postprocessing: adding special symbols, as B/EOS, etc.
 - HuggingFace tokenizer: see usage in notebook and code summary below.
   - Encoding and decoding: words <-> tokens <-> ids
   - Maximum model length: 512 (tokens) for BERT
@@ -424,6 +426,25 @@ my_tokenizer.all_special_tokens # ['[UNK]', '[SEP]', '[PAD]', '[CLS]', '[MASK]']
 # tokenizer.cls_token: the classification token (aka. class of input) used by the tokenizer
 my_tokenizer.unk_token # '[UNK]'
 ```
+
+#### Exercise: Encoding Text
+
+Notebook: [`lab/encoding.ipynb`](./lab/encoding.ipynb)
+
+A simple tokenizer is built manually, following the 4 typical steps: normalization, pretokenization, tokenization, postprocessing.
+However, note that tokenizers usually are trained on corpora to learn efficient splitting nowadays.
+
+Notebook contents:
+
+* **Normalization Step**: Text is first normalized (e.g., lowercased, cleaned) to ensure consistent input before splitting.
+* **Pre-tokenization**: The normalized text is split into basic units, typically by whitespace or punctuation.
+* **Tokenization**: These units are converted into integer IDs or tokens, defining the core encoding.
+* **Postprocessing**: Additional processing, such as adding special tokens (like `[CLS]` and `[SEP]`), finalizes the encoded sequence.
+* **Decoding**: In addition to encoding, decoding is also implemented.
+
+### NLP Models
+
+
 
 ## 3. Transformers and Attention Mechanism
 
