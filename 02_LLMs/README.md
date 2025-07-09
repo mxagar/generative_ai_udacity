@@ -479,29 +479,55 @@ Key ideas:
 
 Notebook: [`lab/text-generation.ipynb`](./lab/text-generation.ipynb).
 
-**Part 1: Character-based Text Generation:**
+The notebook has two parts and it uses a [`helper.py`](./lab/helper.py) file, which contains:
 
-* Loads the Shakespeare corpus and uses **`encode_text()`** to convert characters into integer IDs (character-level encoding).
-* Initializes **`TokenMapping`** for character-level vocabulary, mapping each unique character to an integer.
-* Creates **`ShakespeareDataset`** to generate training sequences, where each input sequence corresponds to the target sequence shifted by one character.
-* Builds a model with **`build_model()`**, which uses:
-  * an embedding layer sized to the character vocabulary,
-  * a GRU recurrent layer,
-  * and a linear output layer projecting to the character logits.
-* Trains the model using cross-entropy loss over multiple epochs.
-* Defines **`next_token()`** to sample the next character, using temperature scaling and optional top-k filtering.
-* Generates character-level text by repeatedly predicting and appending characters.
+* Class `TokenMapping`: Stores token–ID mappings:
+  * `id2token`: list mapping indices to tokens
+  * `token2id`: dict mapping tokens to indices
+  * `__len__`: returns vocabulary size
+  * `decode(ids)`: converts a list of IDs back to text tokens
+  * `encode(tokens)`: converts tokens into IDs
 
-**Part 2: Subword Text Generation:**
+* Class `ShakespeareDataset`: PyTorch `Dataset` for preparing training data
 
-* Imports and uses a pretrained **Byte Pair Encoding (BPE) tokenizer** from the `tokenizers` library (e.g., **`ByteLevelBPETokenizer`**) instead of character-level encoding.
-* The tokenizer is trained on the Shakespeare text to learn subword units (common character sequences).
-* Uses **`encode_text()`** with the BPE tokenizer to encode the corpus into subword IDs.
-* Initializes **`TokenMapping`** to manage subword IDs and token lookup.
-* Re-creates **`ShakespeareDataset`** with subword sequences.
-* Builds a new model with **`build_model()`**, configured to handle the larger subword vocabulary.
-* Trains the model similarly to the character-based model but now predicting subword tokens.
-* Generates text at the subword level using **`next_token()`**, decoding the generated sequence into text via the tokenizer’s `.decode()` method.
+* Function `encode_text(text, mapping=None)`: Encodes text into numeric IDs
+  * If `mapping` is provided: Splits text into tokens (for subword) and converts tokens to IDs
+  * If no mapping, it returns list of characters (character-level)
+
+* Function `build_model(vocab_size, embed_dim, rnn_units)`: Builds a PyTorch model for text generation:
+  * Embedding layer
+  * GRU recurrent layer
+  * Linear layer projecting to logits
+
+* Function `next_token(logits, temperature=1.0, top_k=None)`: Samples the next token index:
+  * Applies temperature scaling
+  * Optionally applies top-k sampling
+
+Concerning the two parts of the notebook:
+
+- Part 1: Character-based Text Generation:
+
+  * Loads the Shakespeare corpus and uses **`encode_text()`** to convert characters into integer IDs (character-level encoding).
+  * Initializes **`TokenMapping`** for character-level vocabulary, mapping each unique character to an integer.
+  * Creates **`ShakespeareDataset`** to generate training sequences, where each input sequence corresponds to the target sequence shifted by one character.
+  * Builds a model with **`build_model()`**, which uses:
+    * an embedding layer sized to the character vocabulary,
+    * a GRU recurrent layer,
+    * and a linear output layer projecting to the character logits.
+  * Trains the model using cross-entropy loss over multiple epochs.
+  * Defines **`next_token()`** to sample the next character, using temperature scaling and optional top-k filtering.
+  * Generates character-level text by repeatedly predicting and appending characters.
+
+- Part 2: Subword Text Generation:
+
+  * Imports and uses a pretrained **Byte Pair Encoding (BPE) tokenizer** from the `tokenizers` library (e.g., **`ByteLevelBPETokenizer`**) instead of character-level encoding.
+  * The tokenizer is trained on the Shakespeare text to learn subword units (common character sequences).
+  * Uses **`encode_text()`** with the BPE tokenizer to encode the corpus into subword IDs.
+  * Initializes **`TokenMapping`** to manage subword IDs and token lookup.
+  * Re-creates **`ShakespeareDataset`** with subword sequences.
+  * Builds a new model with **`build_model()`**, configured to handle the larger subword vocabulary.
+  * Trains the model similarly to the character-based model but now predicting subword tokens.
+  * Generates text at the subword level using **`next_token()`**, decoding the generated sequence into text via the tokenizer’s `.decode()` method.
 
 
 ## 3. Transformers and Attention Mechanism
