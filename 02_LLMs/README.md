@@ -38,6 +38,7 @@ Overview of Contents:
       - [Exercise: Text Generation](#exercise-text-generation)
   - [3. Transformers and Attention Mechanism](#3-transformers-and-attention-mechanism)
     - [Introduction](#introduction-1)
+    - [Attention](#attention)
   - [4. Retrieval Augmented Generation](#4-retrieval-augmented-generation)
   - [5. Build Custom Datasets for LLMs](#5-build-custom-datasets-for-llms)
   - [6. Project: Build Your Own Custom Chatbot](#6-project-build-your-own-custom-chatbot)
@@ -538,6 +539,7 @@ I knew already many concepts, so I just collect the concept names/topics.
 For a deeper explanation of them, see:
 
 - [mxagar/nlp_with_transformers_nbs](https://github.com/mxagar/nlp_with_transformers_nbs)
+- [mxagar/generative_ai_book](https://github.com/mxagar/generative_ai_book)
 - [mxagar/deep_learning_udacity/04_RNN](https://github.com/mxagar/deep_learning_udacity/blob/main/04_RNN/DLND_RNNs.md)
 - [mxagar/computer_vision_udacity/03_Advanced_CV_and_DL](https://github.com/mxagar/computer_vision_udacity/blob/main/03_Advanced_CV_and_DL/CVND_Advanced_CV_and_DL.md#3-recursive-neural-networks-rnn)
 
@@ -551,6 +553,32 @@ For a deeper explanation of them, see:
   - LSTMs were used
 - [Attention Paper: Neural Machine Translation by Jointly Learning to Align and Translate, 2014](https://arxiv.org/abs/1409.0473)
   - > Instead of relying on a single context vector, attention allowed the model to combine all of the encoder's hidden states to become its context vector.
+
+### Attention
+
+Attention is related to three values/concepts that have been around for decades in databases:
+
+-	Query: what we are looking for
+-	Key: an index or identifier against which we compare the query
+-	Value: the data retrieved using the key
+
+This metaphor is used in attention mechanisms to build a contextualized representation of each token:
+
+-	We compute similarity scores (dot products) between the Query and each Key.
+-	We apply softmax to transform these scores into a probability distribution (attention weights).
+-	We compute the weighted sum of the Values using these weights; this becomes the **contextualized vector**.
+
+![Attention](./assets/attention_definition.png)
+
+![Attention Computation](./assets/attention_softmax.png)
+
+There are at least 3 ways of computing attention:
+
+- Multiplicative: also called dot-product attention (Luong), fast and widely used (e.g., BERT).
+- Additive: also called Bahdanau attention, combines learned projections and non-linearities (e.g., tanh) to compute scores; it supports variable-length inputs and is particularly good for alignment in sequence-to-sequence models like translation.
+- General: a more flexible variant that learns a weight matrix to project Queries and Keys to the same dimension; more expressive than multiplicative but still faster than additive.
+
+![Types of Attention](./assets/attention_types.png)
 
 ## 4. Retrieval Augmented Generation
 
