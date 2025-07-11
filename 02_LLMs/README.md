@@ -37,6 +37,7 @@ Overview of Contents:
     - [NLP Models for Sequences](#nlp-models-for-sequences)
       - [Exercise: Text Generation](#exercise-text-generation)
   - [3. Transformers and Attention Mechanism](#3-transformers-and-attention-mechanism)
+    - [Introduction](#introduction-1)
   - [4. Retrieval Augmented Generation](#4-retrieval-augmented-generation)
   - [5. Build Custom Datasets for LLMs](#5-build-custom-datasets-for-llms)
   - [6. Project: Build Your Own Custom Chatbot](#6-project-build-your-own-custom-chatbot)
@@ -532,9 +533,24 @@ Concerning the two parts of the notebook:
 
 ## 3. Transformers and Attention Mechanism
 
-TBD.
+I knew already many concepts, so I just collect the concept names/topics.
 
-:construction:
+For a deeper explanation of them, see:
+
+- [mxagar/nlp_with_transformers_nbs](https://github.com/mxagar/nlp_with_transformers_nbs)
+- [mxagar/deep_learning_udacity/04_RNN](https://github.com/mxagar/deep_learning_udacity/blob/main/04_RNN/DLND_RNNs.md)
+- [mxagar/computer_vision_udacity/03_Advanced_CV_and_DL](https://github.com/mxagar/computer_vision_udacity/blob/main/03_Advanced_CV_and_DL/CVND_Advanced_CV_and_DL.md#3-recursive-neural-networks-rnn)
+
+### Introduction
+
+- Generative Text, Shift: RNNs -> Transformers
+- Generative Images, Shift: GANs -> Diffusion Models
+- RNNs and LSTMs
+- [ELMo Paper: Deep Contextualized Word Representations, 2018](https://aclanthology.org/N18-1202/)
+  - It creates contextual embeddings that could differentiate between the same word being used in different contexts.
+  - LSTMs were used
+- [Attention Paper: Neural Machine Translation by Jointly Learning to Align and Translate, 2014](https://arxiv.org/abs/1409.0473)
+  - > Instead of relying on a single context vector, attention allowed the model to combine all of the encoder's hidden states to become its context vector.
 
 ## 4. Retrieval Augmented Generation
 
