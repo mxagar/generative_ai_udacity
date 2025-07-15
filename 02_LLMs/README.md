@@ -39,6 +39,11 @@ Overview of Contents:
   - [3. Transformers and Attention Mechanism](#3-transformers-and-attention-mechanism)
     - [Introduction](#introduction-1)
     - [Attention](#attention)
+      - [Different Attention Mechanisms](#different-attention-mechanisms)
+      - [Issues and Solutions of Attention Mechanisms](#issues-and-solutions-of-attention-mechanisms)
+    - [BertViz to Investigate Bias](#bertviz-to-investigate-bias)
+    - [Exercise: Implement Self-Attention](#exercise-implement-self-attention)
+    - [Links and Papers](#links-and-papers)
   - [4. Retrieval Augmented Generation](#4-retrieval-augmented-generation)
   - [5. Build Custom Datasets for LLMs](#5-build-custom-datasets-for-llms)
   - [6. Project: Build Your Own Custom Chatbot](#6-project-build-your-own-custom-chatbot)
@@ -579,6 +584,87 @@ There are at least 3 ways of computing attention:
 - General: a more flexible variant that learns a weight matrix to project Queries and Keys to the same dimension; more expressive than multiplicative but still faster than additive.
 
 ![Types of Attention](./assets/attention_types.png)
+
+See my notes on the transformer anatomy for a detailed description of the blocks that use attention in the Transformer:
+
+[mxagar/nlp_with_transformers_nbs/chapter-3-transformer-anatomy](https://github.com/mxagar/nlp_with_transformers_nbs?tab=readme-ov-file#chapter-3-transformer-anatomy)
+
+![LLM Architecture Simplified](./assets/llm_simplified.png)
+
+![LLM Attention](./assets/llm_attention_architecture.png)
+
+- Embeddings (+ positional encoding) are projected to the tensors Q, K, V.
+- The Q, K, V tensors are used to compute the *contextualized vector* using attention; that's a single self-attention head.
+- There are several self-attention heads; their outputs are concatenated to form a multi-head attention layer.
+- Each block is a residual structure, so it is composed by a multi-head attention layer and also: normalization, linear mappings and two skip connections.
+- The encoder of a transformer has several blocks.
+
+```python
+def attention(query, key, value):
+    "Compute 'Scaled Dot Product Attention'"
+    d_k = query.size(-1)
+    scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
+    p_attn = scores.softmax(dim=-1)
+    return torch.matmul(p_attn, value)
+```
+
+#### Different Attention Mechanisms
+
+**Self-attention**: The embeddings projected to Q, K, V are the same.
+
+- We detect the relationships of the sequence elements wrt. each other
+- Matrix multiplication can be parallelized!
+- Interaction is O(1), but computation is O(n^2).
+
+**Multi-head attention**: same as self-attention, but we have several heads (each with their weights), and their outputs are concatenated.
+
+**Multi-query attention**: similar to multi-head, but we have multiple Qs, and only one K and V, shared.
+
+- Faster training.
+- Larger batches.
+- Used to scale to large LLMs (Llama 2).
+
+**Cross-attention**: Q is different to K and V. Used in the decoder; Q can come from a different source or even modality!
+
+#### Issues and Solutions of Attention Mechanisms
+
+- No notion of input order
+  - Solution: Positional encodings
+- There is no non-linearity between repeated self-attention layers; that's an issue because everything becomes like a single layer.
+  - Solution: a feed forward layer is added in-between.
+- By default, self-attention can look into the future when predicting a sequence.
+  - Solution: attention of future words/tokens is masked out during decoding
+
+### BertViz to Investigate Bias
+
+A short demo is done with [BertViz](https://github.com/jessevig/bertviz?tab=readme-ov-file#self-attention-models-bert-gpt-2-etc).
+
+BertViz helps visualize attention in transformer models.
+
+Video: [Using Bert To Detect Bias-Enhanced](https://www.youtube.com/watch?v=tSvn3RLDsrY). 
+
+Notebook: [lab/demo-using-bertviz-to-detect-bias-completed.ipynb](./lab/demo-using-bertviz-to-detect-bias-completed.ipynb):
+
+- Attention views are shown: Head view, Model view, Neuron view
+- The attention relationships of two sentences are compared to investigate bias even in models trained in unsupervised datasets:
+  - *The doctor asked the nurse a question. She*
+    - Layer 5 of GPT2: *She* attends to *nurse*.
+  - *The doctor asked the nurse a question. He*
+    - Layer 5 of GPT2: *He* attends to *The doctor*.
+- GPT2 seems to encoding some occupational bias in layer 5...
+
+### Exercise: Implement Self-Attention
+
+
+
+### Links and Papers
+
+- [A Decomposable Attention Model for Natural Language Inference](https://arxiv.org/abs/1606.01933v2)
+- [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
+- [Understanding Parameter Sharing in Transformers](https://arxiv.org/abs/2306.09380)
+- [Falcon](https://huggingface.co/docs/transformers/main/model_doc/falcon)
+- [Llama 2](https://huggingface.co/docs/transformers/model_doc/llama2)ç
+- [HiCLIP: Contrastive Language-Image Pretraining with Hierarchy-aware Attention](https://arxiv.org/abs/2303.02995)
 
 ## 4. Retrieval Augmented Generation
 
