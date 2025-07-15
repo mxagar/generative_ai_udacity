@@ -1,5 +1,6 @@
 jupyter
 jupyterlab
+ipywidgets
 matplotlib
 numpy
 pandas
@@ -7,6 +8,7 @@ pip
 requests
 accelerate
 autopep8
+bertviz
 bitsandbytes
 beautifulsoup4
 bert-score
