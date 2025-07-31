@@ -43,6 +43,8 @@ Overview of Contents:
       - [Issues and Solutions of Attention Mechanisms](#issues-and-solutions-of-attention-mechanisms)
     - [BertViz to Investigate Bias](#bertviz-to-investigate-bias)
     - [Exercise: Implement Self-Attention](#exercise-implement-self-attention)
+    - [Transformer Models](#transformer-models)
+    - [Exercise: Implement GPT](#exercise-implement-gpt)
     - [Links and Papers](#links-and-papers)
   - [4. Retrieval Augmented Generation](#4-retrieval-augmented-generation)
   - [5. Build Custom Datasets for LLMs](#5-build-custom-datasets-for-llms)
@@ -575,7 +577,7 @@ This metaphor is used in attention mechanisms to build a contextualized represen
 
 ![Attention](./assets/attention_definition.png)
 
-![Attention Computation](./assets/attention_softmax.png)
+![Attention Computation](./assets/attention_softmax.jpeg)
 
 There are at least 3 ways of computing attention:
 
@@ -655,7 +657,185 @@ Notebook: [lab/demo-using-bertviz-to-detect-bias-completed.ipynb](./lab/demo-usi
 
 ### Exercise: Implement Self-Attention
 
+Notebook: [lab/exercise-1-implement-self-attention-solution.ipynb](./lab/exercise-1-implement-self-attention-solution.ipynb)
 
+- A `MultiHeadSelfAttention` module is implemented in Pytorch, and tested with dummy embedding values.
+- This specific GPT implementation is heavily inspired by the [minGPT implementation](https://github.com/karpathy/minGPT) provided by [Andrej Karpathy](https://github.com/karpathy/).
+- Scaled multiplicative attention is used, as in the original paper.
+- One important part is the mask: a mask is applied to hide the future tokens in the sequence; otherwise, the GPT model would cheat.
+  - Masking is done filling the values with `float("-inf")`.
+- Thus, the encoder can have **multi-head attention** blocks, whereas the decoder has **MASKED multi-head attention** blocks.
+
+```python
+import math
+
+import torch
+import torch.nn as nn
+from torch.nn import functional as F
+
+
+class MultiHeadSelfAttention(nn.Module):
+    """A vanilla multi-head masked self-attention layer."""
+
+    def __init__(self, config):
+        super().__init__()
+        assert config.n_embd % config.n_head == 0
+
+        # key, query, value projections for all heads
+        self.key = nn.Linear(config.n_embd, config.n_embd)
+        self.query = nn.Linear(config.n_embd, config.n_embd)
+        self.value = nn.Linear(config.n_embd, config.n_embd)
+
+        # regularization
+        self.attn_drop = nn.Dropout(config.attn_pdrop)
+        self.resid_drop = nn.Dropout(config.resid_pdrop)
+
+        # output projection
+        self.proj = nn.Linear(config.n_embd, config.n_embd)
+
+        # causal mask to ensure that attention is only applied to the left in the input sequence
+        self.register_buffer(
+            "mask",
+            torch.tril(torch.ones(config.block_size, config.block_size)).view(
+                1, 1, config.block_size, config.block_size
+            ),
+        )
+        self.n_head = config.n_head
+
+    def forward(self, x):
+        """The forward pass for the multi-head masked self-attention layer.
+
+        In this exercise, we include lots of print statements and checks to help you
+        understand the code and the shapes of the tensors. When actually training
+        such a model you would not log this information to the console.
+        """
+
+        # batch size, sequence length (in tokens), embedding dimensionality (n_embd per token)
+        B, T, C = x.size()
+        hs = C // self.n_head  # head size
+
+        # print some debug information
+        print(f"batch size: {B}")
+        print(f"sequence length: {T}")
+        print(f"embedding dimensionality: {C}")
+        print(f"number of heads: {self.n_head}")
+        print(f"head size: {hs}")
+
+        # calculate query, key, values for all heads in batch and move head forward to be the batch dim
+        # resulting dims for k, q, and v are (B, n_head, T, hs)
+        k = self.key(x).view(B, T, self.n_head, hs).transpose(1, 2)
+        q = self.query(x).view(B, T, self.n_head, hs).transpose(1, 2)
+        v = self.value(x).view(B, T, self.n_head, hs).transpose(1, 2)
+
+        # multiply q and k_t matrices, then divide by the square root of d_k
+        print("=== Calculate MatrixMultiplication(Q, K_T) / sqrt(d_k) ===")
+
+        k_t = k.transpose(-2, -1)  # what is the shape of k_t?
+        d_k = k.size(-1)
+
+        # Matrix multiplication (hint: not "*")
+        att = q @ k_t / math.sqrt(d_k)
+
+        print(f"q.shape: {q.shape}")
+        print(f"k_t.shape: {k_t.shape}")
+        print(f"d_k: {d_k}")
+        print(f"att.shape: {att.shape}")
+
+        # set the mask fill value to negative infinity
+        print("=== Apply the attention mask ===")
+
+        masked_fill_value = float("-inf")
+
+        att = att.masked_fill(self.mask[:, :, :T, :T] == 0, masked_fill_value)
+
+        # Show the result of applying the mask
+        print(f"att: {att}")
+
+        # apply softmax
+        print("=== Softmax ===")
+
+        att = F.softmax(att, dim=-1)
+
+        att = self.attn_drop(att)
+
+        # Show the result of applying the softmax and check that
+        # the sum of the attention weights in each row is 1
+        print(f"att.shape: {att.shape}")
+        print(f"att: {att}")
+        print(f"att.sum(dim=-1): {att.sum(dim=-1)}")
+        att_rows_sum_to_one = all(
+            ((att.sum(dim=-1) - 1.0) ** 2 < 1e-6).flatten().tolist()
+        )
+        print(f"att_rows_sum_to_one: {att_rows_sum_to_one}")
+        if not att_rows_sum_to_one:
+            raise ValueError(
+                "Attention weight rows do not sum to 1. Perhaps the softmax dimension or masked_fill_value is not correct?"
+            )
+
+        # multiply att and v matrices
+        # (B, n_head, T, T) x (B, n_head, T, hs) -> (B, n_head, T, hs)
+        print("=== Calculate final attention ===")
+
+        y = att @ v
+
+        print(f"y.shape: {y.shape}")
+
+        # re-assemble all head outputs side by side
+        y = y.transpose(1, 2).contiguous().view(B, T, C)
+
+        # output projection
+        y = self.resid_drop(self.proj(y))
+        return y
+```
+
+
+### Transformer Models
+
+As already mentioned, there are 3 types of Transformer models:
+
+- Encoder-only, e,g., BERT
+- Encoder-Decoder, e.g., T5
+- Decoder-only, e.g., GPT
+
+In all of them the **multi-head attention block** introduced in [Attention](#attention) is used, however, these blocks are wrapped with some other layers:
+
+- Layer normalization: inputs/outputs are normalized to mean 0, std 1. This normalization can be pre-layer (original) or post-layer (most common nowadays).
+  - This allows for faster training.
+- Skip connections (aka. residual connections): previous embeddings (before transformations/updates) are added. These skip/residual connections
+  - Minimize the gradient vanishing problem.
+  - Enable deeper networks.
+  - Improve the optimization of the loss function.
+- Positional feed-forward layer: two linear/dense matrices (followed by a dropout) further transform the embeddings. Usually,
+  - the first transformation increases 4x the size of the embeddings
+  - and the second scales back the embeddings to their original size.
+
+![Transformer Architecture](./assets/transformer_paper_architecture.png)
+
+![Transformer Architecture Annotated](./assets/transformer_architecture_annotated.jpeg)
+
+![Skip Connections and Normalization](./assets/skip_connections_normalization.png)
+
+Also, consider *positional encoding* is added to the embeddings. Positional encoding can be:
+
+- Absolute; e.g., sinusoidal values: they allow inputs of various lengths, and were used in the original paper.
+- Learned positional encodings.
+- Others: active area of research.
+
+![Positional Encodings](./assets/positional_encodings.png)
+
+Links to papers:
+
+- [Paper: Learning Positional Embeddings for Coordinate-MLPs, 2021](https://arxiv.org/abs/2112.11577)
+- Transformers Paper:
+  - [Arxiv: Attention is All You Need](https://arxiv.org/abs/1706.03762)
+  - [PDF: Attention is All You Need](./assets/google_transformers_paper_2017.pdf)
+- [Paper: Improving Language Understanding by Generative Pre-Training](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf)
+- [Paper: ResNet, 2015](https://arxiv.org/abs/1512.03385)
+
+
+### Exercise: Implement GPT
+
+Notebook: [lab/exercise-2-create-your-own-gpt-model-solution.ipynb](./lab/exercise-2-create-your-own-gpt-model-solution.ipynb)
 
 ### Links and Papers
 
