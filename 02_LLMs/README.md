@@ -46,6 +46,9 @@ Overview of Contents:
     - [Transformer Models](#transformer-models)
     - [Training Objectives in Transformers](#training-objectives-in-transformers)
     - [Exercise: Implement GPT](#exercise-implement-gpt)
+    - [Transformers vs. LSTMs](#transformers-vs-lstms)
+    - [Transformer Applications](#transformer-applications)
+    - [Research Trends](#research-trends)
     - [Links and Papers](#links-and-papers)
   - [4. Retrieval Augmented Generation](#4-retrieval-augmented-generation)
   - [5. Build Custom Datasets for LLMs](#5-build-custom-datasets-for-llms)
@@ -826,16 +829,6 @@ Also, consider *positional encoding* is added to the embeddings. Positional enco
 
 ![Positional Encodings](./assets/positional_encodings.png)
 
-Links to papers:
-
-- [Paper: Learning Positional Embeddings for Coordinate-MLPs, 2021](https://arxiv.org/abs/2112.11577)
-- Transformers Paper:
-  - [Arxiv: Attention is All You Need](https://arxiv.org/abs/1706.03762)
-  - [PDF: Attention is All You Need](./assets/google_transformers_paper_2017.pdf)
-- [Paper: Improving Language Understanding by Generative Pre-Training](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf)
-- [Paper: ResNet, 2015](https://arxiv.org/abs/1512.03385)
-- [Paper: BERT, 2018](https://arxiv.org/abs/1810.04805)
-
 ### Training Objectives in Transformers
 
 Typical training strategies for transformers:
@@ -858,7 +851,35 @@ Those techniques are self-supervised techniques, i.e., we can work with *unlabel
 
 ### Exercise: Implement GPT
 
-Notebook: [lab/exercise-2-create-your-own-gpt-model-solution.ipynb](./lab/exercise-2-create-your-own-gpt-model-solution.ipynb)
+Code:
+
+- Notebook: [lab/exercise-2-create-your-own-gpt-model-solution.ipynb](./lab/exercise-2-create-your-own-gpt-model-solution.ipynb)
+- Module: [lab/common.py](./lab/common.py)
+
+> This specific GPT implementation is heavily inspired by the [minGPT implementation](https://github.com/karpathy/minGPT) provided by [Andrej Karpathy](https://github.com/karpathy/).
+
+Key contents:
+
+-	The notebook walks through the implementation of a simplified GPT model inspired by Karpathy’s minGPT, using PyTorch.
+-	It defines three core components for the model:
+  -	`MultiHeadSelfAttention` (imported from `common.py`)
+  -	`Block`, a Transformer block with residual connections and MLP
+  -	`GPT`, the full model with token/position embeddings, transformer blocks, and a generation method
+-	The GPT model includes a generate method to autoregressively generate sequences from a given prompt using temperature scaling and (optionally) top-k sampling.
+-	A simple toy dataset of addition problems like `111 + 222 = 3 + 30 + 300 = 333` is introduced, meant to train the model on learning symbolic addition in stages.
+-	The notebook concludes by verifying that the model can forward inputs and generate sequences without error, setting up for later training.
+
+### Transformers vs. LSTMs
+
+![Transformers vs. LSTMs](./assets/transformers-vs-rnns.jpeg)
+
+In summary, Transformers have many performance advantages over LSTMs; however, the *naive* **Self-Attention** mechanism is quadratic, i.e., all sequence tokens against all sequence tokens. That limits the input length.
+
+### Transformer Applications
+
+
+
+### Research Trends
 
 ### Links and Papers
 
@@ -868,6 +889,14 @@ Notebook: [lab/exercise-2-create-your-own-gpt-model-solution.ipynb](./lab/exerci
 - [Falcon](https://huggingface.co/docs/transformers/main/model_doc/falcon)
 - [Llama 2](https://huggingface.co/docs/transformers/model_doc/llama2)ç
 - [HiCLIP: Contrastive Language-Image Pretraining with Hierarchy-aware Attention](https://arxiv.org/abs/2303.02995)
+- [Scaling Transformer to 1M tokens and beyond with RMT; Bulatov et al., 2023](https://arxiv.org/abs/2304.11062).
+- [Paper: Learning Positional Embeddings for Coordinate-MLPs, 2021](https://arxiv.org/abs/2112.11577)
+- Transformers Paper:
+  - [Arxiv: Attention is All You Need](https://arxiv.org/abs/1706.03762)
+  - [PDF: Attention is All You Need](./assets/google_transformers_paper_2017.pdf)
+- [Paper: Improving Language Understanding by Generative Pre-Training](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf)
+- [Paper: ResNet, 2015](https://arxiv.org/abs/1512.03385)
+- [Paper: BERT, 2018](https://arxiv.org/abs/1810.04805)
 
 ## 4. Retrieval Augmented Generation
 
