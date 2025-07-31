@@ -47,8 +47,11 @@ Overview of Contents:
     - [Training Objectives in Transformers](#training-objectives-in-transformers)
     - [Exercise: Implement GPT](#exercise-implement-gpt)
     - [Transformers vs. LSTMs](#transformers-vs-lstms)
-    - [Transformer Applications](#transformer-applications)
+    - [Transformer Applications and Trends](#transformer-applications-and-trends)
     - [Research Trends](#research-trends)
+      - [Optimization](#optimization)
+      - [Improved Understanding](#improved-understanding)
+      - [Ethics](#ethics)
     - [Links and Papers](#links-and-papers)
   - [4. Retrieval Augmented Generation](#4-retrieval-augmented-generation)
   - [5. Build Custom Datasets for LLMs](#5-build-custom-datasets-for-llms)
@@ -875,11 +878,25 @@ Key contents:
 
 In summary, Transformers have many performance advantages over LSTMs; however, the *naive* **Self-Attention** mechanism is quadratic, i.e., all sequence tokens against all sequence tokens. That limits the input length.
 
-### Transformer Applications
+### Transformer Applications and Trends
 
-
+- Devices, such as [https://www.rabbit.tech/](https://www.rabbit.tech/)
+- Multi-Modal Understanding, rather than only text understanding/generation.
+  - Check: [MMMU: A Massive Multi-discipline Multimodal Understanding and Reasoning Benchmark for Expert AGI](https://mmmu-benchmark.github.io/)
+- The shift from Transformers to AI Systems; interesting article: [The Shift from Models to Compound AI Systems](https://bair.berkeley.edu/blog/2024/02/18/compound-ai-systems/).
+- Retrieval-Augmented Generation (RAG)
+  - There is a debate due to the continuously increased context windows; will effectively infinite windows arrive and if so, will they render RAGs unnecessary?
+- Agents
 
 ### Research Trends
+
+#### Optimization
+
+
+
+#### Improved Understanding
+
+#### Ethics
 
 ### Links and Papers
 
