@@ -813,6 +813,8 @@ In all of them the **multi-head attention block** introduced in [Attention](#att
 
 ![Transformer Architecture Annotated](./assets/transformer_architecture_annotated.jpeg)
 
+![Transformer Architecture Annotated](./assets/transformer_annotated.png)
+
 ![Skip Connections and Normalization](./assets/skip_connections_normalization.png)
 
 Also, consider *positional encoding* is added to the embeddings. Positional encoding can be:
