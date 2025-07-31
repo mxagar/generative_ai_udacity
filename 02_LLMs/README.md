@@ -44,6 +44,7 @@ Overview of Contents:
     - [BertViz to Investigate Bias](#bertviz-to-investigate-bias)
     - [Exercise: Implement Self-Attention](#exercise-implement-self-attention)
     - [Transformer Models](#transformer-models)
+    - [Training Objectives in Transformers](#training-objectives-in-transformers)
     - [Exercise: Implement GPT](#exercise-implement-gpt)
     - [Links and Papers](#links-and-papers)
   - [4. Retrieval Augmented Generation](#4-retrieval-augmented-generation)
@@ -663,7 +664,7 @@ Notebook: [lab/exercise-1-implement-self-attention-solution.ipynb](./lab/exercis
 - This specific GPT implementation is heavily inspired by the [minGPT implementation](https://github.com/karpathy/minGPT) provided by [Andrej Karpathy](https://github.com/karpathy/).
 - Scaled multiplicative attention is used, as in the original paper.
 - One important part is the mask: a mask is applied to hide the future tokens in the sequence; otherwise, the GPT model would cheat.
-  - Masking is done filling the values with `float("-inf")`.
+  - Masking is done filling the values with `float("-inf")`; then, the `softmax(-inf) = 0`.
 - Thus, the encoder can have **multi-head attention** blocks, whereas the decoder has **MASKED multi-head attention** blocks.
 
 ```python
@@ -833,7 +834,27 @@ Links to papers:
   - [PDF: Attention is All You Need](./assets/google_transformers_paper_2017.pdf)
 - [Paper: Improving Language Understanding by Generative Pre-Training](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf)
 - [Paper: ResNet, 2015](https://arxiv.org/abs/1512.03385)
+- [Paper: BERT, 2018](https://arxiv.org/abs/1810.04805)
 
+### Training Objectives in Transformers
+
+Typical training strategies for transformers:
+
+- Autoregressive (causal): next token prediction; GPT
+  - Every time we pass a sequence, the future token values are masked, to avoid cheating; thus, the matrices are lower diagonal.
+  - Teacher forcing is used, which involves using the actual target output (the ground truth) from the training data as the input to the next time step in the sequence, rather than using the model's own predicted output from the previous time step.
+- Denoising Autoencoders: predict masked tokens or next sentences; BERT
+  - Sentence(s) are input and tokens are masked; we request the masked tokens
+  - Predicting the next sentence is also a strategy: we present to sentences and ask the model whether the second is a logical continuation of the first. So it's a binary classification problem.
+- Contrastive: target similarity; SBERT, CLIP
+
+Those techniques are self-supervised techniques, i.e., we can work with *unlabeled data*. The output is a **pre-trained model**. Then, we can apply **fine-tuning** to adapt our model to our task/domain. To that end, we usually need *labeled data*, but in a much smaller amount than the *unlabeled dataset*.
+
+![BERT Training: Masked token prediction](assets/masked_bert_training.png)
+
+![BERT Training: Next sentence prediction (binary classification)](assets/next_sentence_bert_training.png)
+
+![Domain Adaptation](assets/domain_adaptation.png)
 
 ### Exercise: Implement GPT
 
