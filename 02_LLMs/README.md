@@ -51,7 +51,7 @@ Overview of Contents:
     - [Research Trends](#research-trends)
       - [Optimization](#optimization)
       - [Improved Understanding](#improved-understanding)
-      - [Ethics](#ethics)
+      - [Safe and Ethical Use of AI](#safe-and-ethical-use-of-ai)
     - [Links and Papers](#links-and-papers)
   - [4. Retrieval Augmented Generation](#4-retrieval-augmented-generation)
   - [5. Build Custom Datasets for LLMs](#5-build-custom-datasets-for-llms)
@@ -892,28 +892,71 @@ In summary, Transformers have many performance advantages over LSTMs; however, t
 
 #### Optimization
 
+Attention requires a pairwise token computation, which makes the naive approach quadratic on the sequence length.
 
+Some optimizations are being done:
+
+- Hardware optimization
+  - 1-bit models: quantization
+  - CUDA kernel optimizations
+- Variation of the Transformers
+  - Reformer: locality-sensitive hashing done to achieve `nlogn` complexity
+  - Linformer: low-ran approximations used
+  - Performer: orthogonal random features used
+- New/alternative architectures, e.g., **Mamba**
+  - Not a transformer model, but a *state-space model*
+  - Inference faster than in transformers
+  - It excels at long sequences (1M tokens)
+  - At 3B parameters, it outperforms transformers of the same size
+  - If it can scale to larger models while still outperforming transformers, it may dethrone them!
 
 #### Improved Understanding
 
-#### Ethics
+- [In-context Learning and Induction Heads, 2022](https://arxiv.org/abs/2209.11895)
+  - *Induction heads* are hypothetical components that help the model learn from the context.
+- [Grokking of Hierarchical Structure in Vanilla Transformers, 2023](https://arxiv.org/abs/2305.18741)
+  - Analyzes the model's ability of going beyond the memorized data, i.e., generalization
+- [Quantifying Memorization Across Neural Language Models, 2022](https://arxiv.org/abs/2202.07646)
+  - > The authors noted:
+    - > that the likelihood of LLMs reproducing memorized content verbatim increases with the model's capacity,
+    - > the duplication frequency of a training example, and
+    - > the length of the context used for prompting.
+
+#### Safe and Ethical Use of AI
+
+- [A Human Rights-Based Approach to Responsible AI, 2022](https://arxiv.org/abs/2210.02667)
+- [An Overview of Catastrophic AI Risks, 2023](https://arxiv.org/abs/2306.12001)
 
 ### Links and Papers
 
+- Transformers Paper:
+  - [Arxiv: Attention is All You Need](https://arxiv.org/abs/1706.03762)
+  - [PDF: Attention is All You Need](./assets/google_transformers_paper_2017.pdf)
 - [A Decomposable Attention Model for Natural Language Inference](https://arxiv.org/abs/1606.01933v2)
-- [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
 - [Understanding Parameter Sharing in Transformers](https://arxiv.org/abs/2306.09380)
 - [Falcon](https://huggingface.co/docs/transformers/main/model_doc/falcon)
 - [Llama 2](https://huggingface.co/docs/transformers/model_doc/llama2)ç
 - [HiCLIP: Contrastive Language-Image Pretraining with Hierarchy-aware Attention](https://arxiv.org/abs/2303.02995)
 - [Scaling Transformer to 1M tokens and beyond with RMT; Bulatov et al., 2023](https://arxiv.org/abs/2304.11062).
 - [Paper: Learning Positional Embeddings for Coordinate-MLPs, 2021](https://arxiv.org/abs/2112.11577)
-- Transformers Paper:
-  - [Arxiv: Attention is All You Need](https://arxiv.org/abs/1706.03762)
-  - [PDF: Attention is All You Need](./assets/google_transformers_paper_2017.pdf)
 - [Paper: Improving Language Understanding by Generative Pre-Training](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf)
 - [Paper: ResNet, 2015](https://arxiv.org/abs/1512.03385)
 - [Paper: BERT, 2018](https://arxiv.org/abs/1810.04805)
+- Transformer optimization and latest research directions
+  - [The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits, 2024](https://arxiv.org/abs/2402.17764)
+  - [FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness, 2022](https://arxiv.org/abs/2205.14135)
+  - [Reformer: The Efficient Transformer, 2020](https://arxiv.org/abs/2001.04451)
+  - [Linformer: Self-Attention with Linear Complexity, 2020](https://arxiv.org/abs/2006.04768)
+  - [Rethinking Attention with Performers, 2020](https://arxiv.org/abs/2009.14794)
+  - [Mamba: Linear-Time Sequence Modeling with Selective State Spaces, 2023](https://arxiv.org/abs/2312.00752)
+- Transformer understanding research directions:
+  - [In-context Learning and Induction Heads, 2022](https://arxiv.org/abs/2209.11895)
+  - [Grokking of Hierarchical Structure in Vanilla Transformers, 2023](https://arxiv.org/abs/2305.18741)
+  - [Quantifying Memorization Across Neural Language Models, 2022](https://arxiv.org/abs/2202.07646)
+- Ethics:
+  - [A Human Rights-Based Approach to Responsible AI, 2022](https://arxiv.org/abs/2210.02667)
+  - [An Overview of Catastrophic AI Risks, 2023](https://arxiv.org/abs/2306.12001)
+
 
 ## 4. Retrieval Augmented Generation
 
