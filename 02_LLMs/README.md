@@ -960,9 +960,22 @@ Some optimizations are being done:
 
 ## 4. Retrieval Augmented Generation
 
-TBD.
+OpenAI APIs are used to build a RAG QA chatbot which considers recent events persisted in a database.
 
-:construction:
+Check: [OpenAI API Quickstart guide](https://platform.openai.com/docs/quickstart).
+
+Steps summary:
+
+1. Prepare dataset: tokenize and convert into embedding vectors.
+  - These vectors are stored in a (vector) database.
+2. Find relevant data related to the query.
+  - The query is converted into a vector and using cosine similarity we search the items in our dataset which are most related to it.
+3. A custom text prompt is composed, which integrates the query and the database items found.
+4. Query a completion model which provides with the answer.
+
+![RAG Idea](./assets/rag_idea.png)
+
+
 
 ## 5. Build Custom Datasets for LLMs
 
