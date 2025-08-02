@@ -975,7 +975,42 @@ Steps summary:
 
 ![RAG Idea](./assets/rag_idea.png)
 
+Dataset(s):
 
+- [Wikipedia 2022 events](https://en.wikipedia.org/wiki/2022)
+- [2023 Turkey–Syria earthquakes](https://en.wikipedia.org/wiki/2023_Turkey%E2%80%93Syria_earthquakes)
+
+Set up an OpenAI account:
+
+- Get an OpenAI API key: Settings > API Keys > Create new secret key
+- Create a `.env` file with the API key.
+- Add credit to the OpenAI account: Settings > Billing > Add payment method & Add credit balance
+
+Then, we can check everything works:
+
+```python
+import os
+import dotenv
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv(".env")
+
+client = OpenAI(
+  api_key=os.environ['OPENAI_API_KEY'],
+)
+
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "What's the difference between GPT-4 and GPT-4o mini?"}
+    ],
+    temperature=0.7
+)
+
+print(response.choices[0].message.content)
+```
 
 ## 5. Build Custom Datasets for LLMs
 
