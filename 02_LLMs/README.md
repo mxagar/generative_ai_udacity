@@ -54,6 +54,7 @@ Overview of Contents:
       - [Safe and Ethical Use of AI](#safe-and-ethical-use-of-ai)
     - [Links and Papers](#links-and-papers)
   - [4. Retrieval Augmented Generation](#4-retrieval-augmented-generation)
+    - [Gathering Data](#gathering-data)
   - [5. Build Custom Datasets for LLMs](#5-build-custom-datasets-for-llms)
   - [6. Project: Build Your Own Custom Chatbot](#6-project-build-your-own-custom-chatbot)
     - [Notebooks](#notebooks)
@@ -977,8 +978,16 @@ Steps summary:
 
 Dataset(s):
 
-- [Wikipedia 2022 events](https://en.wikipedia.org/wiki/2022)
-- [2023 Turkey–Syria earthquakes](https://en.wikipedia.org/wiki/2023_Turkey%E2%80%93Syria_earthquakes)
+1. Course example: [Wikipedia 2022 events](https://en.wikipedia.org/wiki/2022)
+2. Exercise: [2023 Turkey–Syria earthquakes](https://en.wikipedia.org/wiki/2023_Turkey%E2%80%93Syria_earthquakes)
+
+The rest of the section uses the first dataset (Wikipedia 2022 events) to build a RAG QA chatbot:
+
+[lab/casestudy_rag_wikpedia_2022.ipynb](./lab/casestudy_rag_wikpedia_2022.ipynb)
+
+Additionally the second dataset (2023 Turkey–Syria earthquakes) is used as an exercise:
+
+[lab/exercise_rag.ipynb](./lab/exercise_rag.ipynb)
 
 Set up an OpenAI account:
 
@@ -986,7 +995,7 @@ Set up an OpenAI account:
 - Create a `.env` file with the API key.
 - Add credit to the OpenAI account: Settings > Billing > Add payment method & Add credit balance
 
-Then, we can check everything works:
+Then, we can check everything works, as done in [lab/openai_test.ipynb](./lab/openai_test.ipynb):
 
 ```python
 import os
@@ -1000,6 +1009,7 @@ client = OpenAI(
   api_key=os.environ['OPENAI_API_KEY'],
 )
 
+# Chat completion
 response = client.chat.completions.create(
     model="gpt-4o-mini",
     messages=[
@@ -1010,7 +1020,36 @@ response = client.chat.completions.create(
 )
 
 print(response.choices[0].message.content)
+# ...
+
+ukraine_prompt = """
+Question: "When did Russia invade Ukraine?"
+Answer:
+"""
+
+# Prompt completion
+response = client.completions.create(
+    model="gpt-3.5-turbo-instruct",
+    prompt=ukraine_prompt,
+    max_tokens=150,
+    temperature=0.7,
+)
+
+initial_ukraine_answer = response.choices[0].text.strip()
+print(initial_ukraine_answer)  # "Russia invaded Ukraine in February 2014."
+# The model is answering this way because the training data ends in 2021.
+# Our task will be to provide context from 2022 to help the model answer these questions correctly.
+# That can be accomplished by using a Retrieval-Augmented Generation (RAG) approach.
 ```
+
+We can see that there are two main API calls:
+
+- `chat.completions.create`: for chat-based interactions, which supports roles, memory, and turns.
+- `completions.create`: for simple Q&A or text generation, which is prompt-only, and legacy-compatible.
+
+### Gathering Data
+
+
 
 ## 5. Build Custom Datasets for LLMs
 
