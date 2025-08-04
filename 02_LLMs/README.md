@@ -54,7 +54,8 @@ Overview of Contents:
       - [Safe and Ethical Use of AI](#safe-and-ethical-use-of-ai)
     - [Links and Papers](#links-and-papers)
   - [4. Retrieval Augmented Generation](#4-retrieval-augmented-generation)
-    - [Gathering Data](#gathering-data)
+    - [Case Study: RAG with Wikipedia 2022 Events](#case-study-rag-with-wikipedia-2022-events)
+    - [Exercise: RAG with 2023 Turkey–Syria Earthquakes](#exercise-rag-with-2023-turkeysyria-earthquakes)
   - [5. Build Custom Datasets for LLMs](#5-build-custom-datasets-for-llms)
   - [6. Project: Build Your Own Custom Chatbot](#6-project-build-your-own-custom-chatbot)
     - [Notebooks](#notebooks)
@@ -1047,9 +1048,26 @@ We can see that there are two main API calls:
 - `chat.completions.create`: for chat-based interactions, which supports roles, memory, and turns.
 - `completions.create`: for simple Q&A or text generation, which is prompt-only, and legacy-compatible.
 
-### Gathering Data
+### Case Study: RAG with Wikipedia 2022 Events
 
+Key aspects discussed:
 
+- Use APIs to download.
+- Numerical representations of text:
+  - ASCII tables.
+  - One-hot encoding: sparse, too large (size is the vocabulary size).
+  - Embeddings: dense; similar words have similar vectors, so word arithmetic becomes possible.
+- OpenAI `text-embedding-ada-002` is used to create the embeddings: it has a dimensionality of 1536.
+
+Notebook: [lab/casestudy_rag_wikpedia_2022.ipynb](./lab/casestudy_rag_wikpedia_2022.ipynb)
+
+```python
+
+```
+
+### Exercise: RAG with 2023 Turkey–Syria Earthquakes
+
+Not done, but should be similar to the previous case study.
 
 ## 5. Build Custom Datasets for LLMs
 
