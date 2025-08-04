@@ -1058,8 +1058,18 @@ Key aspects discussed:
   - One-hot encoding: sparse, too large (size is the vocabulary size).
   - Embeddings: dense; similar words have similar vectors, so word arithmetic becomes possible.
 - OpenAI `text-embedding-ada-002` is used to create the embeddings: it has a dimensionality of 1536.
+- Keyword search vs. semantic search:
+  - Keyword search: exact match, not robust to typos, synonyms, etc.
+  - Semantic search: uses embeddings to find similar items, robust to typos, synonyms, etc. Cosine similarity is recommended as distance or similarity metric.
+    - In practice, **cosine distance** is used: `cosine_distance = 1 - cosine similarity`
+- Context prompt: we provide the found items to the model as context, so it can answer the question; also we request to use only the context information and say "I don't know" if the answer is not in the context.
+  - How much context to provide? As much tokens as the model can handle; but don't feed irrelevant information.
+  - We can use `tiktoken` to count the tokens in the context and the question.
 
 Notebook: [lab/casestudy_rag_wikpedia_2022.ipynb](./lab/casestudy_rag_wikpedia_2022.ipynb)
+
+**Note**: I had to change many parts of the notebook, since it was using the old API of Open AI. The current version uses the latest API (as of 2025-07).
+
 
 ```python
 
