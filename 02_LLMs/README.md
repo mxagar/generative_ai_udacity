@@ -1072,6 +1072,242 @@ Notebook: [lab/casestudy_rag_wikpedia_2022.ipynb](./lab/casestudy_rag_wikpedia_2
 
 
 ```python
+import os
+import dotenv
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv(".env")
+
+## Step 0: Inspecting Non-Customized Results
+
+client = OpenAI(
+  api_key=os.environ['OPENAI_API_KEY'],
+)
+
+ukraine_prompt = """
+Question: "When did Russia invade Ukraine?"
+Answer:
+"""
+
+response = client.completions.create(
+    model="gpt-3.5-turbo-instruct",
+    prompt=ukraine_prompt,
+    max_tokens=150,
+    temperature=0.7,
+)
+
+initial_ukraine_answer = response.choices[0].text.strip()
+print(initial_ukraine_answer)  # Wrong answer, since the model was trained with data until 2021.
+
+twitter_prompt = """
+Question: "Who owns Twitter?"
+Answer:
+"""
+
+response = client.completions.create(
+    model="gpt-3.5-turbo-instruct",
+    prompt=twitter_prompt,
+    max_tokens=150,
+    temperature=0.7,
+)
+
+initial_twitter_answer = response.choices[0].text.strip()
+print(initial_twitter_answer). # Wrong answer, since the model was trained with data until 2021.
+
+## Step 1: Prepare Dataset
+
+from dateutil.parser import parse
+import pandas as pd
+import requests
+
+# Get the Wikipedia page for "2022" since OpenAI's models stop in 2021
+resp = requests.get("https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exlimit=1&titles=2022&explaintext=1&formatversion=2&format=json")
+
+# Load page text into a dataframe
+df = pd.DataFrame()
+df["text"] = resp.json()["query"]["pages"][0]["extract"].split("\n")
+
+# Clean up text to remove empty lines and headings
+df = df[(df["text"].str.len() > 0) & (~df["text"].str.startswith("=="))]
+
+# In some cases dates are used as headings instead of being part of the
+# text sample; adjust so dated text samples start with dates
+prefix = ""
+for (i, row) in df.iterrows():
+    # If the row already has " - ", it already has the needed date prefix
+    if " – " not in row["text"]:
+        try:
+            # If the row's text is a date, set it as the new prefix
+            parse(row["text"])
+            prefix = row["text"]
+        except ValueError:
+            # If the row's text isn't a date, add the prefix
+            row["text"] = prefix + " – " + row["text"]
+df = df[df["text"].str.contains(" – ")]
+
+EMBEDDING_MODEL_NAME = "text-embedding-ada-002"
+batch_size = 100
+embeddings = []
+
+for i in range(0, len(df), batch_size):
+    batch_texts = df.iloc[i:i+batch_size]["text"].tolist()
+    
+    response = client.embeddings.create(
+        model=EMBEDDING_MODEL_NAME,
+        input=batch_texts
+    )
+
+    # Each `response.data` element is an object with an "embedding"
+    embeddings.extend([item.embedding for item in response.data])
+
+df["embeddings"] = embeddings
+
+df.to_csv("embeddings.csv")
+
+import numpy as np
+import pandas as pd
+import ast
+
+df = pd.read_csv("embeddings.csv", index_col=0)
+df["embeddings"] = df["embeddings"].apply(ast.literal_eval)
+
+## Step 2: Create a Function that Finds Related Pieces of Text for a Given Question
+
+from scipy.spatial.distance import cosine as cosine_distance
+import ast
+
+# Calculate cosine distance between the first two embeddings
+# cosine_distance = 1 - cosine_similarity
+cosine_distance(df["embeddings"].loc[0], df["embeddings"].loc[1])
+
+import numpy as np
+from scipy.spatial.distance import cdist
+
+def get_embedding(text: str, model="text-embedding-ada-002"):
+    response = client.embeddings.create(input=[text], model=model)
+    return response.data[0].embedding
+
+def distances_from_embeddings(query_embedding, embeddings, distance_metric="cosine"):
+    embeddings = np.stack(embeddings)
+    return cdist([query_embedding], embeddings, metric=distance_metric)[0]
+
+def get_rows_sorted_by_relevance(question, df):
+    """
+    Function that takes in a question string and a dataframe containing
+    rows of text and associated embeddings, and returns that dataframe
+    sorted from least to most relevant for that question
+    """
+    
+    # Get embeddings for the question text
+    question_embeddings = get_embedding(question, model=EMBEDDING_MODEL_NAME)
+    
+    # Make a copy of the dataframe and add a "distances" column containing
+    # the cosine distances between each row's embeddings and the
+    # embeddings of the question
+    df_copy = df.copy()
+    df_copy["distances"] = distances_from_embeddings(
+        question_embeddings,
+        df_copy["embeddings"].values,
+        distance_metric="cosine"
+    )
+    
+    # Sort the copied dataframe by the distances and return it
+    # (shorter distance = more relevant so we sort in ascending order)
+    df_copy.sort_values("distances", ascending=True, inplace=True)
+    return df_copy
+
+df = get_rows_sorted_by_relevance("When did Russia invade Ukraine?", df)
+df.head()
+
+df = get_rows_sorted_by_relevance("Who owns Twitter?", df)
+df.head()
+
+df.to_csv("distances.csv", index=False)
+df = pd.read_csv("distances.csv")
+df["embeddings"] = df["embeddings"].apply(ast.literal_eval)
+df.head()
+
+## Step 3: Create a Function that Composes a Text Prompt
+
+import tiktoken
+
+def create_prompt(question, df, max_token_count):
+    """
+    Given a question and a dataframe containing rows of text and their
+    embeddings, return a text prompt to send to a Completion model
+    """
+    # Create a tokenizer that is designed to align with our embeddings
+    tokenizer = tiktoken.get_encoding("cl100k_base")
+    
+    # Count the number of tokens in the prompt template and question
+    prompt_template = """
+Answer the question based on the context below, and if the question
+can't be answered based on the context, say "I don't know"
+
+Context: 
+
+{}
+
+---
+
+Question: {}
+Answer:"""
+    
+    current_token_count = len(tokenizer.encode(prompt_template)) + \
+                            len(tokenizer.encode(question))
+    
+    context = []
+    for text in get_rows_sorted_by_relevance(question, df)["text"].values:
+        
+        # Increase the counter based on the number of tokens in this row
+        text_token_count = len(tokenizer.encode(text))
+        current_token_count += text_token_count
+        
+        # Add the row of text to the list if we haven't exceeded the max
+        if current_token_count <= max_token_count:
+            context.append(text)
+        else:
+            break
+
+    return prompt_template.format("\n\n###\n\n".join(context), question)
+
+print(create_prompt("When did Russia invade Ukraine?", df, 200))
+print(create_prompt("Who owns Twitter?", df, 100))
+
+## Step 4: Create a Function that Answers a Question
+
+COMPLETION_MODEL_NAME = "gpt-3.5-turbo-instruct"
+
+def answer_question(
+    question, df, max_prompt_tokens=1800, max_answer_tokens=150
+):
+    """
+    Given a question, a dataframe containing rows of text, and a maximum
+    number of desired tokens in the prompt and response, return the
+    answer to the question according to an OpenAI Completion model
+    
+    If the model produces an error, return an empty string
+    """
+    prompt = create_prompt(question, df, max_prompt_tokens)
+
+    try:
+        response = client.completions.create(
+            model=COMPLETION_MODEL_NAME,
+            prompt=prompt,
+            max_tokens=max_answer_tokens,
+            temperature=0.7  # optional: defaults to 1.0
+        )
+        return response.choices[0].text.strip()
+    except Exception as e:
+        print(f"Error during completion: {e}")
+        return ""
+
+custom_ukraine_answer = answer_question("When did Russia invade Ukraine?", df)
+print(custom_ukraine_answer)  # February 24 – missiles strike Kyiv.
+
+custom_twitter_answer = answer_question("Who owns Twitter?", df)
+print(custom_twitter_answer)  # Elon Musk
 
 ```
 
