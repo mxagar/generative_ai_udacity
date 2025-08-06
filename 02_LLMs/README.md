@@ -39,7 +39,23 @@ Overview of Contents:
   - [3. Transformers and Attention Mechanism](#3-transformers-and-attention-mechanism)
     - [Introduction](#introduction-1)
     - [Attention](#attention)
+      - [Different Attention Mechanisms](#different-attention-mechanisms)
+      - [Issues and Solutions of Attention Mechanisms](#issues-and-solutions-of-attention-mechanisms)
+    - [BertViz to Investigate Bias](#bertviz-to-investigate-bias)
+    - [Exercise: Implement Self-Attention](#exercise-implement-self-attention)
+    - [Transformer Models](#transformer-models)
+    - [Training Objectives in Transformers](#training-objectives-in-transformers)
+    - [Exercise: Implement GPT](#exercise-implement-gpt)
+    - [Transformers vs. LSTMs](#transformers-vs-lstms)
+    - [Transformer Applications and Trends](#transformer-applications-and-trends)
+    - [Research Trends](#research-trends)
+      - [Optimization](#optimization)
+      - [Improved Understanding](#improved-understanding)
+      - [Safe and Ethical Use of AI](#safe-and-ethical-use-of-ai)
+    - [Links and Papers](#links-and-papers)
   - [4. Retrieval Augmented Generation](#4-retrieval-augmented-generation)
+    - [Case Study: RAG with Wikipedia 2022 Events](#case-study-rag-with-wikipedia-2022-events)
+    - [Exercise: RAG with 2023 Turkey–Syria Earthquakes](#exercise-rag-with-2023-turkeysyria-earthquakes)
   - [5. Build Custom Datasets for LLMs](#5-build-custom-datasets-for-llms)
   - [6. Project: Build Your Own Custom Chatbot](#6-project-build-your-own-custom-chatbot)
     - [Notebooks](#notebooks)
@@ -570,7 +586,7 @@ This metaphor is used in attention mechanisms to build a contextualized represen
 
 ![Attention](./assets/attention_definition.png)
 
-![Attention Computation](./assets/attention_softmax.png)
+![Attention Computation](./assets/attention_softmax.jpeg)
 
 There are at least 3 ways of computing attention:
 
@@ -580,11 +596,724 @@ There are at least 3 ways of computing attention:
 
 ![Types of Attention](./assets/attention_types.png)
 
+See my notes on the transformer anatomy for a detailed description of the blocks that use attention in the Transformer:
+
+[mxagar/nlp_with_transformers_nbs/chapter-3-transformer-anatomy](https://github.com/mxagar/nlp_with_transformers_nbs?tab=readme-ov-file#chapter-3-transformer-anatomy)
+
+![LLM Architecture Simplified](./assets/llm_simplified.png)
+
+![LLM Attention](./assets/llm_attention_architecture.png)
+
+- Embeddings (+ positional encoding) are projected to the tensors Q, K, V.
+- The Q, K, V tensors are used to compute the *contextualized vector* using attention; that's a single self-attention head.
+- There are several self-attention heads; their outputs are concatenated to form a multi-head attention layer.
+- Each block is a residual structure, so it is composed by a multi-head attention layer and also: normalization, linear mappings and two skip connections.
+- The encoder of a transformer has several blocks.
+
+```python
+def attention(query, key, value):
+    "Compute 'Scaled Dot Product Attention'"
+    d_k = query.size(-1)
+    scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
+    p_attn = scores.softmax(dim=-1)
+    return torch.matmul(p_attn, value)
+```
+
+#### Different Attention Mechanisms
+
+**Self-attention**: The embeddings projected to Q, K, V are the same.
+
+- We detect the relationships of the sequence elements wrt. each other
+- Matrix multiplication can be parallelized!
+- Interaction is O(1), but computation is O(n^2).
+
+**Multi-head attention**: same as self-attention, but we have several heads (each with their weights), and their outputs are concatenated.
+
+**Multi-query attention**: similar to multi-head, but we have multiple Qs, and only one K and V, shared.
+
+- Faster training.
+- Larger batches.
+- Used to scale to large LLMs (Llama 2).
+
+**Cross-attention**: Q is different to K and V. Used in the decoder; Q can come from a different source or even modality!
+
+#### Issues and Solutions of Attention Mechanisms
+
+- No notion of input order
+  - Solution: Positional encodings
+- There is no non-linearity between repeated self-attention layers; that's an issue because everything becomes like a single layer.
+  - Solution: a feed forward layer is added in-between.
+- By default, self-attention can look into the future when predicting a sequence.
+  - Solution: attention of future words/tokens is masked out during decoding
+
+### BertViz to Investigate Bias
+
+A short demo is done with [BertViz](https://github.com/jessevig/bertviz?tab=readme-ov-file#self-attention-models-bert-gpt-2-etc).
+
+BertViz helps visualize attention in transformer models.
+
+Video: [Using Bert To Detect Bias-Enhanced](https://www.youtube.com/watch?v=tSvn3RLDsrY). 
+
+Notebook: [lab/demo-using-bertviz-to-detect-bias-completed.ipynb](./lab/demo-using-bertviz-to-detect-bias-completed.ipynb):
+
+- Attention views are shown: Head view, Model view, Neuron view
+- The attention relationships of two sentences are compared to investigate bias even in models trained in unsupervised datasets:
+  - *The doctor asked the nurse a question. She*
+    - Layer 5 of GPT2: *She* attends to *nurse*.
+  - *The doctor asked the nurse a question. He*
+    - Layer 5 of GPT2: *He* attends to *The doctor*.
+- GPT2 seems to encoding some occupational bias in layer 5...
+
+### Exercise: Implement Self-Attention
+
+Notebook: [lab/exercise-1-implement-self-attention-solution.ipynb](./lab/exercise-1-implement-self-attention-solution.ipynb)
+
+- A `MultiHeadSelfAttention` module is implemented in Pytorch, and tested with dummy embedding values.
+- This specific GPT implementation is heavily inspired by the [minGPT implementation](https://github.com/karpathy/minGPT) provided by [Andrej Karpathy](https://github.com/karpathy/).
+- Scaled multiplicative attention is used, as in the original paper.
+- One important part is the mask: a mask is applied to hide the future tokens in the sequence; otherwise, the GPT model would cheat.
+  - Masking is done filling the values with `float("-inf")`; then, the `softmax(-inf) = 0`.
+- Thus, the encoder can have **multi-head attention** blocks, whereas the decoder has **MASKED multi-head attention** blocks.
+
+```python
+import math
+
+import torch
+import torch.nn as nn
+from torch.nn import functional as F
+
+
+class MultiHeadSelfAttention(nn.Module):
+    """A vanilla multi-head masked self-attention layer."""
+
+    def __init__(self, config):
+        super().__init__()
+        assert config.n_embd % config.n_head == 0
+
+        # key, query, value projections for all heads
+        self.key = nn.Linear(config.n_embd, config.n_embd)
+        self.query = nn.Linear(config.n_embd, config.n_embd)
+        self.value = nn.Linear(config.n_embd, config.n_embd)
+
+        # regularization
+        self.attn_drop = nn.Dropout(config.attn_pdrop)
+        self.resid_drop = nn.Dropout(config.resid_pdrop)
+
+        # output projection
+        self.proj = nn.Linear(config.n_embd, config.n_embd)
+
+        # causal mask to ensure that attention is only applied to the left in the input sequence
+        self.register_buffer(
+            "mask",
+            torch.tril(torch.ones(config.block_size, config.block_size)).view(
+                1, 1, config.block_size, config.block_size
+            ),
+        )
+        self.n_head = config.n_head
+
+    def forward(self, x):
+        """The forward pass for the multi-head masked self-attention layer.
+
+        In this exercise, we include lots of print statements and checks to help you
+        understand the code and the shapes of the tensors. When actually training
+        such a model you would not log this information to the console.
+        """
+
+        # batch size, sequence length (in tokens), embedding dimensionality (n_embd per token)
+        B, T, C = x.size()
+        hs = C // self.n_head  # head size
+
+        # print some debug information
+        print(f"batch size: {B}")
+        print(f"sequence length: {T}")
+        print(f"embedding dimensionality: {C}")
+        print(f"number of heads: {self.n_head}")
+        print(f"head size: {hs}")
+
+        # calculate query, key, values for all heads in batch and move head forward to be the batch dim
+        # resulting dims for k, q, and v are (B, n_head, T, hs)
+        k = self.key(x).view(B, T, self.n_head, hs).transpose(1, 2)
+        q = self.query(x).view(B, T, self.n_head, hs).transpose(1, 2)
+        v = self.value(x).view(B, T, self.n_head, hs).transpose(1, 2)
+
+        # multiply q and k_t matrices, then divide by the square root of d_k
+        print("=== Calculate MatrixMultiplication(Q, K_T) / sqrt(d_k) ===")
+
+        k_t = k.transpose(-2, -1)  # what is the shape of k_t?
+        d_k = k.size(-1)
+
+        # Matrix multiplication (hint: not "*")
+        att = q @ k_t / math.sqrt(d_k)
+
+        print(f"q.shape: {q.shape}")
+        print(f"k_t.shape: {k_t.shape}")
+        print(f"d_k: {d_k}")
+        print(f"att.shape: {att.shape}")
+
+        # set the mask fill value to negative infinity
+        print("=== Apply the attention mask ===")
+
+        masked_fill_value = float("-inf")
+
+        att = att.masked_fill(self.mask[:, :, :T, :T] == 0, masked_fill_value)
+
+        # Show the result of applying the mask
+        print(f"att: {att}")
+
+        # apply softmax
+        print("=== Softmax ===")
+
+        att = F.softmax(att, dim=-1)
+
+        att = self.attn_drop(att)
+
+        # Show the result of applying the softmax and check that
+        # the sum of the attention weights in each row is 1
+        print(f"att.shape: {att.shape}")
+        print(f"att: {att}")
+        print(f"att.sum(dim=-1): {att.sum(dim=-1)}")
+        att_rows_sum_to_one = all(
+            ((att.sum(dim=-1) - 1.0) ** 2 < 1e-6).flatten().tolist()
+        )
+        print(f"att_rows_sum_to_one: {att_rows_sum_to_one}")
+        if not att_rows_sum_to_one:
+            raise ValueError(
+                "Attention weight rows do not sum to 1. Perhaps the softmax dimension or masked_fill_value is not correct?"
+            )
+
+        # multiply att and v matrices
+        # (B, n_head, T, T) x (B, n_head, T, hs) -> (B, n_head, T, hs)
+        print("=== Calculate final attention ===")
+
+        y = att @ v
+
+        print(f"y.shape: {y.shape}")
+
+        # re-assemble all head outputs side by side
+        y = y.transpose(1, 2).contiguous().view(B, T, C)
+
+        # output projection
+        y = self.resid_drop(self.proj(y))
+        return y
+```
+
+
+### Transformer Models
+
+As already mentioned, there are 3 types of Transformer models:
+
+- Encoder-only, e,g., BERT
+- Encoder-Decoder, e.g., T5
+- Decoder-only, e.g., GPT
+
+In all of them the **multi-head attention block** introduced in [Attention](#attention) is used, however, these blocks are wrapped with some other layers:
+
+- Layer normalization: inputs/outputs are normalized to mean 0, std 1. This normalization can be pre-layer (original) or post-layer (most common nowadays).
+  - This allows for faster training.
+- Skip connections (aka. residual connections): previous embeddings (before transformations/updates) are added. These skip/residual connections
+  - Minimize the gradient vanishing problem.
+  - Enable deeper networks.
+  - Improve the optimization of the loss function.
+- Positional feed-forward layer: two linear/dense matrices (followed by a dropout) further transform the embeddings. Usually,
+  - the first transformation increases 4x the size of the embeddings
+  - and the second scales back the embeddings to their original size.
+
+![Transformer Architecture](./assets/transformer_paper_architecture.png)
+
+![Transformer Architecture Annotated](./assets/transformer_architecture_annotated.jpeg)
+
+![Transformer Architecture Annotated](./assets/transformer_annotated.png)
+
+![Skip Connections and Normalization](./assets/skip_connections_normalization.png)
+
+Also, consider *positional encoding* is added to the embeddings. Positional encoding can be:
+
+- Absolute; e.g., sinusoidal values: they allow inputs of various lengths, and were used in the original paper.
+- Learned positional encodings.
+- Others: active area of research.
+
+![Positional Encodings](./assets/positional_encodings.png)
+
+### Training Objectives in Transformers
+
+Typical training strategies for transformers:
+
+- Autoregressive (causal): next token prediction; GPT
+  - Every time we pass a sequence, the future token values are masked, to avoid cheating; thus, the matrices are lower diagonal.
+  - Teacher forcing is used, which involves using the actual target output (the ground truth) from the training data as the input to the next time step in the sequence, rather than using the model's own predicted output from the previous time step.
+- Denoising Autoencoders: predict masked tokens or next sentences; BERT
+  - Sentence(s) are input and tokens are masked; we request the masked tokens
+  - Predicting the next sentence is also a strategy: we present to sentences and ask the model whether the second is a logical continuation of the first. So it's a binary classification problem.
+- Contrastive: target similarity; SBERT, CLIP
+
+Those techniques are self-supervised techniques, i.e., we can work with *unlabeled data*. The output is a **pre-trained model**. Then, we can apply **fine-tuning** to adapt our model to our task/domain. To that end, we usually need *labeled data*, but in a much smaller amount than the *unlabeled dataset*.
+
+![BERT Training: Masked token prediction](assets/masked_bert_training.png)
+
+![BERT Training: Next sentence prediction (binary classification)](assets/next_sentence_bert_training.png)
+
+![Domain Adaptation](assets/domain_adaptation.png)
+
+### Exercise: Implement GPT
+
+Code:
+
+- Notebook: [lab/exercise-2-create-your-own-gpt-model-solution.ipynb](./lab/exercise-2-create-your-own-gpt-model-solution.ipynb)
+- Module: [lab/common.py](./lab/common.py)
+
+> This specific GPT implementation is heavily inspired by the [minGPT implementation](https://github.com/karpathy/minGPT) provided by [Andrej Karpathy](https://github.com/karpathy/).
+
+Key contents:
+
+-	The notebook walks through the implementation of a simplified GPT model inspired by Karpathy’s minGPT, using PyTorch.
+-	It defines three core components for the model:
+  -	`MultiHeadSelfAttention` (imported from `common.py`)
+  -	`Block`, a Transformer block with residual connections and MLP
+  -	`GPT`, the full model with token/position embeddings, transformer blocks, and a generation method
+-	The GPT model includes a generate method to autoregressively generate sequences from a given prompt using temperature scaling and (optionally) top-k sampling.
+-	A simple toy dataset of addition problems like `111 + 222 = 3 + 30 + 300 = 333` is introduced, meant to train the model on learning symbolic addition in stages.
+-	The notebook concludes by verifying that the model can forward inputs and generate sequences without error, setting up for later training.
+
+### Transformers vs. LSTMs
+
+![Transformers vs. LSTMs](./assets/transformers-vs-rnns.jpeg)
+
+In summary, Transformers have many performance advantages over LSTMs; however, the *naive* **Self-Attention** mechanism is quadratic, i.e., all sequence tokens against all sequence tokens. That limits the input length.
+
+### Transformer Applications and Trends
+
+- Devices, such as [https://www.rabbit.tech/](https://www.rabbit.tech/)
+- Multi-Modal Understanding, rather than only text understanding/generation.
+  - Check: [MMMU: A Massive Multi-discipline Multimodal Understanding and Reasoning Benchmark for Expert AGI](https://mmmu-benchmark.github.io/)
+- The shift from Transformers to AI Systems; interesting article: [The Shift from Models to Compound AI Systems](https://bair.berkeley.edu/blog/2024/02/18/compound-ai-systems/).
+- Retrieval-Augmented Generation (RAG)
+  - There is a debate due to the continuously increased context windows; will effectively infinite windows arrive and if so, will they render RAGs unnecessary?
+- Agents
+
+### Research Trends
+
+#### Optimization
+
+Attention requires a pairwise token computation, which makes the naive approach quadratic on the sequence length.
+
+Some optimizations are being done:
+
+- Hardware optimization
+  - 1-bit models: quantization
+  - CUDA kernel optimizations
+- Variation of the Transformers
+  - Reformer: locality-sensitive hashing done to achieve `nlogn` complexity
+  - Linformer: low-ran approximations used
+  - Performer: orthogonal random features used
+- New/alternative architectures, e.g., **Mamba**
+  - Not a transformer model, but a *state-space model*
+  - Inference faster than in transformers
+  - It excels at long sequences (1M tokens)
+  - At 3B parameters, it outperforms transformers of the same size
+  - If it can scale to larger models while still outperforming transformers, it may dethrone them!
+
+#### Improved Understanding
+
+- [In-context Learning and Induction Heads, 2022](https://arxiv.org/abs/2209.11895)
+  - *Induction heads* are hypothetical components that help the model learn from the context.
+- [Grokking of Hierarchical Structure in Vanilla Transformers, 2023](https://arxiv.org/abs/2305.18741)
+  - Analyzes the model's ability of going beyond the memorized data, i.e., generalization
+- [Quantifying Memorization Across Neural Language Models, 2022](https://arxiv.org/abs/2202.07646)
+  - > The authors noted:
+    - > that the likelihood of LLMs reproducing memorized content verbatim increases with the model's capacity,
+    - > the duplication frequency of a training example, and
+    - > the length of the context used for prompting.
+
+#### Safe and Ethical Use of AI
+
+- [A Human Rights-Based Approach to Responsible AI, 2022](https://arxiv.org/abs/2210.02667)
+- [An Overview of Catastrophic AI Risks, 2023](https://arxiv.org/abs/2306.12001)
+
+### Links and Papers
+
+- Transformers Paper:
+  - [Arxiv: Attention is All You Need](https://arxiv.org/abs/1706.03762)
+  - [PDF: Attention is All You Need](./assets/google_transformers_paper_2017.pdf)
+- [A Decomposable Attention Model for Natural Language Inference](https://arxiv.org/abs/1606.01933v2)
+- [Understanding Parameter Sharing in Transformers](https://arxiv.org/abs/2306.09380)
+- [Falcon](https://huggingface.co/docs/transformers/main/model_doc/falcon)
+- [Llama 2](https://huggingface.co/docs/transformers/model_doc/llama2)ç
+- [HiCLIP: Contrastive Language-Image Pretraining with Hierarchy-aware Attention](https://arxiv.org/abs/2303.02995)
+- [Scaling Transformer to 1M tokens and beyond with RMT; Bulatov et al., 2023](https://arxiv.org/abs/2304.11062).
+- [Paper: Learning Positional Embeddings for Coordinate-MLPs, 2021](https://arxiv.org/abs/2112.11577)
+- [Paper: Improving Language Understanding by Generative Pre-Training](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf)
+- [Paper: ResNet, 2015](https://arxiv.org/abs/1512.03385)
+- [Paper: BERT, 2018](https://arxiv.org/abs/1810.04805)
+- Transformer optimization and latest research directions
+  - [The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits, 2024](https://arxiv.org/abs/2402.17764)
+  - [FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness, 2022](https://arxiv.org/abs/2205.14135)
+  - [Reformer: The Efficient Transformer, 2020](https://arxiv.org/abs/2001.04451)
+  - [Linformer: Self-Attention with Linear Complexity, 2020](https://arxiv.org/abs/2006.04768)
+  - [Rethinking Attention with Performers, 2020](https://arxiv.org/abs/2009.14794)
+  - [Mamba: Linear-Time Sequence Modeling with Selective State Spaces, 2023](https://arxiv.org/abs/2312.00752)
+- Transformer understanding research directions:
+  - [In-context Learning and Induction Heads, 2022](https://arxiv.org/abs/2209.11895)
+  - [Grokking of Hierarchical Structure in Vanilla Transformers, 2023](https://arxiv.org/abs/2305.18741)
+  - [Quantifying Memorization Across Neural Language Models, 2022](https://arxiv.org/abs/2202.07646)
+- Ethics:
+  - [A Human Rights-Based Approach to Responsible AI, 2022](https://arxiv.org/abs/2210.02667)
+  - [An Overview of Catastrophic AI Risks, 2023](https://arxiv.org/abs/2306.12001)
+
+
 ## 4. Retrieval Augmented Generation
 
-TBD.
+OpenAI APIs are used to build a RAG QA chatbot which considers recent events persisted in a database.
 
-:construction:
+Check: [OpenAI API Quickstart guide](https://platform.openai.com/docs/quickstart).
+
+Steps summary:
+
+1. Prepare dataset: tokenize and convert into embedding vectors.
+  - These vectors are stored in a (vector) database.
+2. Find relevant data related to the query.
+  - The query is converted into a vector and using cosine similarity we search the items in our dataset which are most related to it.
+3. A custom text prompt is composed, which integrates the query and the database items found.
+4. Query a completion model which provides with the answer.
+
+![RAG Idea](./assets/rag_idea.png)
+
+Dataset(s):
+
+1. Course example: [Wikipedia 2022 events](https://en.wikipedia.org/wiki/2022)
+2. Exercise: [2023 Turkey–Syria earthquakes](https://en.wikipedia.org/wiki/2023_Turkey%E2%80%93Syria_earthquakes)
+
+The rest of the section uses the first dataset (Wikipedia 2022 events) to build a RAG QA chatbot:
+
+[lab/casestudy_rag_wikpedia_2022.ipynb](./lab/casestudy_rag_wikpedia_2022.ipynb)
+
+Additionally the second dataset (2023 Turkey–Syria earthquakes) is used as an exercise:
+
+[lab/exercise_rag.ipynb](./lab/exercise_rag.ipynb)
+
+Set up an OpenAI account:
+
+- Get an OpenAI API key: Settings > API Keys > Create new secret key
+- Create a `.env` file with the API key.
+- Add credit to the OpenAI account: Settings > Billing > Add payment method & Add credit balance
+
+Then, we can check everything works, as done in [lab/openai_test.ipynb](./lab/openai_test.ipynb):
+
+```python
+import os
+import dotenv
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv(".env")
+
+client = OpenAI(
+  api_key=os.environ['OPENAI_API_KEY'],
+)
+
+# Chat completion
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "What's the difference between GPT-4 and GPT-4o mini?"}
+    ],
+    temperature=0.7
+)
+
+print(response.choices[0].message.content)
+# ...
+
+ukraine_prompt = """
+Question: "When did Russia invade Ukraine?"
+Answer:
+"""
+
+# Prompt completion
+response = client.completions.create(
+    model="gpt-3.5-turbo-instruct",
+    prompt=ukraine_prompt,
+    max_tokens=150,
+    temperature=0.7,
+)
+
+initial_ukraine_answer = response.choices[0].text.strip()
+print(initial_ukraine_answer)  # "Russia invaded Ukraine in February 2014."
+# The model is answering this way because the training data ends in 2021.
+# Our task will be to provide context from 2022 to help the model answer these questions correctly.
+# That can be accomplished by using a Retrieval-Augmented Generation (RAG) approach.
+```
+
+We can see that there are two main API calls:
+
+- `chat.completions.create`: for chat-based interactions, which supports roles, memory, and turns.
+- `completions.create`: for simple Q&A or text generation, which is prompt-only, and legacy-compatible.
+
+### Case Study: RAG with Wikipedia 2022 Events
+
+Key aspects discussed:
+
+- Use APIs to download.
+- Numerical representations of text:
+  - ASCII tables.
+  - One-hot encoding: sparse, too large (size is the vocabulary size).
+  - Embeddings: dense; similar words have similar vectors, so word arithmetic becomes possible.
+- OpenAI `text-embedding-ada-002` is used to create the embeddings: it has a dimensionality of 1536.
+- Keyword search vs. semantic search:
+  - Keyword search: exact match, not robust to typos, synonyms, etc.
+  - Semantic search: uses embeddings to find similar items, robust to typos, synonyms, etc. Cosine similarity is recommended as distance or similarity metric.
+    - In practice, **cosine distance** is used: `cosine_distance = 1 - cosine similarity`
+- Context prompt: we provide the found items to the model as context, so it can answer the question; also we request to use only the context information and say "I don't know" if the answer is not in the context.
+  - How much context to provide? As much tokens as the model can handle; but don't feed irrelevant information.
+  - We can use `tiktoken` to count the tokens in the context and the question.
+
+Notebook: [lab/casestudy_rag_wikpedia_2022.ipynb](./lab/casestudy_rag_wikpedia_2022.ipynb)
+
+**Note**: I had to change many parts of the notebook, since it was using the old API of Open AI. The current version uses the latest API (as of 2025-07).
+
+
+```python
+import os
+import dotenv
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv(".env")
+
+## Step 0: Inspecting Non-Customized Results
+
+client = OpenAI(
+  api_key=os.environ['OPENAI_API_KEY'],
+)
+
+ukraine_prompt = """
+Question: "When did Russia invade Ukraine?"
+Answer:
+"""
+
+response = client.completions.create(
+    model="gpt-3.5-turbo-instruct",
+    prompt=ukraine_prompt,
+    max_tokens=150,
+    temperature=0.7,
+)
+
+initial_ukraine_answer = response.choices[0].text.strip()
+print(initial_ukraine_answer)  # Wrong answer, since the model was trained with data until 2021.
+
+twitter_prompt = """
+Question: "Who owns Twitter?"
+Answer:
+"""
+
+response = client.completions.create(
+    model="gpt-3.5-turbo-instruct",
+    prompt=twitter_prompt,
+    max_tokens=150,
+    temperature=0.7,
+)
+
+initial_twitter_answer = response.choices[0].text.strip()
+print(initial_twitter_answer). # Wrong answer, since the model was trained with data until 2021.
+
+## Step 1: Prepare Dataset
+
+from dateutil.parser import parse
+import pandas as pd
+import requests
+
+# Get the Wikipedia page for "2022" since OpenAI's models stop in 2021
+resp = requests.get("https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exlimit=1&titles=2022&explaintext=1&formatversion=2&format=json")
+
+# Load page text into a dataframe
+df = pd.DataFrame()
+df["text"] = resp.json()["query"]["pages"][0]["extract"].split("\n")
+
+# Clean up text to remove empty lines and headings
+df = df[(df["text"].str.len() > 0) & (~df["text"].str.startswith("=="))]
+
+# In some cases dates are used as headings instead of being part of the
+# text sample; adjust so dated text samples start with dates
+prefix = ""
+for (i, row) in df.iterrows():
+    # If the row already has " - ", it already has the needed date prefix
+    if " – " not in row["text"]:
+        try:
+            # If the row's text is a date, set it as the new prefix
+            parse(row["text"])
+            prefix = row["text"]
+        except ValueError:
+            # If the row's text isn't a date, add the prefix
+            row["text"] = prefix + " – " + row["text"]
+df = df[df["text"].str.contains(" – ")]
+
+EMBEDDING_MODEL_NAME = "text-embedding-ada-002"
+batch_size = 100
+embeddings = []
+
+for i in range(0, len(df), batch_size):
+    batch_texts = df.iloc[i:i+batch_size]["text"].tolist()
+    
+    response = client.embeddings.create(
+        model=EMBEDDING_MODEL_NAME,
+        input=batch_texts
+    )
+
+    # Each `response.data` element is an object with an "embedding"
+    embeddings.extend([item.embedding for item in response.data])
+
+df["embeddings"] = embeddings
+
+df.to_csv("embeddings.csv")
+
+import numpy as np
+import pandas as pd
+import ast
+
+df = pd.read_csv("embeddings.csv", index_col=0)
+df["embeddings"] = df["embeddings"].apply(ast.literal_eval)
+
+## Step 2: Create a Function that Finds Related Pieces of Text for a Given Question
+
+from scipy.spatial.distance import cosine as cosine_distance
+import ast
+
+# Calculate cosine distance between the first two embeddings
+# cosine_distance = 1 - cosine_similarity
+cosine_distance(df["embeddings"].loc[0], df["embeddings"].loc[1])
+
+import numpy as np
+from scipy.spatial.distance import cdist
+
+def get_embedding(text: str, model="text-embedding-ada-002"):
+    response = client.embeddings.create(input=[text], model=model)
+    return response.data[0].embedding
+
+def distances_from_embeddings(query_embedding, embeddings, distance_metric="cosine"):
+    embeddings = np.stack(embeddings)
+    return cdist([query_embedding], embeddings, metric=distance_metric)[0]
+
+def get_rows_sorted_by_relevance(question, df):
+    """
+    Function that takes in a question string and a dataframe containing
+    rows of text and associated embeddings, and returns that dataframe
+    sorted from least to most relevant for that question
+    """
+    
+    # Get embeddings for the question text
+    question_embeddings = get_embedding(question, model=EMBEDDING_MODEL_NAME)
+    
+    # Make a copy of the dataframe and add a "distances" column containing
+    # the cosine distances between each row's embeddings and the
+    # embeddings of the question
+    df_copy = df.copy()
+    df_copy["distances"] = distances_from_embeddings(
+        question_embeddings,
+        df_copy["embeddings"].values,
+        distance_metric="cosine"
+    )
+    
+    # Sort the copied dataframe by the distances and return it
+    # (shorter distance = more relevant so we sort in ascending order)
+    df_copy.sort_values("distances", ascending=True, inplace=True)
+    return df_copy
+
+df = get_rows_sorted_by_relevance("When did Russia invade Ukraine?", df)
+df.head()
+
+df = get_rows_sorted_by_relevance("Who owns Twitter?", df)
+df.head()
+
+df.to_csv("distances.csv", index=False)
+df = pd.read_csv("distances.csv")
+df["embeddings"] = df["embeddings"].apply(ast.literal_eval)
+df.head()
+
+## Step 3: Create a Function that Composes a Text Prompt
+
+import tiktoken
+
+def create_prompt(question, df, max_token_count):
+    """
+    Given a question and a dataframe containing rows of text and their
+    embeddings, return a text prompt to send to a Completion model
+    """
+    # Create a tokenizer that is designed to align with our embeddings
+    tokenizer = tiktoken.get_encoding("cl100k_base")
+    
+    # Count the number of tokens in the prompt template and question
+    prompt_template = """
+Answer the question based on the context below, and if the question
+can't be answered based on the context, say "I don't know"
+
+Context: 
+
+{}
+
+---
+
+Question: {}
+Answer:"""
+    
+    current_token_count = len(tokenizer.encode(prompt_template)) + \
+                            len(tokenizer.encode(question))
+    
+    context = []
+    for text in get_rows_sorted_by_relevance(question, df)["text"].values:
+        
+        # Increase the counter based on the number of tokens in this row
+        text_token_count = len(tokenizer.encode(text))
+        current_token_count += text_token_count
+        
+        # Add the row of text to the list if we haven't exceeded the max
+        if current_token_count <= max_token_count:
+            context.append(text)
+        else:
+            break
+
+    return prompt_template.format("\n\n###\n\n".join(context), question)
+
+print(create_prompt("When did Russia invade Ukraine?", df, 200))
+print(create_prompt("Who owns Twitter?", df, 100))
+
+## Step 4: Create a Function that Answers a Question
+
+COMPLETION_MODEL_NAME = "gpt-3.5-turbo-instruct"
+
+def answer_question(
+    question, df, max_prompt_tokens=1800, max_answer_tokens=150
+):
+    """
+    Given a question, a dataframe containing rows of text, and a maximum
+    number of desired tokens in the prompt and response, return the
+    answer to the question according to an OpenAI Completion model
+    
+    If the model produces an error, return an empty string
+    """
+    prompt = create_prompt(question, df, max_prompt_tokens)
+
+    try:
+        response = client.completions.create(
+            model=COMPLETION_MODEL_NAME,
+            prompt=prompt,
+            max_tokens=max_answer_tokens,
+            temperature=0.7  # optional: defaults to 1.0
+        )
+        return response.choices[0].text.strip()
+    except Exception as e:
+        print(f"Error during completion: {e}")
+        return ""
+
+custom_ukraine_answer = answer_question("When did Russia invade Ukraine?", df)
+print(custom_ukraine_answer)  # February 24 – missiles strike Kyiv.
+
+custom_twitter_answer = answer_question("Who owns Twitter?", df)
+print(custom_twitter_answer)  # Elon Musk
+
+```
+
+### Exercise: RAG with 2023 Turkey–Syria Earthquakes
+
+Not done, but should be very similar to the previous case study. Only the dataset is different.
 
 ## 5. Build Custom Datasets for LLMs
 
