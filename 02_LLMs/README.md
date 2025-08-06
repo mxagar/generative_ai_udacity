@@ -59,7 +59,7 @@ Overview of Contents:
   - [5. Build Custom Datasets for LLMs](#5-build-custom-datasets-for-llms)
     - [Introduction](#introduction-2)
     - [Collecting Data](#collecting-data)
-    - [Web Scraping](#web-scraping)
+    - [Web Scraping with BeautifullSoup](#web-scraping-with-beautifullsoup)
   - [6. Project: Build Your Own Custom Chatbot](#6-project-build-your-own-custom-chatbot)
     - [Notebooks](#notebooks)
     - [Project Requirements](#project-requirements)
@@ -1352,9 +1352,76 @@ Key ideas:
 - Safety
   - Some data can be toxic
 
-### Web Scraping
+### Web Scraping with BeautifullSoup
 
 Notebook: [lab/Basic Web Scraping.ipynb](./lab/Basic%20Web%20Scraping.ipynb)
+
+```python
+import requests
+from bs4 import BeautifulSoup
+
+url = 'https://archive.org/details/cu31924067841738'
+response = requests.get(url)
+
+# print the status code
+print(response.status_code)
+
+# print the content of the response
+print(response.text)
+
+with open("language_of_flowers.html", mode='wb') as file:
+    file.write(response.content)
+
+with open("language_of_flowers.html") as fp:
+    flower_soup = BeautifulSoup(fp, 'html.parser')
+
+# Print a clean (prettier) version to look through
+print(flower_soup.prettify())
+
+# Get the <title> tag from the soup
+book_title = flower_soup.find("title")
+print(book_title)
+
+# Get the text from the <title> tag
+book_title = book_title.text.strip()
+print(book_title)
+
+# Find all the elements with the tag <p> (paragraph)
+collection_items = [item.text.strip() for item in flower_soup.find_all("p")]
+print(collection_items)
+
+# Look for an <a> tag (anchor/link element) that has the CSS class "item-upload-info__uploader-name"
+# The result is stored in the uploader_name variable
+# We find the name of the uploader of the book
+uploader_name = flower_soup.find("a", class_="item-upload-info__uploader-name")
+print(uploader_name.text.strip())
+
+# Look for an <a> tag (anchor/link element) that has 
+# collection items
+collection_items = flower_soup.find_all("a", class_="collection-item")
+print(collection_items)
+
+for item in collection_items:
+    print(item.text.strip())
+```
+
+Requests:
+
+- Status codes in 200-299: all good
+- Status codes in 400-599: error
+  - 404: website doesn't exist
+  - 403: forbidden access
+
+HTML tags:
+
+> - `<div>`: Div element is used to chunk content together.
+> - `<h1>,<h2>,<h3>,<h4>`: Heading elements are used for section headings.
+> - `<img>`: Image element is used to embed an image in a web page.
+> - `<p>`: Paragraph element is used for standard blocks of text.
+> - `<span>`: Span element is used to group text within another block of text, often for styling.
+> - `<a>`: Hyperlink tag is used to link to one page from another.
+
+XML files contain custom tags.
 
 ## 6. Project: Build Your Own Custom Chatbot
 
