@@ -1313,7 +1313,7 @@ print(custom_twitter_answer)  # Elon Musk
 
 ### Exercise: RAG with 2023 Turkey–Syria Earthquakes
 
-Not done, but should be similar to the previous case study.
+Not done, but should be very similar to the previous case study. Only the dataset is different.
 
 ## 5. Build Custom Datasets for LLMs
 
