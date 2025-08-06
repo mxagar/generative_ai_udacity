@@ -57,6 +57,9 @@ Overview of Contents:
     - [Case Study: RAG with Wikipedia 2022 Events](#case-study-rag-with-wikipedia-2022-events)
     - [Exercise: RAG with 2023 Turkey–Syria Earthquakes](#exercise-rag-with-2023-turkeysyria-earthquakes)
   - [5. Build Custom Datasets for LLMs](#5-build-custom-datasets-for-llms)
+    - [Introduction](#introduction-2)
+    - [Collecting Data](#collecting-data)
+    - [Web Scraping](#web-scraping)
   - [6. Project: Build Your Own Custom Chatbot](#6-project-build-your-own-custom-chatbot)
     - [Notebooks](#notebooks)
     - [Project Requirements](#project-requirements)
@@ -1317,9 +1320,41 @@ Not done, but should be very similar to the previous case study. Only the datase
 
 ## 5. Build Custom Datasets for LLMs
 
-TBD.
+### Introduction
 
-:construction:
+Key concepts:
+
+- Zero-shot answering: no examples shown in training dataset; emergent properties
+- Open domain vs narrow domain: open is common, Wikipedia-like domain, whereas narrow refers to specific information not accessible to the general pucblic, i.e., not common knowledge.
+
+Module contents:
+
+- Collect data
+- Clean data
+- Modeling tasks
+  - Causal language modeling
+  - Question-answering
+- Bulding dataset
+
+### Collecting Data
+
+Key ideas:
+
+- Internet data
+  - API
+    - Programmatic access
+    - Structured data: JSON, XML
+  - Scraping: HTTP requests
+    - Costly
+    - Sometimes not allowed
+- Licensing: some data has a license!
+  - Code licenses can be complicated
+- Safety
+  - Some data can be toxic
+
+### Web Scraping
+
+Notebook: [lab/Basic Web Scraping.ipynb](./lab/Basic%20Web%20Scraping.ipynb)
 
 ## 6. Project: Build Your Own Custom Chatbot
 
