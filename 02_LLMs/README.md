@@ -62,6 +62,8 @@ Overview of Contents:
     - [Web Scraping with BeautifullSoup](#web-scraping-with-beautifullsoup)
     - [Web Scraping with Selenium and Scrapy](#web-scraping-with-selenium-and-scrapy)
     - [Exercise: Collecting Data](#exercise-collecting-data)
+    - [Evaluating Data Quality](#evaluating-data-quality)
+    - [Data Cleaning](#data-cleaning)
   - [6. Project: Build Your Own Custom Chatbot](#6-project-build-your-own-custom-chatbot)
     - [Notebooks](#notebooks)
     - [Project Requirements](#project-requirements)
@@ -1588,6 +1590,26 @@ for url in url_list:
     product_description = parse_page(page_text)
     save_text(product_description, url)
 ```
+
+### Evaluating Data Quality
+
+For language modeling, we should make sure that for the given task:
+
+- The text is syntactically and semantically correct.
+  - Syntax: grammatical correctness.
+  - Semantics: meaning of the text.
+- The text is relevant.
+  - Source should be trustworthy.
+
+Also, we should consider that word embeddings have been [proven to be biased](https://link.springer.com/article/10.1007/s00146-022-01443-w), often male-biased. Thus, we should consider whether that affects our task.
+
+Interestingly, fair models are not necessarily the best models, i.e., a model that is fair may not be the best performing model. Thus, we should consider the trade-off between performance and fairness.
+
+Book: the [Fair ML book](https://fairmlbook.org) by Solon Baracas, Moritz Hardt, Arvind Narayanan is a great resource.
+
+### Data Cleaning
+
+Notebook: [lab/Data_Cleaning.ipynb](./lab/Data_Cleaning.ipynb)
 
 ## 6. Project: Build Your Own Custom Chatbot
 
