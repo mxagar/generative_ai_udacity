@@ -1,2 +1,3 @@
 .env
 language_of_flowers.html
+data/train/*
