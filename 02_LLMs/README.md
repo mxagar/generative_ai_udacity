@@ -60,6 +60,8 @@ Overview of Contents:
     - [Introduction](#introduction-2)
     - [Collecting Data](#collecting-data)
     - [Web Scraping with BeautifullSoup](#web-scraping-with-beautifullsoup)
+    - [Web Scraping with Selenium and Scrapy](#web-scraping-with-selenium-and-scrapy)
+    - [Exercise: Collecting Data](#exercise-collecting-data)
   - [6. Project: Build Your Own Custom Chatbot](#6-project-build-your-own-custom-chatbot)
     - [Notebooks](#notebooks)
     - [Project Requirements](#project-requirements)
@@ -1325,7 +1327,7 @@ Not done, but should be very similar to the previous case study. Only the datase
 Key concepts:
 
 - Zero-shot answering: no examples shown in training dataset; emergent properties
-- Open domain vs narrow domain: open is common, Wikipedia-like domain, whereas narrow refers to specific information not accessible to the general pucblic, i.e., not common knowledge.
+- Open domain vs narrow domain: open is common, Wikipedia-like domain, whereas narrow refers to specific information not accessible to the general public, i.e., not common knowledge.
 
 Module contents:
 
@@ -1334,7 +1336,7 @@ Module contents:
 - Modeling tasks
   - Causal language modeling
   - Question-answering
-- Bulding dataset
+- Building dataset
 
 ### Collecting Data
 
@@ -1422,6 +1424,170 @@ HTML tags:
 > - `<a>`: Hyperlink tag is used to link to one page from another.
 
 XML files contain custom tags.
+
+### Web Scraping with Selenium and Scrapy
+
+Other libraries for web scraping:
+
+- [Selenium](https://www.selenium.dev/): for web automation, e.g., clicking buttons, filling forms, etc.
+- [Scrapy](https://docs.scrapy.org/en/latest/intro/tutorial.html): a fast high-level web crawling & scraping framework for Python.
+
+Selenium renders the page in a virtual browser, usually *headless* (no GUI), and allows to interact with the page, e.g., clicking buttons, filling forms, etc.
+
+Example code:
+
+```python
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+options = Options()
+options.headless = True
+options.add_argument("--window-size=1920,1080")
+
+# Create a new instance of the Chrome driver
+driver = webdriver.Chrome(options=options, executable_path='/path/to/chromedriver')
+
+# Get the page
+driver.get("https://www.udacity.com/")
+
+# The content we are interested is in the page source!
+page_source = driver.page_source
+with open("udacity_home.html", "w") as f:
+    f.write(page_source)
+
+# Close the driver/browser
+driver.quit()
+```
+
+### Exercise: Collecting Data
+
+Notebook: [lab/Simple_Scraper_SOLUTION.ipynb](./lab/Simple_Scraper_SOLUTION.ipynb)
+
+- Some books are scrapped from [http://books.toscrape.com](http://books.toscrape.com), a scrapping-friendly website.
+- Key functions:
+  - `fetch_page(url)`: fetches the HTML content of a page.
+  - `parse_page(html_doc)`: parses the HTML content to extract product descriptions.
+  - `save_text(text, url, train=True)`: saves the extracted text to disk, either in a training or test directory.
+  - `generate_url_list()`: generates a list of URLs to scrape from the main page.
+- The complete pipeline is automated.
+
+
+```python
+import requests
+from bs4 import BeautifulSoup
+from pathlib import Path
+
+def fetch_page(url: str):
+    headers = {
+    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36'
+    }
+    r = requests.get(url, headers=headers)
+    if r.status_code == 200:
+        return r.text
+    else:
+        print(r.status_code)
+        return r.text
+
+
+# Test if the function fetch the page correctly
+test_url = "http://books.toscrape.com/catalogue/olio_984/index.html"
+test_result = fetch_page(test_url)
+print(test_result)
+
+
+def parse_page(html_doc:str):
+    soup = BeautifulSoup(html_doc, 'html.parser')
+    
+    # Our LLM should be trained in product descriptions
+    # Find the <div> element with id="product_description"
+    product_div = soup.find('div', id='product_description')
+    
+    # Find the <p> element that is immediate siblings of the product_div
+    selected_elements = product_div.find_next('p')
+    
+    description = selected_elements.text
+    return description
+
+
+test_text = parse_page(test_result)
+print(test_text)
+
+
+def save_text(text, url, train=True):
+    # Save the data to "./data/train/" if it's in the training set
+    if train:
+        file_path = Path("./data/train/")
+        file_path.mkdir(parents=True, exist_ok=True)
+    # If data is not in the training set, save it to "./data/test/"
+    else:
+        file_path = Path("./data/test/")
+        file_path.mkdir(parents=True, exist_ok=True)
+    
+    # Split the URL by "/"
+    split_url = url.split("/")
+    
+    # Pull the name from the URL, Add a .txt extension to the end of the file
+    file_name = f"{split_url[-2]}.txt"
+    print(file_name)
+    
+    # Write the file to disk
+    with open(file_path.joinpath(file_name), "w") as f:
+        f.write(text)
+
+
+save_text(test_text, test_url, train=True)
+
+
+def generate_url_list():
+    # Create a list to store our urls
+    url_list = list()
+    
+    # Specify the index page and fetch it
+    home = "https://books.toscrape.com/catalogue/category/books_1/index.html"
+    home_page = fetch_page(home)
+    
+    # Create a soup object for the home page
+    soup = BeautifulSoup(home_page, 'html.parser')
+    
+    # Find all the links on the page
+    links = soup.find_all('a', href=True)
+    
+    for element in links:
+        # Pull out and clean the relevant link
+        if len(element['href'].split("/")) == 4 and "../../" in element['href'] and "../../../" not in element['href']:
+            # Extract the url with the relative (..) references
+            relative_url = element['href']
+            
+            # Replace the relative references with the base URL
+            full_url = relative_url.replace("../../", "http://books.toscrape.com/catalogue/")
+            url_list.append(full_url)
+#         url_list.append(full_url)
+    # Deduplicate links in the list
+    url_list = list(set(url_list))
+    return url_list
+
+
+# Check if the urls are valid
+url_list = generate_url_list()
+url_list
+
+
+# Test if the fetch_page and parse_page functions run correctly.
+# Run the cell a few times to test if the descrption is extracted successfully on a random url from the url_list
+import random
+url = random.choice(url_list)
+
+page_text = fetch_page(url)
+product_description = parse_page(page_text)
+print(url + "\n")
+print(product_description)
+
+# Bring it all together to production description texts from mupliple urls and save them to the disk
+for url in url_list:
+    page_text = fetch_page(url)
+    product_description = parse_page(page_text)
+    save_text(product_description, url)
+```
 
 ## 6. Project: Build Your Own Custom Chatbot
 
