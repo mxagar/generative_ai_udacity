@@ -65,6 +65,10 @@ Overview of Contents:
     - [Evaluating Data Quality](#evaluating-data-quality)
     - [Data Cleaning](#data-cleaning)
     - [Language Modeling Tasks](#language-modeling-tasks)
+    - [HuggingFace Dataset and Data Structuring](#huggingface-dataset-and-data-structuring)
+    - [Datasets for Casual Modeling](#datasets-for-casual-modeling)
+    - [Datasets for Question Answering](#datasets-for-question-answering)
+      - [Exercise: Dataset for Question Answering](#exercise-dataset-for-question-answering)
   - [6. Project: Build Your Own Custom Chatbot](#6-project-build-your-own-custom-chatbot)
     - [Notebooks](#notebooks)
     - [Project Requirements](#project-requirements)
@@ -1790,6 +1794,241 @@ Which models should be use?
   - Clustering
 - Sequence to Sequence models (encoder and decoder, T5):
   - Translation
+
+### HuggingFace Dataset and Data Structuring
+
+```python
+from datasets import Dataset, load_from_disk, load_dataset
+# Create a dictionary
+data_dict = {"courses": ["Deep Learning", "Datasets for LLMs"], 
+"type": ["Nanodegree", "Standalone"]}
+
+# Create a Dataset object from the dictionary
+ds = Dataset.from_dict(data_dict)
+
+# Save the Dataset object to local disk
+ds.save_to_disk("my_dataset.hf")
+print("Dataset saved!")
+
+# Load the Dataset object from local disk
+ds = load_from_disk("my_dataset.hf")
+print("Dataset loaded!")
+
+# To share a dataset to the Hub
+# Web UI:
+# https://huggingface.co/docs/datasets/upload_dataset
+# Via Python:
+ds.push_to_hub("mxagar/my_dataset")
+
+# To load a dataset from the Hub
+ds_ = load_dataset("mxagar/my_dataset")
+```
+
+To structure the data, we can:
+
+> 1. Option 1: Storing each context in its own `.txt` file, and, if applicable, storing questions/answers pairs or instructions/outputs pairs in a separate `.csv` file.
+  - We can [stream the dataset](https://huggingface.co/docs/datasets/stream), i.e., use the dataset without downloading it entirely.
+  - Version control is easier, as well as partial downloading.
+  - However, we're going to store many pieces of data, i.e., files: naming and directory structure are essential.
+> 2. Option 2: Storing everything within one `.csv` file (potentially one each for train/validation/test sets).
+  - Easier: one file, all can be loaded as a Pandas dataframe.
+  - Drawbacks: harder to manage and version control, especially with large datasets.
+  - Usually used for smaller datasets.
+
+Also consider if we save the *raw* text or the *processed* one, and if the conversion from *processed* to *raw* is necessary (if another processing is desired) and possible at all.
+
+### Datasets for Casual Modeling
+
+Notebook: [lab/Causal LM Datasets.ipynb](./lab/Causal%20LM%20Datasets.ipynb)
+
+In the notebook, a small dataset is used to finetune a causal small language model (GPT2). The whole preparation, training and evaluation process is demonstrated step-by-step.
+
+```python
+from datasets import Dataset, load_dataset
+from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, Trainer, DataCollatorForLanguageModeling
+from itertools import chain
+import pandas as pd
+from pathlib import Path
+import torch
+
+# Our data is located in the /data directory. Let's see what we're working with.
+!ls ./data/causal_modeling/
+# CVE-2020-29583.txt xss.txt
+
+# Load the file names into a list
+data_path = Path("./data/causal_modeling")
+file_paths = [filename for filename in data_path.glob("*.txt")]
+
+# Read all the file contents into a list
+file_data = list()
+for filename in file_paths:
+    with open(filename, "r") as f:
+        data = f.read()
+    file_data.append(data)
+
+print(file_data[0])
+print('=====================')
+print(file_data[1])
+
+# Convert our list of text into a dataset using .from_dict()
+dataset = Dataset.from_dict({"text": file_data})
+
+# Preview the dataset
+dataset["text"]
+
+# Load the tokenizer for GPT-2
+tokenizer = AutoTokenizer.from_pretrained('gpt2')
+
+# The tokenizer does not have a pad token, so we'll specify one.
+tokenizer.pad_token = tokenizer.eos_token
+
+# Load the GPT-2 model
+model = AutoModelForCausalLM.from_pretrained('gpt2')
+
+# Create a tokenization function to tokenize the dataset
+def tokenize_function(examples):
+    output = tokenizer(examples['text'])
+    return output
+
+# Run the tokenizer over our dataset using the .map method 
+# NOTE: For large datasets, this can take a while
+tokenized_dataset = dataset.map(tokenize_function, batched=True)
+
+# We want to remove our original dataset's column names from the tokenized dataset
+tokenized_dataset = tokenized_dataset.remove_columns(dataset.column_names)
+
+# This function was lightly modified from the HuggingFace run_clm.py
+# You can find the original function at https://github.com/huggingface/transformers/blob/main/examples/pytorch/language-modeling/run_clm.py
+# Create a preprocessing function to group aour texts together in chunks of 1024
+def group_texts(examples):
+    # Specify our bock size -- 1024
+    block_size = 1024
+    
+    # Concatenate all the texts together for each example
+    concatenated_examples = dict()
+    for k in examples.keys():
+        concatenated_examples[k] = list(chain(*examples[k]))
+        
+    # Compute the total length of all the text
+    total_length = len(concatenated_examples[list(examples.keys())[0]])
+    
+    # We drop the small remainder of the block
+    # If total_length < block_size, we return an empty dict.
+    total_length = (total_length // block_size) * block_size
+    
+    # Split into chunks of 1024
+    result = dict()
+    # Loop over the keys and texts in the concatenated examples
+    for k, t in concatenated_examples.items():
+        # Divide each text into chunks of 1024
+        chunks = list()
+        for i in range(0, total_length, block_size):
+            chunks.append(t[i : i + block_size])
+        result[k] = chunks
+    # Set the "labels" equal to the "input_ids"
+    result["labels"] = result["input_ids"].copy()
+    return result
+
+# Chunk our datasets using the group_texts function
+dataset = tokenized_dataset.map(group_texts, batched=True)
+
+# Set up our data collator for training. Since our model is PyTorch, we need to specify return_tensors as "pt"
+# A data collator is a utility to dynamically batch and format individual samples from a dataset into tensors suitable for training
+# mlm=False: Disables masked language modeling (MLM), meaning it’s for causal language modeling (like GPT-style models).
+data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False, return_tensors="pt")
+
+# Establish our training arguments
+training_args = TrainingArguments(
+    output_dir="finetune_gpt2",
+    per_device_train_batch_size=1,
+    save_strategy="no"
+)
+
+# Put everything into our Trainer
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=dataset,
+    data_collator=data_collator
+)
+
+# Run the trainer
+trainer.train()
+
+# Specify an input string
+input_string = "Cross-Site Scripting is a vulnerability that"
+
+# Tokenize our input string
+inputs = tokenizer(
+    input_string,
+    return_tensors="pt",
+    padding=True,
+    truncation=True,
+)
+input_ids = inputs["input_ids"].to("cpu")
+attention_mask = inputs["attention_mask"].to("cpu")
+
+# Generate model output_ids
+model.eval()
+model.to("cpu")  # Ensure the model is on CPU for inference
+with torch.no_grad():
+    outputs = model.generate(
+        input_ids=input_ids,
+        attention_mask=attention_mask,
+        num_beams=10,
+        num_return_sequences=1,
+        no_repeat_ngram_size=1,
+        remove_invalid_values=True,
+        pad_token_id=tokenizer.eos_token_id,  # required for GPT2
+    )
+
+# Decode the output tokens to text
+output_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+# Print our output!
+print(output_text)
+# # Specify an input string
+input_string = "Cross-Site Scripting is a vulnerability that"
+
+# Tokenize our input string
+inputs = tokenizer(
+    input_string,
+    return_tensors="pt",
+    padding=True,
+    truncation=True,
+)
+input_ids = inputs["input_ids"].to("cpu")
+attention_mask = inputs["attention_mask"].to("cpu")
+
+# Generate model output_ids
+model.eval()
+model.to("cpu")  # Ensure the model is on CPU for inference
+with torch.no_grad():
+    outputs = model.generate(
+        input_ids=input_ids,
+        attention_mask=attention_mask,
+        num_beams=10,
+        num_return_sequences=1,
+        no_repeat_ngram_size=1,
+        remove_invalid_values=True,
+        pad_token_id=tokenizer.eos_token_id,  # required for GPT2
+    )
+
+# Decode the output tokens to text
+output_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+# Print our output!
+print(output_text)
+# Cross-Site Scripting is a vulnerability that allows remote attackers to inject arbitrary web script or HTML via unspecified vectors. A denial of service (DoS
+
+```
+
+### Datasets for Question Answering
+
+
+
+#### Exercise: Dataset for Question Answering
+
 
 
 ## 6. Project: Build Your Own Custom Chatbot
