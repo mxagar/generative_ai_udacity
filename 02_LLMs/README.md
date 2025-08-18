@@ -64,6 +64,7 @@ Overview of Contents:
     - [Exercise: Collecting Data](#exercise-collecting-data)
     - [Evaluating Data Quality](#evaluating-data-quality)
     - [Data Cleaning](#data-cleaning)
+    - [Language Modeling Tasks](#language-modeling-tasks)
   - [6. Project: Build Your Own Custom Chatbot](#6-project-build-your-own-custom-chatbot)
     - [Notebooks](#notebooks)
     - [Project Requirements](#project-requirements)
@@ -1610,6 +1611,186 @@ Book: the [Fair ML book](https://fairmlbook.org) by Solon Baracas, Moritz Hardt,
 ### Data Cleaning
 
 Notebook: [lab/Data_Cleaning.ipynb](./lab/Data_Cleaning.ipynb)
+
+In this notebook, text is fetched from a website (author's bio) and cleaned:
+
+- `BeautifulSoup` is used for parsing HTML and extracting text, going to specific paragraphs/sections.
+- Basic processing is performed: select relevant sections after visual inspection, strip text, select based on length, etc.
+- Then, spelling errors are addressed: a mangled text is corrected using `SymSpell`: words not found in the package dictionary and not starting with a capital letter are suggested for correction (based on edit distance).
+
+```python
+from tqdm import tqdm
+import requests
+import json
+from bs4 import BeautifulSoup
+import re
+from symspellpy import SymSpell, Verbosity
+import pkg_resources
+
+
+# Function to fetch a page
+def fetch_page(url: str):
+    headers = {
+    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36'
+    }
+    response = requests.get(url, headers=headers)
+    r = requests.get(url)
+    if r.status_code == 200:
+        return r.text
+    else:
+        print(r.status_code)
+        return r.text
+
+
+# Get the source of the page
+# source = fetch_page(research_url)
+
+# Write the source to disk
+# with open("research_source.html", "w") as f:
+#     f.write(source)
+    
+# Load the source from disk
+with open("research_source.html", "r") as f:
+    source = f.read()
+
+print(source)
+
+# Function to condense whitespace
+def condense_newline(text):
+    return '\n'.join([p for p in re.split('\n|\r', text) if len(p) > 0])
+
+# Return the body without the tags
+def strip(body):
+    soup = BeautifulSoup(body, 'html.parser')
+    condensed_soup = condense_newline(soup.get_text("\n"))
+    return condensed_soup
+
+stripped_source = strip(source)
+
+# Returns the text in a list based on specified tags
+def parse_html(html_source):
+    soup = BeautifulSoup(html_source, 'html.parser')
+
+    # Get text from the specified tags. Add more tags if necessary.
+    TAGS = ['div']
+    condensed_list = [condense_newline(tag.text) for tag in soup.findAll(TAGS, {"class": "bio_content"})]
+    return condensed_list
+
+parsed_source = parse_html(source)
+
+# Finding specific data
+for bio in parsed_source:
+    if "Erick Galinkin" in bio:
+        print(f"{bio}\n")
+
+for bio in parsed_source:
+    # Split by newline
+    sections = bio.split("\n")
+    # The full bio is the last section
+    full_bio = sections[-1]
+    if "Erick Galinkin" in full_bio:
+        print(full_bio)
+
+# Collect full bios by excluding short passages
+full_bios = [bio.split("\n")[-1] for bio in parsed_source if len(bio.split("\n")[-1]) > 50]
+erick_bio = full_bios[4]
+print(erick_bio)
+
+# Bio with errors, to be corrected
+mangled_bio = "Erick Galinkin is a hackr and artificial intelligence researcher whose passion is in finding ways to both apply AI to security and apply security to AI. His experience spans the spectrum of information security, including threat intelligence, vulnerability discvery, data science, and malware analysis. As part of Rapid7’s OCTO Team, he coonducts resaerch and informs policy on the cybersecurity implications of artificial intelligence.Erick has presented his research at leading industry and academic conferences and actively writes papers for academic journals. Outside of Rapid7, Erick does research on the theory of deep learning and privacy preserving machine learning while persuing his PhD at Drexel University."
+
+# Find potential misspellings
+# Create our SymSpell object
+# max_dictionary_edit_distance=2: dictionary words to look are no more than 2 edits/characters away
+speller = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
+
+# Load the dictionary included in symspellpy using pkg_resources
+# The structure of the file has to specify when the file is split, whether the term or the count comes first.
+dictionary_path = pkg_resources.resource_filename("symspellpy", "frequency_dictionary_en_82_765.txt")
+speller.load_dictionary(dictionary_path, term_index=0, count_index=1)
+
+# Check each word in the mangled bio
+for word in mangled_bio.split(" "):
+    # Show the closest words that are at most two characters different and 
+    # if there is no correction within the edit distance, return an empty list.
+    suggestions = speller.lookup(word, Verbosity.CLOSEST, max_edit_distance=2, include_unknown=False)
+    for suggestion in suggestions:
+        print(suggestion)
+# rick, 1, 13822320
+# trick, 1, 8208473
+# ...
+
+# Run the lookup over the whole string
+suggestions = speller.lookup_compound(mangled_bio, max_edit_distance=2)
+for suggestion in suggestions:
+    print(suggestion)
+
+# Check each word in the mangled bio
+for word in mangled_bio.split(" "):
+    # Exclude correcting words that start with an upper case letter
+    suggestions = speller.lookup(word, Verbosity.CLOSEST, max_edit_distance=2, ignore_token=r"[A-Z]\w+", include_unknown=True)
+    for suggestion in suggestions:
+        print(suggestion)
+# Erick, 0, 1
+# Galinkin, 0, 1
+# ...
+
+bio_list = list()
+# Check each word in the mangled bio
+for word in mangled_bio.split(" "):
+    # Exclude correcting words that start with an upper case letter
+    # Set include unknown to True so we return the original word
+    suggestions = speller.lookup(word, Verbosity.CLOSEST, max_edit_distance=2, ignore_token=r"[A-Z]\w+", 
+                                 include_unknown=True)
+    # Append the most probable suggestion term to bio_list
+    bio_list.append(suggestions[0].term)
+    
+# Convert bio_list to string
+corrected_bio = " ".join(bio_list)
+
+print('====erick_bio====','\n')
+print(erick_bio)
+print('\n','====mangled_bio====','\n')
+print(mangled_bio)
+print('\n','====corrected_bio====','\n')
+print(corrected_bio)
+```
+
+### Language Modeling Tasks
+
+Key ideas:
+
+- We have different task groups:
+  - Text generation
+  - Text classification
+  - Text summarization
+  - Text clustering
+- Within the text generation group, we need to deal with text modeling/understanding; there are mainly 2 language modeling tasks:
+  - Masked word modeling: a word is masked and it needs to be predicted.
+  - Causal language modeling: the last word in a sequence is masked and it needs to be predicted.
+- Causal language modeling is a super-class of other tasks:
+  - Abstractive summarization: summary of most important contents.
+  - QA: answering questions based on a context.
+    - Extractive QA: selecting a span from the context.
+    - Abstractive QA: generating a new answer based on the context.
+- Other tasks groups:
+  - Text classification: assigning a label to a given text.
+  - Translation
+  - Clustering: done with embeddings
+
+Which models should be use?
+
+- Autoregressive models (decoder only, GPT):
+  - Instruction-based text generation
+  - Summarization
+  - Abstractive QA
+- Autoencoder models (encoder only, BERT):
+  - Classification
+  - Extractive QA
+  - Clustering
+- Sequence to Sequence models (encoder and decoder, T5):
+  - Translation
+
 
 ## 6. Project: Build Your Own Custom Chatbot
 
