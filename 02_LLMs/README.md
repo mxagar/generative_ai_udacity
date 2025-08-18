@@ -66,9 +66,8 @@ Overview of Contents:
     - [Data Cleaning](#data-cleaning)
     - [Language Modeling Tasks](#language-modeling-tasks)
     - [HuggingFace Dataset and Data Structuring](#huggingface-dataset-and-data-structuring)
-    - [Datasets for Casual Modeling](#datasets-for-casual-modeling)
-    - [Datasets for Question Answering](#datasets-for-question-answering)
-      - [Exercise: Dataset for Question Answering](#exercise-dataset-for-question-answering)
+    - [Causal Modeling: Example](#causal-modeling-example)
+    - [Question Answering: Exercise](#question-answering-exercise)
   - [6. Project: Build Your Own Custom Chatbot](#6-project-build-your-own-custom-chatbot)
     - [Notebooks](#notebooks)
     - [Project Requirements](#project-requirements)
@@ -1837,7 +1836,7 @@ To structure the data, we can:
 
 Also consider if we save the *raw* text or the *processed* one, and if the conversion from *processed* to *raw* is necessary (if another processing is desired) and possible at all.
 
-### Datasets for Casual Modeling
+### Causal Modeling: Example
 
 Notebook: [lab/Causal LM Datasets.ipynb](./lab/Causal%20LM%20Datasets.ipynb)
 
@@ -2023,12 +2022,7 @@ print(output_text)
 
 ```
 
-### Datasets for Question Answering
-
-
-
-#### Exercise: Dataset for Question Answering
-
+### Question Answering: Exercise
 
 
 ## 6. Project: Build Your Own Custom Chatbot
