@@ -4,3 +4,6 @@ data/train/*
 data/causal_modeling/*
 finetune_gpt2/*
 data/qa/*
+qa_data.hf
+tmp_trainer
+ft-distilbert
