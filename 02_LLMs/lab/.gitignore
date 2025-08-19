@@ -3,3 +3,4 @@ language_of_flowers.html
 data/train/*
 data/causal_modeling/*
 finetune_gpt2/*
+data/qa/*
