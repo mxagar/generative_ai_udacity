@@ -2024,6 +2024,27 @@ print(output_text)
 
 ### Question Answering: Exercise
 
+QA datasets have 3 important elements:
+
+1. **Context**: The text or documents that provide the background information for the questions.
+2. **Questions**: The specific queries that need to be answered based on the context.
+3. **Answers**: The correct responses to the questions, usually extracted from the context.
+
+Popular dataset:
+
+- [SQuAD](https://rajpurkar.github.io/SQuAD-explorer/)
+- [HotpotQA](https://hotpotqa.github.io)
+- [SubjQA](https://github.com/megagonlabs/SubjQA)
+
+If we want to create our own QA dataset:
+
+- We need to start collecting contexts
+- From the contexts, we derive Questions and Answers
+- Alternatively, we have a set of predefined questions and answers that we can use, and we need to map them to contexts.
+
+Notebook: [lab/Building_QA_Datasets_SOLUTION.ipynb](./lab/Building_QA_Datasets_SOLUTION.ipynb)
+
+
 
 ## 6. Project: Build Your Own Custom Chatbot
 
