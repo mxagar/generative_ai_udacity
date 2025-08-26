@@ -2044,7 +2044,96 @@ If we want to create our own QA dataset:
 
 Notebook: [lab/Building_QA_Datasets_SOLUTION.ipynb](./lab/Building_QA_Datasets_SOLUTION.ipynb)
 
+-	Introduces the goal of building a question answering (QA) dataset for training models.
+-	Describes the structure of the SQuAD dataset as a widely-used QA format:
+  ``` python
+  {
+    'id': '123',
+    'title': 'University_of_Notre_Dame',
+    'context': 'One of the main driving...',
+    'question': 'In what year did the team lead by Knute Rockne win the Rose Bowl?',
+    'answers': {'text': ['1925'], 'answer_start': [354]}
+  }
+  ```
+-	Loads sample context and question-answer pairs provided as Python dictionaries: [`lab/data/qa/qa.csv`](./lab/data/qa/qa.csv), which contains: `question, answer, filename`
+-	Converts the question-answer pairs into the SQuAD-style JSON format, including fields like context, question, answers, and id: `qa_to_squad()`
+-	Handles the answers field by computing `answer_start` (character index of the answer in the context).
+-	Uses the HuggingFace datasets library to convert the list of examples into a Dataset object.
+-	Saves the dataset into a HF file type (JSON & arrow) on disk in SQuAD format.
+-	Reloads the saved HF dataset using `load_dataset()` from HuggingFace to validate formatting.
+-	Verifies the structure and types of the loaded dataset fields (like context, question, etc.).
+-	Prepares the dataset for training with HuggingFace models by ensuring it matches expected input formats.
 
+```python
+from pathlib import Path
+import pandas as pd
+from datasets import Dataset
+from transformers import AutoTokenizer, AutoModelForQuestionAnswering, Trainer, default_data_collator, pipeline
+from transformers.trainer_utils import PredictionOutput, speed_metrics
+import math
+import time
+import collections
+import numpy as np
+from tqdm.notebook import tqdm
+
+
+df = pd.read_csv("data/qa/qa.csv")
+df.head()
+# question	answer	filename
+# 0	Who is the manufacturer of the product?	Zyxel	CVE-2020-29583.txt
+# ...
+
+
+def qa_to_squad(question, answer, filename, identifier):
+    filepath = "data/qa/" + filename
+    with open(filepath, "r") as f:
+        context = f.read()
+        
+    start_location = context.find(answer)
+    qa_pair = {
+        'id': identifier,
+        'title': filepath,
+        'context': context,
+        'question': question,
+        'answers': {
+            'text': [answer],
+            'answer_start': [start_location]
+        }
+    }
+    return qa_pair
+
+
+# Build a list of dictionaries
+# being each dict the QA pair/row in SQuAD format
+qa_list = list()
+for i, row in df.iterrows():
+    q = row['question']
+    a = row['answer']
+    f = row['filename']
+    SQuAD_dict = qa_to_squad(q, a, f, i)
+    qa_list.append(SQuAD_dict)
+
+
+# Convert the list of dicts into a Dataset object
+# We need to use pandas as intermediate auxiliary library
+qa_df = pd.DataFrame(data=qa_list)
+data = Dataset.from_pandas(qa_df)
+print(data[0])
+# {'id': 0, 'title': 'data/qa/CVE-2020-29583.txt', 'context': 'CVE: ...
+
+
+# We can save the dataset to disk
+data.save_to_disk("qa_data.hf")
+
+
+# We will use DistilBERT as the backbone foundation model to be fine-tuned
+# Load the tokenizer for DistilBERT
+tokenizer = AutoTokenizer.from_pretrained('distilbert-base-uncased')
+
+# Load the model for the task: AutoModelForQuestionAnswering
+# Note: This will throw warnings, which is expected!
+model = AutoModelForQuestionAnswering.from_pretrained('distilbert-base-uncased')
+```
 
 ## 6. Project: Build Your Own Custom Chatbot
 
@@ -2054,7 +2143,8 @@ TBD.
 
 ### Notebooks
 
-- Project: [mxagar/rag-app-examples](https://github.com/mxagar/rag-app-examples)
+- Project: [mxagar/rag-app-examples/qa-chatbot](https://github.com/mxagar/rag-app-examples/tree/main/qa-chatbot)
+
 
 ### Project Requirements
 
@@ -2063,5 +2153,6 @@ TBD.
 ### Interesting Links
 
 - [mxagar/azure-rag-app](https://github.com/mxagar/azure-rag-app)
+- [mxagar/rag-app-examples/local-rag](https://github.com/mxagar/rag-app-examples/tree/main/local-rag)
 - [aws-samples/aws-genai-llm-chatbot](https://github.com/aws-samples/aws-genai-llm-chatbot)
 - [Azure-Samples/azure-search-openai-demo](https://github.com/Azure-Samples/azure-search-openai-demo/)
