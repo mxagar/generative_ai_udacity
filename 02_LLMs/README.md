@@ -2044,6 +2044,7 @@ If we want to create our own QA dataset:
 
 Notebook: [lab/Building_QA_Datasets_SOLUTION.ipynb](./lab/Building_QA_Datasets_SOLUTION.ipynb)
 
+- Example/notebook based on [https://github.com/huggingface/transformers/tree/main/examples/pytorch/question-answering](https://github.com/huggingface/transformers/tree/main/examples/pytorch/question-answering).
 -	Introduces the goal of building a question answering (QA) dataset for training models.
 -	Describes the structure of the SQuAD dataset as a widely-used QA format:
   ``` python
