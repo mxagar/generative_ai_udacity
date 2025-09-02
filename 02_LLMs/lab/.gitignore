@@ -7,3 +7,5 @@ data/qa/*
 qa_data.hf
 tmp_trainer
 ft-distilbert
+.DS_Store
+
