@@ -70,7 +70,6 @@ Overview of Contents:
     - [Question Answering: Exercise](#question-answering-exercise)
   - [6. Project: Build Your Own Custom Chatbot](#6-project-build-your-own-custom-chatbot)
     - [Notebooks](#notebooks)
-    - [Project Requirements](#project-requirements)
     - [Interesting Links](#interesting-links)
 
 ## 1. Introduction LLMs
@@ -2536,18 +2535,49 @@ question_answerer(question=question, context=context)
 
 ## 6. Project: Build Your Own Custom Chatbot
 
-TBD.
+Key ideas:
 
-:construction:
+- Construct a custom chatbot.
+  - Using RAG? Yes.
+  - Using QA model fine-tuning? Not required.
+- Data:
+  1. Either an article of choice from Wikipedia (we can use API)
+  2. Or any of the CSV files provided:
+    > - `2023_fashion_trends.csv`: this file contains reports and quotes about fashion trends for 2023. Each row includes the source URL, article title, and text snippet.
+    > - `character_descriptions.csv`: this file contains character descriptions from theater, television, and film productions. Each row contains the name, description, medium, and setting. All characters were invented by an OpenAI model.
+    > - `nyc_food_scrap_drop_off_sites.csv`: this file contains locations, hours, and other information about food scrap drop-off sites in New York City. This information was retrieved in early 2023, and you can also get the latest version from this open data [portal](https://dev.socrata.com/foundry/data.cityofnewyork.us/if26-z6xq).
+  3. Or own own scrapped data: at least 20 rows, text-based.
+
+Instructions:
+
+- Explain why the dataset is suited for the project.
+  - Why is model customization required?
+  - The model should answer differently after customization.
+  - Run the QA model befor and after trianing and show the customization makes sense.
+- Prepare dataset:
+  - Pandas df with `text` column.
+- Create custom query code (use previous example).
+- Provide examples.
+
+Rubric:
+
+- Data wrangling: dataframe with at least 20 rows and a `text` column.
+- Custom Query Completion: OpenAI API used to get/generate response.
+- Demonstrate that custom prompts enhance the performance of the OpenAI model: 2 Questions tested with and without prompt.
+- Explain why dataset is appropriate.
+
+Improvements:
+
+- [ ] Explore OpenAI [fine-tuning API](https://platform.openai.com/docs/guides/model-optimization).
+- [ ] Use while loop to allow one query after the other.
+- [ ] Clean dataset to remove irrelevant contant and augment it if possible and useful.
 
 ### Notebooks
 
 - Project: [mxagar/rag-app-examples/qa-chatbot](https://github.com/mxagar/rag-app-examples/tree/main/qa-chatbot)
-
-
-### Project Requirements
-
-
+  - Data wrangling: [mxagar/rag-app-examples/qa-chatbot](https://github.com/mxagar/rag-app-examples/tree/main/qa-chatbot)
+  - RAG basic implementation: [mxagar/rag-app-examples/qa-chatbot](https://github.com/mxagar/rag-app-examples/tree/main/qa-chatbot)
+  - QA finetuning: [mxagar/rag-app-examples/qa-chatbot](https://github.com/mxagar/rag-app-examples/tree/main/qa-chatbot)
 
 ### Interesting Links
 
