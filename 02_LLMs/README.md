@@ -2574,11 +2574,7 @@ Improvements:
 
 ### Notebooks
 
-- Project: [mxagar/rag-app-examples/qa-chatbot](https://github.com/mxagar/rag-app-examples/tree/main/qa-chatbot)
-- Notebooks:
-  - Data preparation: [mxagar/rag-app-examples/qa-chatbot/01_data_preparation.ipynb](https://github.com/mxagar/rag-app-examples/blob/main/qa-chatbot/01_data_preparation.ipynb)
-  - RAG basic implementation: [mxagar/rag-app-examples/qa-chatbot/02_rag_basic.ipynb](https://github.com/mxagar/rag-app-examples/blob/main/qa-chatbot/02_rag_basic.ipynb)
-  - QA finetuning: [mxagar/rag-app-examples/qa-chatbot/03_qa_finetuning.ipynb](https://github.com/mxagar/rag-app-examples/blob/main/qa-chatbot/03_qa_finetuning.ipynb)
+- Project: [mxagar/rag-app-examples/qa-rag](https://github.com/mxagar/rag-app-examples/tree/main/qa-rag)
 
 ### Interesting Links
 
