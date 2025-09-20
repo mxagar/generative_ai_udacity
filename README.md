@@ -21,7 +21,7 @@ The Nanodegree asssumes basic data analysis skills with data science python libr
 Additionally, it is necessary to submit and pass some projects to get the certification:
 
 - Project 1: Apply Lightweight Fine-Tuning to a Foundation Model: [mxagar/llm_peft_fine_tuning_example](https://github.com/mxagar/llm_peft_fine_tuning_example).
-- Project 2: Build Your Own Custom Chatbot - TBD.
+- Project 2: Build Your Own Custom Chatbot: [mxagar/rag-app-examples/qa-rag](https://github.com/mxagar/rag-app-examples/tree/main/qa-rag)
 - Project 3: AI Photo Editing with Inpainting - TBD.
 - Project 4: Personalized Real Estate Agent - TBD.
 
