@@ -16,6 +16,37 @@ No guarantees.
 
 Overview of Contents:
 
+## 1. Introduction to Image Generation
+
+Introductory concepts:
+
+- Discriminative vs. Generative Models
+  - Discriminative models learn decision boundaries
+  - Generative models learn distributions where the y sample from
+  - Mathematically they capture related but different models
+  - Discriminative models cannot generate, but generative models can somehow discriminate
+- Images are high-dimensional points
+  - Realistic images are really points in a large vast of noise
+  - Generative models learn *islands in an universe of noise*
+  - 
+
+![Discriminative vs. Generative Models](./assets/discriminative_vs_generative.png)
+
+
+
+## 2. Computer Vision Fundamentals
+
 TBD.
 
-:construction:
+## 3. Transformer-Based Computer Vision Models
+
+TBD.
+
+## 4. Diffusion Models
+
+TBD.
+
+## 5. Project: AI Photo Editing with Inpainting
+
+TBD.
+
