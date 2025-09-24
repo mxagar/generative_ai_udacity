@@ -49,6 +49,17 @@ To that end, the Gradio local UI from [Automatic1111 - Stable Diffusion Web UI](
 
 ![Automatic1111 - Stable Diffusion Web UI](./assets/stable_diffusion_ui_screenshot.png)
 
+Stable Diffusion
+
+- was trained with 2.3 billion text-image pairs, the dataset is [LAION-5B](https://huggingface.co/papers/2210.08402)
+- was trained in 256 NVIDIA A100 GPUs, 150k GPU hours -> 600k USD estimated cost
+
+Some issues:
+
+- It was shown that it captures the biases of the dataset. When asked to generate a doctor, women appear only in 7% of the images (in the US, 39% of the doctors are women).
+- Copyright theft is an issue; style cannot be protected, but characters are -- however, the model is able to reproduce popular characters and people.
+- Deep fakes.
+
 #### Setup
 
 Instead of downloading and using the web UI locally, I used the Udacity Ubuntu VM.
@@ -102,17 +113,68 @@ Very first example tried:
 
 ### First Stage: Fixing the Random Seed
 
+The seed makes the generation reproducible.
+
+Seed zapping: for the same prompt, try different seeds.
+
+> A photo of a horse
+
+Seed can be set in the parameters: 1877613533.
+
+![Horse - Initial](./lab/generated_images/horse_initial.jpeg)
+
 ### Second Stage: Add Details
+
+We can specify the the details we'd like in the image.
+
+> A photo of a horse jumping in the desert dramatic sky
 
 ### Third Stage: Styles
 
+We can mention styles.
+
+> A photo of a horse jumping in the desert dramatic sky by Van Gogh
+> A photo of a horse jumping in the desert dramatic sky artstation
+> A photo of a horse jumping in the desert dramatic sky intricate details
+> A photo of a horse jumping in the desert dramatic sky intricate details National Geographic
+
 ### Fourth Stage: Negative Prompts
+
+Negative prompts can be used to specify which concepts should not appear in the generated image.
+
+> "A photo of a horse jumping in the desert dramatic sky intricate details National Geographic", negative prompt: "sand"
+> "A photo of a horse jumping in the desert dramatic sky intricate details National Geographic", negative prompt "overexposed, underexposed"
 
 ### Fifth Stage: "magic" Words
 
+Magic words are terms discovered by the community which convey specific (often nice) properties to the image: "8k", "high details", etc.
+
+> "A photo of a horse jumping in the desert dramatic sky intricate details National Geographic 8k high details", Negative prompt: "overexposed, underexposed"
+
 ### Sixth Stage: Parameters
 
+We can tune the parameters in the UI. However, note that they have no linear effects.
+
+Diffusion works by removing noise from an initial noise map; we have 2 very important params:
+
+- Number of iterations: 20 default; increase might not improve necessarily.
+- Classifier-free guidance scale (CFG Scale): how close th emodel should follow prompt; if low, model is freer and more creative...
+- Switch: Stable diffusion works with 2 models: base, which creates the base image, and refiner, which refines the details; the switch is the fraction of iteration after which refiner takes over.
+
+> "A photo of a horse jumping in the desert dramatic sky intricate details National Geographic 8k high details", negative prompt: "overexposed, underexposed", Switch at 0.5 and CFG Scale at 6
+
+![Horse - Final](./lab/generated_images/horse_final.jpeg)
+
 ### Bonus Stage: Inpaint
+
+We can select a region of the image (a badly generated finger/leg) and ask the model to regenerate that part.
+
+- Inpainting icon: colour palette below the generated image.
+- Inpaint tab: select/paint region we want to change.
+
+Inpainting has many parameters and they are quire sensitive; we should paly with them, but here's a snapshot of the tested ones:
+
+![Inpainting Parameters](./assets/inpainting_parameters.jpeg)
 
 ### Other Examples, Links
 
@@ -121,10 +183,16 @@ Very first example tried:
 - [https://stablediffusion.fr/prompts](https://stablediffusion.fr/prompts)
 - [https://stable-diffusion-art.com/automatic1111/](https://stable-diffusion-art.com/automatic1111/)
 
-
 ## 2. Computer Vision Fundamentals
 
-TBD.
+Since I am quite familiar to the topic, I will collect only the key concepts mentioned in the module;.
+
+For more information, you can check other resources of mine, e.g.: [Deep Learning Methods for CV: `mxagar/computer_vision_udacity/CVND_Advanced_CV_and_DL.md`](https://github.com/mxagar/computer_vision_udacity/blob/main/03_Advanced_CV_and_DL/CVND_Advanced_CV_and_DL.md).
+
+Key concepts:
+
+
+
 
 ## 3. Transformer-Based Computer Vision Models
 
