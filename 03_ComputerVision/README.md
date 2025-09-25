@@ -216,9 +216,160 @@ For more information, you can check other resources of mine, e.g.:
 - [mxagar/deep_learning_udacity/05_GAN](https://github.com/mxagar/deep_learning_udacity/blob/main/05_GAN/DLND_GANs.md).
 - [mxagar/generative_ai_book/gans](https://github.com/mxagar/generative_ai_book?tab=readme-ov-file#chapter-4-generative-adversarial-networks-gans)
 
-Key concepts:
+Key introductory concepts:
 
-- 
+- Image generation can be
+  - Unconditional: GANs
+  - Conditional
+    - text2img: Stable Diffusion
+    - img2img: ControlNet (draw sketches), Inpainting or Part Substitution
+- Three main image generation algorithms:
+  - VAEs
+  - GANs
+  - Diffusion
+- Generative models can be evaluated in terms of [three properties, aka. the imposible triangle](https://arxiv.org/pdf/2112.07804):
+  - **Coverage**: how multimodal (from mode/peak, not modality) are the distributions they capture, i.e., several dog breeds; the higher the coverage, the more diverse is the output.
+  - **Quality**: if the distributions of the generated images and real images are close, the quality is good. Pretrained CNNs are used to create image embeddings, creating distributions. Then, the difference between the distributions is measured with the Wasserstein distance metric. That's called the *Fréchet inception distance (FID)*.
+  - **Speed**: sampling speed, i.e., how fast we can create new images.
+- Each algorithm class excells in mainly 2 out these 3 properties:
+  - GANs: quality + speed
+  - Diffusion: quality + diversity
+  - VAE: speed + diversity
+
+![Impossible Triangle: Diversity, Quality, Speed](./assets/impossible_triangle.jpg)
+
+### Generative Adversarial Networks (GANs)
+
+Key aspects:
+
+- Two elements:
+  - Generator, `G`: given noise `z`, generate a fake image `G(z)`
+    - Starting from latent random noise vector `z`, it is upscaled while decreasing channels: `G(z)`
+  - Dicriminator, `D`: given and image `x` (real or fake `x = G(z)`), determine whether it's real/fake
+    - Binary classification is performed with a regular CNN: `D(x) in (0,1)`
+- Training process:
+  - First, the Discriminator is trained:
+      - We fix G and generate fake images `G(z)`
+      - We train D with real and fake images for one or more steps
+  - Second, teh Generator is trained:
+    - We fix D
+    - We train G and try to fool D
+  - The process is repeated until there is no improvement  
+
+![GAN: Main Idea](./assets/gan_idea.jpg)
+
+Discriminator Training:
+
+- It is the first trained model
+- This is the 1st step in the overall batch-iteration loop
+
+![GAN: D Training](./assets/gan_d_training.jpg)
+
+```python
+optimizerD = optim.Adam(D.parameters(), …)
+criterion = BCELoss()
+
+for data, _ in dataloader:
+    # ... omitted, moving data to GPU etc.
+
+    # Probability for data to be real,
+    # according to the Discriminator
+    D_pred = D(data).view(-1)
+
+    # Ground truth labels: here the images are real
+    # so the labels are all 1
+    labels = torch.full((size,), 1.0, device=device)
+
+    # Compare Discriminator prediction vs ground truth
+    loss_on_real_data = criterion(D_pred, labels)
+
+    # Compute gradients
+    loss_on_real_data.backward()
+
+    # NOW, instead of calling optimizerD.step()
+    # We generate fake images in and pass them to D
+
+    # Get latent vectors and generate
+    # fake images using the Generator
+    latent_vectors = torch.randn(
+        b_size, 
+        latent_dimension, 
+        1, 
+        1
+    )
+    fake_data = G(latent_vectors)
+
+    # Get predictions from the Discriminator
+    # on the fake data
+    # NOTE: remember to use .detach()!
+    # Why detach?
+    # When we call .backward(), the autograd graph is destroyed
+    # but we want to re-use the graph of fake_data later in the G
+    # so we need to .detach() it
+    D_pred = D(
+        fake_data.detach()
+    ).view(-1)
+
+    # Since these are all fake images, the ground
+    # truth should be 0 for all labels. We refill
+    # the tensor of labels we already have instead
+    # of creating a new one
+    labels.fill_(0)
+
+    # Compare Discriminator prediction vs ground truth
+    loss_on_fake_data = criterion(D_pred, labels)
+
+    # Add gradients computed on the loss on fake data
+    loss_on_fake_data.backward()
+
+    # Finally update the Discriminator
+    optimizerD.step()
+```
+
+Generator Training (same loop batch-iteration, but 2nd step):
+
+- The `D` is part of the training, but its weights are frozen
+- We re-use the `fake_images` generated to train the `D`
+- > It can be shown mathematically that maximizing the Binary Cross Entropy loss of the Discriminator on fake data (with label y=0) is equivalent to minimizing the same loss assigning y=1 instead of y=0.
+
+![GAN: G Training](./assets/gan_g_training.jpg)
+
+```python
+optimizerG = optim.Adam(G.parameters(), …)
+
+for data, _ in dataloader:
+    
+    ... # Discriminator training
+
+    G.zero_grad()
+    
+    # Get a prediction from the Discriminator on the
+    # fake data we already generated during Discriminator
+    # training
+    D_pred = D(fake_data).view(-1)
+    
+    # BCE trick: instead of maximizing BCE when
+    # y = 0, we minimize the BCE when y = 1. These
+    # are equivalent, but minimizing can be done with
+    # the normal Gradient Descent algorithm
+    labels.fill_(1)
+    loss_on_fake_G = criterion(D_pred, labels)
+    
+    # Compute gradients
+    loss_on_fake_G.backward()
+	
+    # Update Generator to maximally-fool the
+    # Discriminator
+    optimizerG.step()
+```
+
+#### Exercise: Training a GAN
+
+
+
+#### Exercise: Style GAN
+
+
 
 ## 4. Transformer-Based Computer Vision Models
 
