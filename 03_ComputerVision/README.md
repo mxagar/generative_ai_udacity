@@ -416,7 +416,15 @@ The NVIDIA StyleGan v3 model is downloaded and used to generate images.
 
 ## 4. Transformer-Based Computer Vision Models
 
-TBD.
+In 2020 OpenAI released [Image GPT](https://openai.com/index/image-gpt/), the naïve approach to use transformers for image data: pixels of 64x64 were rasterized in row order and passed to a GPT model which predicted the missing pixel values, i.e., the ending of the image.
+
+This approach is not used as is anymore (expensive to train), but explains which is the straighforward approach.
+
+The current common architecture for Vision Transformers (ViT) was laid by [Dosovitskiy et al. in 2020: *An image is worth 16x16 words: Transformers for image recognition at scale*](https://arxiv.org/abs/2010.11929).
+
+![Vision Transformer](./assets/vit.png)
+
+
 
 ## 5. Diffusion Models
 
