@@ -33,6 +33,8 @@ numexpr
 ollama
 onnxruntime
 openai
+opencv-python
+opencv-contrib-python
 peft
 pydantic
 pypdf

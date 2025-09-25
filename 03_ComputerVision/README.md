@@ -191,18 +191,44 @@ For more information, you can check other resources of mine, e.g.: [Deep Learnin
 
 Key concepts:
 
+- Image representation: pixels, arrays/matrices, channels
+- Features: corners, edges, shapes
+- Convolutions (2D local processing): kernels or filters; in DL, they are learnt
+- Canny edge detector
+- CV tasks: classification, object detection (localization), semantic/instance segmentation
+- Intersection Over Union, Non Maximum Supression
+- Classical CV vs Deep Learning CV (keys: feature extraction, generalization, interpretability)
+- YOLO example
+  - Image divided in grid
+  - For each grid cell, the probabilities of an object are detected
+  - The output has several channels, in which for each grid (x, y, w, h) values are also predicted, among others
+  - Realtime
+  - Transfer learning, fine-tuning possible
+- Demo: pedestrian detection with OpenCV HOG (video)
+- Demo: face recognition with eigenfaces and DLIB (notebook, below)
 
+## 3. Image Generation and GANs
 
+Since I am quite familiar to the topic, I will collect only the key concepts mentioned in the module;.
 
-## 3. Transformer-Based Computer Vision Models
+For more information, you can check other resources of mine, e.g.: 
+
+- [mxagar/deep_learning_udacity/05_GAN](https://github.com/mxagar/deep_learning_udacity/blob/main/05_GAN/DLND_GANs.md).
+- [mxagar/generative_ai_book/gans](https://github.com/mxagar/generative_ai_book?tab=readme-ov-file#chapter-4-generative-adversarial-networks-gans)
+
+Key concepts:
+
+- 
+
+## 4. Transformer-Based Computer Vision Models
 
 TBD.
 
-## 4. Diffusion Models
+## 5. Diffusion Models
 
 TBD.
 
-## 5. Project: AI Photo Editing with Inpainting
+## 6. Project: AI Photo Editing with Inpainting
 
 TBD.
 
