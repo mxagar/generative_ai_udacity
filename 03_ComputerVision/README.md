@@ -365,11 +365,54 @@ for data, _ in dataloader:
 
 #### Exercise: Training a GAN
 
+Notebook: [gan_exercise_1/gan_training.ipynb](./lab/gan_exercise_1/gan_training.ipynb)
 
+Video: [Exercise: Training GANs](https://www.youtube.com/watch?v=3Hq9BGbP6Dw)
+
+Images of cars are predicted. Regular G & D are defined with convolutional blocks.
+
+SoTA Tricks are used for training:
+
+- Use smoothed G, EMA(G)
+- Use Gaussian initialization of weights
+- Smooth the labels: 1 -> 0.8
+- Randomly flip the labels to make D training harder
+- Augmentations to prevent overfitting D
+
+#### Training Difficulty
+
+Indeed, GANs are difficult to train
+
+- If any of the D or G gets too good too fast, the training doesn't work, the losses diverge.
+- There is no obvious stopping point or metric we could follow; in fact, D's performance becomes worse over time, but we need to stop before it becomes really bad.
+- Mode collapse: sometimes the G can find a set of images that always fool the D
+
+Beyond vanialla GANs, some advances have been made:
+
+- [Wasserstein GAN](https://arxiv.org/abs/1701.07875)
+- [Progessive GAN](https://arxiv.org/abs/1710.10196)
+- [Style GAN](https://arxiv.org/abs/1812.04948)
+- [Conditional GAN](https://arxiv.org/abs/1907.10786)
+
+![Conditional GAN](./assets/conditional_gan.gif)
+
+The advantages of GANs
+
+- Very fast: given a random `z`, the model generates a realistic image
+- Very high quality; fotos look real
+
+Disadvantages:
+
+- Poor mode coverage
+- Tricky to train
 
 #### Exercise: Style GAN
 
+Notebook: [`gan_exercise_2/style_gan.ipynb`](./lab/gan_exercise_2/style_gan.ipynb)
 
+Video: [Exercise: Style GAN](https://www.youtube.com/watch?v=FjTfhrSA0T8)
+
+The NVIDIA StyleGan v3 model is downloaded and used to generate images.
 
 ## 4. Transformer-Based Computer Vision Models
 
