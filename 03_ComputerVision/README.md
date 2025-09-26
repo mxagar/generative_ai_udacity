@@ -424,6 +424,170 @@ The current common architecture for Vision Transformers (ViT) was laid by [Dosov
 
 ![Vision Transformer](./assets/vit.png)
 
+- The paper proposes applying a **pure Transformer** (no convolutional layers) directly to an image, by splitting it into patches, treating each patch as a "token", and using the Transformer encoder to process the sequence of patch embeddings.
+- Architecture: encoder only (+ classification head).
+- Image size: no restricted.
+- An image of shape (H × W × C) is divided into non-overlapping patches of size (P × P).
+  - They found that a patch size of 16x16 pixels provides a good balance between expressivity and manageable sequence length.
+  - Self-attention scales quadratically with sequence length (number of patches), so using smaller patches or higher image resolution increases cost.
+- Each patch is flattened and mapped via a linear projection to a vector (patch embedding).
+- A positional embedding is added to each patch embedding to encode spatial position.
+- A special "CLS token" is prepended; its final representation is used for classification.
+  - CLS is a learnable parameter vector; similarly as in BERT, where CLS token embedding is learned.
+- Then the sequence of patch embeddings + CLS is fed into a standard Transformer encoder (stack of self-attention + MLP blocks).
+- The (pre-)training task was supervised image classification.
+  - We input CLS + 16x16 tokens
+  - We get CLS + 16x16 embeddings
+  - CLS is used in a classification head (it should contain a kind of a summary)
+  - Rest of patch embeddings is discarded, but later works use them (DETR: Detection, DINO: Reconstruction, etc.)
+- Because ViT outputs a sequence of patch embeddings, you can adapt it to almost anything:
+  - Detection (ViT -> DETR: directly predict bounding boxes with transformer heads).
+  - Segmentation (ViT + UPerNet or ViT-based decoders).
+  - Vision-language tasks (ViT + text encoder = CLIP, BLIP, Flamingo, etc.).
+  - Generative vision models (as the encoder part in diffusion, MAE pretraining).
+- **Scale matters**: ViTs underperform CNNs when trained on modest data, but when pre-trained on large datasets (like ImageNet-21k or JFT-300M), they match or exceed performance of strong CNN baselines.
+- They perform transfer learning: pre-train on a large dataset and fine-tune on smaller benchmarks (ImageNet, CIFAR-100, VTAB).
+- The largest ViT models approach state-of-the-art performance on a range of image classification benchmarks.
+- ViT models tend to require **less compute for training** (given high data volumes) compared to strong CNNs.
+- The model has fewer inductive biases (no convolution, no explicit locality) — it must learn those structures from data.
+- Many follow-up works address weaknesses: combining convolution + attention, hierarchical / patch pooling, sparse attention, better regularization, applying ViTs to detection, segmentation.
+  - Usually, hybrid architectures are used, where comvolutional layers extract some of the features
+
+### Conditioned Generation and Multi-Modality
+
+We can have different modalities: images, text, video, audio, etc.
+
+Additionally, we might want to generate a modality conditioned by another one; e.g.: a `text2img` model.
+
+The idea to build those multi-modal models is the following:
+
+- For each modality input, we generate instance embeddings; e.g.:
+  - Images: patched in raster order, and for each an embedding vector computed.
+  - Texts: tokens converted into embeddings.
+- Then, those embeddings are merged: concatenated, summed, etc.
+- The resulting merged embedding is passed to the encoder, which receives a more contextualized information.
+- The models that create the embeddings are trained together using contrastive loss; for instance, in the case of images and text:
+  - If the image and the text (caption) are aligned, their embedding vectors should yield a low contrastive loss.
+  - If the image and the text are unrelated, their embedding vectors should be far apart, leading to a high contrastive loss.
+
+![Multi-Modal Models](./assets/multimodal_models.jpg)
+
+These kind of multi-modal architectures allow tasks like **visual question answering (VQA)**, where we can ask the model about the content of the image.
+
+![Multimodal ViT](./assets/vit-multimodal.jpeg)
+
+### DALL-E: Text to Image Generation
+
+See: [mxagar/generative_ai_book/chapter-13-multimodal-models](https://github.com/mxagar/generative_ai_book?tab=readme-ov-file#chapter-13-multimodal-models).
+
+Python snippet to generate images with DALL-E via the OpenAI API: [`openai_dalle.ipynb`](./lab/openai_dalle.ipynb):
+
+![DALL-E Architecture](./assets/vit-dalle.jpeg)
+
+```python
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
+
+import base64
+from io import BytesIO
+from PIL import Image
+from IPython.display import display
+
+load_dotenv(".env")
+
+client = OpenAI(
+  api_key=os.environ['OPENAI_API_KEY'],
+)
+
+# Prompt
+prompt = "A watercolor painting of a cyberpunk city with flying cars"
+
+# Generate image: API Call
+# WARNING: We need authorization/verification: OpenAI Platform > Profile > General > Verify
+result = client.images.generate(
+    model="gpt-image-1",  # This is the DALL·E model
+    prompt=prompt,
+    size="1024x1024"
+)
+
+# The response contains a URL or base64-encoded image
+image_base64 = result.data[0].b64_json
+image_bytes = base64.b64decode(image_base64)
+
+# Load with PIL
+image = Image.open(BytesIO(image_bytes))
+
+# Display inline in notebook
+display(image)
+
+# Optionally save to file
+image.save("dalle_output.png")
+```
+
+### DINO v2: 
+
+Links:
+
+- Paper v1: [Oquab et al., 2024 (Meta): DINOv2: Learning Robust Visual Features without Supervision](https://arxiv.org/pdf/2304.07193)
+- Paper v2: [Caron et al., 2021 (Meta): DINOv1: Emerging Properties in Self-Supervised Vision Transformers](https://arxiv.org/abs/2104.14294)
+- Repo v1: [https://github.com/facebookresearch/dino](https://github.com/facebookresearch/dino)
+- Repo v2: [https://github.com/facebookresearch/dinov2](https://github.com/facebookresearch/dinov2)
+
+Self-supervised training framework for Vision Transformers (ViTs).
+Instead of learning with labeled data (like ImageNet classification), DINO trains a ViT to learn general-purpose visual representations, which can later be used for:
+
+- Image classification
+- Segmentation
+- Feature detection; e.g., eyes, mouth or other elements are detected
+- Object detection
+- Depth estimation
+- Retrieval
+- Few-shot tasks
+
+Two models are used: the teacher and the student; the smaller student tries to imitate the behaviour of th emore powerful teacher.
+
+
+
+![DINOv2](./assets/vit-dino.jpeg)
+
+### SAM (Segment Anything Model): Zero-Shot Image Segmentation
+
+
+
+### DETR: Object Detection
+
+Links:
+
+- Repo: [https://github.com/facebookresearch/detr](https://github.com/facebookresearch/detr)
+- Paper: [Carion et al., 2020 (Meta): DETR: End-to-end object detection with Transformers](https://ai.meta.com/research/publications/end-to-end-object-detection-with-transformers/)
+- Variant: [RT-DETRv2](https://huggingface.co/docs/transformers/en/model_doc/rt_detr_v2)
+
+Key aspects:
+
+- An image is split into a grid of patches (via a CNN backbone like ResNet, not a linear patch embedding like ViT).
+- Each patch/feature vector is projected into an embedding and flattened into a sequence.
+- Positional encodings are added (since Transformers are permutation-invariant).
+- A **Transformer encoder–decoder** architecture.
+- Encoder: processes the sequence of image features with self-attention.
+- Decoder: receives a fixed number (by default 100) of **object queries** (learned embeddings) that interact with encoder features through cross-attention.
+  - Those fixed queries don't correspond to specific object categories ahead of time. Instead, they act like "slots" in which the model can place an object it detects.
+  - For each query (i.e., 100 total), the decoder outputs a representation vector.
+  - Each decoder output goes into a small feed-forward network (FFN) (same for all outputs).
+  - The FFN Predicts (1) a class label (including a special "no object" class), and (2) normalized bounding box coordinates `[cx, cy, w, h]`.
+  - Only queries which are not "no object" are valid.
+- Hungarian matching is used during trianing: it matches predicted boxes with ground-truth boxes one-to-one.
+- Loss = classification loss + bounding box regression loss.
+- "No object" predictions are allowed to absorb extra queries.
+- No non-max suppression (NMS) is needed.
+- Inference: Just take the top scoring boxes (excluding "no object").
+- Slow convergence and data inefficiency (needs long training).
+- Struggles with small objects.
+- Many follow-up works (Deformable DETR, Conditional DETR, DAB-DETR, etc.) improve speed, accuracy, or both.
+
+### Qwen
+
+
 
 
 ## 5. Diffusion Models
