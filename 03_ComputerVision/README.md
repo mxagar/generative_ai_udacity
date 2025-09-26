@@ -603,7 +603,142 @@ print("Patch embeddings shape:", patch_embeddings.shape)
 
 ### SAM (Segment Anything Model): Zero-Shot Image Segmentation
 
+See my previous examples in [mxagar/detection_segmentation_pytorch/08_SAM](https://github.com/mxagar/detection_segmentation_pytorch/tree/main/08_SAM).
 
+Links:
+
+- Paper SAM: [Kirillov et al., 2023 (Meta) - Segment Anything](https://ai.meta.com/research/publications/segment-anything/)
+- Repo SAM: [https://github.com/facebookresearch/segment-anything](https://github.com/facebookresearch/segment-anything)
+- Paper SAM 2: [Ravi et al., 2024 (Meta) - SAM 2: Segment Anything in Images and Videos](https://ai.meta.com/research/publications/sam-2-segment-anything-in-images-and-videos/)
+- Repo SAM 2: [https://github.com/facebookresearch/sam2](https://github.com/facebookresearch/sam2)
+
+SAM is a foundation model for image segmentation. Instead of training a new segmentation model for each task (medical, aerial, autonomous driving, etc.), SAM is trained to be promptable: we guide it with simple inputs (points, boxes, text) and it outputs segmentation masks.
+
+SAM has three main parts:
+
+- Image Encoder
+  - A Vision Transformer (ViT-Huge, 632M params) pre-trained on billions of masks from Meta's SA-1B dataset (11M images, 1B masks).
+  - Produces a dense embedding of the image once → can be reused for multiple prompts.
+- Prompt Encoder
+  - Encodes user-provided prompts (points, bounding boxes, free-form text in later extensions).
+  - Prompts are mapped into the same embedding space as image features.
+- Mask Decoder
+  - A lightweight transformer decoder that takes both image embeddings and prompt embeddings.
+  - Outputs one or more segmentation masks + confidence scores.
+  - Designed to run interactively (in <50 ms per mask).
+
+SAM was trained progressively, starting with human annotators, and ending in a self-supervised way.
+
+Limitations:
+
+- Not optimized for small objects (<16x16 patch).
+- Works best on natural images (its training domain).
+- Produces category-agnostic masks (doesn't know "this is a cat").
+- Heavy model (ViT-Huge), inference requires a GPU for interactivity.
+
+![SAM](./assets/vit-sam.jpeg)
+
+Notebook: [`sam.ipynb`](./lab/sam.ipynb)
+
+- A point prompt is defined
+- The model is run with a car image and the point
+- Three masks are output and displayed as overlay
+
+```python
+from dotenv import load_dotenv
+from PIL import Image
+from IPython.display import display
+
+import numpy as np
+from transformers import SamProcessor, SamModel
+import torch
+import torch.nn.functional as F
+import matplotlib.pyplot as plt
+
+load_dotenv(".env")
+
+# Open image
+image = Image.open("../assets/car.png").convert("RGB")
+display(image)
+
+# Load SAM processor + model
+processor = SamProcessor.from_pretrained("facebook/sam-vit-base")
+model = SamModel.from_pretrained("facebook/sam-vit-base")
+
+# Define a prompt (here: a single point [x, y])
+# Coordinates are in pixel space relative to the image
+input_points = [[[450, 600]]] # 2D localization of a window
+
+# Prepare inputs
+inputs = processor(
+    images=image,
+    input_points=input_points,
+    return_tensors="pt"
+)
+
+# Run model
+with torch.no_grad():
+    outputs = model(**inputs)
+
+# Input image size: (2646, 1764)
+image.size
+
+# These are the scores of the 3 outputs
+print(outputs.iou_scores.shape)
+print(outputs.iou_scores)
+
+# These are the 2 masks detected
+# We need to scale them back to the original image size
+outputs.pred_masks.shape
+
+image_np = np.array(image)
+print(image_np.shape)  # Should be (height, width, 3) for RGB
+
+def show_mask(mask, ax, random_color=False):
+    """
+    Overlay a single binary mask on the given matplotlib axis.
+    """
+    if random_color:
+        color = np.concatenate([np.random.random(3), np.array([0.6])], axis=0)  # RGBA
+    else:
+        color = np.array([30/255, 144/255, 255/255, 0.6])  # default blue
+    
+    mask = np.squeeze(mask) # (H, W)
+    mask = mask.astype(np.float32) # ensure numeric
+    h, w = mask.shape
+    mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1)
+    ax.imshow(mask_image)
+
+# Postprocess masks into the original image space
+# F.interpolate doesn't work as expected in my case...
+# So I ended up using the processor's built-in function
+masks = processor.post_process_masks(
+    outputs.pred_masks,
+    inputs["original_sizes"],
+    inputs["reshaped_input_sizes"]
+)[0].cpu().numpy()
+
+# Drop batch dim -> (num_masks, H, W)
+masks = np.squeeze(masks, axis=0)
+
+print("Postprocessed masks shape:", masks.shape)
+
+# Plot image + masks + prompt point(s)
+plt.figure(figsize=(10, 10))
+# Image
+plt.imshow(image_np)
+ax = plt.gca()
+# Show masks
+for mask in masks:
+    show_mask(mask, ax=ax, random_color=True)
+
+# Add the red sphere at the prompt point(s)
+for (x, y) in input_points[0]:
+    ax.scatter(x, y, c="red", s=80, marker="o", edgecolors="white", linewidths=1.5)
+
+plt.axis("off")
+plt.show()
+```
 
 ### DETR: Object Detection
 
