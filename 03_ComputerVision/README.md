@@ -525,7 +525,7 @@ display(image)
 image.save("dalle_output.png")
 ```
 
-### DINO v2: 
+### DINO v2: General Purpose Image Embeddings
 
 Links:
 
@@ -534,7 +534,7 @@ Links:
 - Repo v1: [https://github.com/facebookresearch/dino](https://github.com/facebookresearch/dino)
 - Repo v2: [https://github.com/facebookresearch/dinov2](https://github.com/facebookresearch/dinov2)
 
-Self-supervised training framework for Vision Transformers (ViTs).
+A Self-supervised training framework is used to build the Vision Transformer (ViT) DINO, which outputs image embeddings.
 Instead of learning with labeled data (like ImageNet classification), DINO trains a ViT to learn general-purpose visual representations, which can later be used for:
 
 - Image classification
@@ -545,11 +545,61 @@ Instead of learning with labeled data (like ImageNet classification), DINO train
 - Retrieval
 - Few-shot tasks
 
-Two models are used: the teacher and the student; the smaller student tries to imitate the behaviour of th emore powerful teacher.
+Key ideas:
 
-
+- Two models are used: the teacher and the student; the smaller student tries to imitate the behaviour of th emore powerful teacher.
+  - The teacher is updated with EMA of student.
+  - Both see different augmented views of the same image.
+  - The student is trained to match the teacher's output distribution (softmax over features).
+- The trainig task is matching features across augmentations of the same image: *earn embeddings where crops of the same image are close, and different images are far apart.*
+- DINOv2 trained on a huge curated dataset (142M images) with no manual labels.
+- The resulting ViT backbone is general-purpose, like CLIP but without text.
 
 ![DINOv2](./assets/vit-dino.jpeg)
+
+Notebook: [`dino_v2.ipynb`](./lab/dino_v2.ipynb):
+
+- We pass the image of a labrador to the HuggingFace DINOv2-small model.
+- We get the output embeddings:
+  - The first is the CLS token embedding; summary embedding for downstream tasks that require global understanding, such as: classification, similarity, etc.
+  - The rest are local embeddings; they are useful for tasks that capture localized information; they can be used for object detection, segmentation, depth, saliency, etc. Each local embedding corresponds to a patch in rasterized row-major order.
+
+```python
+from dotenv import load_dotenv
+from PIL import Image
+from IPython.display import display
+
+from transformers import AutoImageProcessor, AutoModel
+import torch
+
+load_dotenv(".env")
+
+# Open image
+image = Image.open("../assets/YellowLabradorLooking_new.jpg").convert("RGB")
+display(image)
+
+# Choose a DINOv2 model: small (S), base (B), large (L), giant (G)
+MODEL_NAME = "facebook/dinov2-small"
+
+# Load processor + model
+processor = AutoImageProcessor.from_pretrained(MODEL_NAME)
+model = AutoModel.from_pretrained(MODEL_NAME)
+
+# Preprocess
+inputs = processor(images=image, return_tensors="pt")
+
+# Forward pass
+with torch.no_grad():
+    outputs = model(**inputs)
+
+# CLS embedding (global image representation)
+cls_embedding = outputs.last_hidden_state[:, 0]
+print("CLS embedding shape:", cls_embedding.shape)
+
+# Patch embeddings (local features)
+patch_embeddings = outputs.last_hidden_state[:, 1:]
+print("Patch embeddings shape:", patch_embeddings.shape)
+```
 
 ### SAM (Segment Anything Model): Zero-Shot Image Segmentation
 
