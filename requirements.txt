@@ -278,6 +278,7 @@ huggingface-hub==0.33.0
     #   evaluate
     #   peft
     #   sentence-transformers
+    #   timm
     #   tokenizers
     #   transformers
 humanfriendly==10.0
@@ -913,6 +914,7 @@ pyyaml==6.0.2
     #   langchain-core
     #   llama-index-core
     #   peft
+    #   timm
     #   transformers
     #   uvicorn
 pyzmq==27.0.0
@@ -995,6 +997,7 @@ safetensors==0.5.3
     #   accelerate
     #   diffusers
     #   peft
+    #   timm
     #   transformers
 scikit-learn==1.7.0
     # via
@@ -1081,6 +1084,8 @@ tiktoken==0.9.0
     #   langchain-openai
     #   llama-index-core
     #   tavily-python
+timm==1.0.20
+    # via -r requirements.in
 tinycss2==1.4.0
     # via bleach
 tokenizers==0.21.1
@@ -1104,6 +1109,7 @@ torch==2.7.1
     #   peft
     #   ragatouille
     #   sentence-transformers
+    #   timm
     #   torchaudio
     #   torchtext
     #   torchvision
@@ -1113,7 +1119,9 @@ torchaudio==2.7.1
 torchtext==0.18.0
     # via -r requirements.in
 torchvision==0.22.1
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   timm
 tornado==6.5.1
     # via
     #   ipykernel

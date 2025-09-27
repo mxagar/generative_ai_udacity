@@ -46,6 +46,7 @@ seaborn
 sentence-transformers
 setuptools
 tensorboard
+timm
 torch
 torchaudio
 torchtext
