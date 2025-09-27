@@ -770,9 +770,67 @@ Key aspects:
 - Struggles with small objects.
 - Many follow-up works (Deformable DETR, Conditional DETR, DAB-DETR, etc.) improve speed, accuracy, or both.
 
-### Qwen
+Notebook: [`detr.ipynb`](./lab/detr.ipynb):
 
+- DETR-ResNet50 is loaded
+- Cats are detected in an image, in addition to a remote and a sofa
+- Training/fine-tuning would be easy with the HuggingFace library; usually, we would train/fine-tune the complete transformer, but we could freeze the ResNet50 weights.
 
+```python
+from dotenv import load_dotenv
+from PIL import Image
+from IPython.display import display
+
+from transformers import DetrImageProcessor, DetrForObjectDetection
+import torch
+from PIL import Image
+import matplotlib.pyplot as plt
+
+load_dotenv(".env")
+
+image = Image.open("../assets/cats.jpg")
+display(image)
+
+# Load processor + model
+processor = DetrImageProcessor.from_pretrained("facebook/detr-resnet-50")
+model = DetrForObjectDetection.from_pretrained("facebook/detr-resnet-50")
+
+# Preprocess image
+inputs = processor(images=image, return_tensors="pt")
+
+# Forward pass
+outputs = model(**inputs)
+
+# Convert logits to class labels + bounding boxes
+target_sizes = torch.tensor([image.size[::-1]])  # (height, width)
+results = processor.post_process_object_detection(
+    outputs, target_sizes=target_sizes, threshold=0.9
+)[0]
+
+# Plot
+plt.imshow(image)
+ax = plt.gca()
+for score, label, box in zip(results["scores"], results["labels"], results["boxes"]):
+    box = [round(i, 2) for i in box.tolist()]
+    x, y, w, h = box
+    ax.add_patch(plt.Rectangle((x, y), w - x, h - y,
+                               fill=False, color="red", linewidth=2))
+    ax.text(x, y, f"{model.config.id2label[label.item()]}: {round(score.item(), 3)}",
+            fontsize=12, color="white", bbox=dict(facecolor="red", alpha=0.5))
+plt.axis("off")
+plt.show()
+
+# COCO-pretrained DETR
+# How many classes can it predict?
+print(len(model.config.id2label))  # number of classes: 91
+print(model.config.id2label)  # dict: {id: class_name}
+
+# DETR always outputs a fixed number of predictions (default: 100 queries).
+# For each query, it outputs a class label (or "no object") and a bounding box.
+# 91 classes + 1 "no object" class = 92 classes
+print(outputs.logits.shape)  # (batch_size, num_queries, num_classes+1)
+# torch.Size([1, 100, 92])
+```
 
 
 ## 5. Diffusion Models
