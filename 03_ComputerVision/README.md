@@ -869,10 +869,65 @@ In order to condition the generation with text:
 - At every denoising step we take the noisy image + time step + embedding vector and pass it to the DDPM model, which will predict the noise map for the time step, taking the text into account
 - In practice, we need to inject the embedding vector in different layers of the DDPM using *cross attention*, to reinforce the conditioning
 - During training, we also remove the text conditioning in some random steps so that the model learns unconditional generation, too
-- During generation, *Classifier-Free Guidance* is used; the name comes from the previous approaches, which used an auxiliary classifier model to guide the model; but that not required anymore.
-- 
+- During generation (inference time), *Classifier-Free Guidance* is used; the name comes from the previous approaches, which used an auxiliary classifier model to guide the model; but that not required anymore.
 
 ![DDPM Text Conditioning](./assets/ddpm_text_conditioning.jpg)
+
+Classifier-Free Guidance in inference time:
+
+- The method boosts the importance of the text prompt, making sure the image aligns with the text.
+> - We generate two images, one with text guidance and the other one without. The same noise input is used.
+> - We then take the direction going from the unconditional to the conditional image and amplify that by a factor gamma or lambda: `lambda * diff`
+- The amplified direction is used in the denoising, in each step.
+
+![Classifier-Free Guidance](./assets/classifier_free_guidance.jpg)
+
+Where are text embeddings used in the DDPM model?
+
+- You take your text prompt -> encode it with a text encoder (CLIP text encoder in Stable Diffusion, or BERT-like transformer in Imagen).
+- This produces a sequence of embeddings (not a single vector).
+- These embeddings are injected into the UNet denoiser at cross-attention layers:
+  - Inside the UNet, instead of doing self-attention only (Q, K, V all from image latents), you do cross-attention:
+    - Queries (Q) come from the noisy image features.
+    - Keys and Values (K, V) come from the text embeddings.
+  - This way, the model can "look at" the text at multiple levels of abstraction during denoising.
+- Recall that the UNet predicts the noise map `e`.
+
+How is `diff` computed and used in practice?
+
+- We don't compute two full images in practice.
+- `diff` is in practice `e_cond - e_uncond`.
+- Training:
+  - Sometimes drop text -> unconditional branch.
+  - Learn to predict noise given (noisy image, timestep, conditioning or none).
+- Inference with CFG:
+  - Encode text -> embeddings
+  - For each denoising step:
+    - Run UNet with no conditioning -> `e_uncond`
+    - Run UNet with text conditioning -> `e_cond` 
+  - Compute guided noise: `e_final = e_uncond + lambda *(e_cond - e_uncond)`
+  - Update latent using `e_final`
+  - Repeat until step `t = 0`
+
+### Latent Diffusion Models
+
+The models introduced so far worked at pixel level, which is very compute intensive. A solution for them has been to compute a low resolution image first and the use a super-resolution model to upscale them. However, that requires training 2 models, and they are still compute intensive.
+
+A new approach consists in **latent diffusion models**. Latent diffision models are diffusion models wrapped by autoencoders: the encoder creates a latent vectors to which we add diffusion, then denoising, and finally the decoder tries to expand back the image. Working in the latent space is much faster, because the sizes of the manipulated vectors are much smaller (like 16 times smaller, compared to images); thus, we require also smaller models.
+
+[Stable Diffusion](https://arxiv.org/abs/2112.10752) is one of the most popular latent diffusion models; latent diffusion is one of the best in
+
+- Ease of conditioning
+- Quality of output
+- Diverstity
+
+Compared to the other generative models, they are slower (recall the triangle), but due to the [latest the advances in latent diffusion](https://stability.ai/news/stability-ai-sdxl-turbo), their speed disadvantage has faded considerably.
+
+![Latent Diffusion](./assets/latent_diffusion.jpg)
+
+### DDPM Theory and Implementation
+
+![Diffusion Models](./assets/diffusion_models.jpg)
 
 
 
