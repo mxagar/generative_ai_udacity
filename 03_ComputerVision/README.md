@@ -832,10 +832,49 @@ print(outputs.logits.shape)  # (batch_size, num_queries, num_classes+1)
 # torch.Size([1, 100, 92])
 ```
 
-
 ## 5. Diffusion Models
 
-TBD.
+Links:
+
+- Paper: [Ho et al., 2020: Denoising Diffusion Probabilistic Models (DDPM)](https://arxiv.org/abs/2006.11239)
+- Web: [https://hojonathanho.github.io/diffusion/](https://hojonathanho.github.io/diffusion/)
+
+Key ideas:
+
+- We have two phase:
+  - Forward phase: we iteratively add noise to an image.
+  - Backward phase: we iteratively remove noise from an image; it's the reverse process!
+- We run the phases step by step, i.e., we add/remove a little bit of noise in each step.
+- In the forward phase, We learn to predict the added noise with the DDPM model.
+- In the backward phase, we predict the noise to remove with the DDPM model.
+- Since we train the model with a wide range of images, it ends up being able to generate many images.
+- We need small steps in the reverse phase: it's much easier to improve an image with slight noise than to reconstruct a clear image from pure randomness.
+- To create an image, we start from a random noise map.
+- Image generation can be unconditioned or conditioned.
+
+![DDPM](./assets/ddpm.jpg)
+
+### Conditioning
+
+Conditioning consists in guiding the model in what to generate:
+
+- We can condition th emodel with a sketch
+- With an image, and ask variations
+- With a style, i.e., with an input image
+- With a text: the most common
+
+In order to condition the generation with text:
+
+- We convert the text into an embedding vector
+- At every denoising step we take the noisy image + time step + embedding vector and pass it to the DDPM model, which will predict the noise map for the time step, taking the text into account
+- In practice, we need to inject the embedding vector in different layers of the DDPM using *cross attention*, to reinforce the conditioning
+- During training, we also remove the text conditioning in some random steps so that the model learns unconditional generation, too
+- During generation, *Classifier-Free Guidance* is used; the name comes from the previous approaches, which used an auxiliary classifier model to guide the model; but that not required anymore.
+- 
+
+![DDPM Text Conditioning](./assets/ddpm_text_conditioning.jpg)
+
+
 
 ## 6. Project: AI Photo Editing with Inpainting
 
