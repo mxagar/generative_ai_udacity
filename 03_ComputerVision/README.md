@@ -927,7 +927,140 @@ Compared to the other generative models, they are slower (recall the triangle), 
 
 ### DDPM Theory and Implementation
 
+Videos:
+
+- [Implementation 1](https://www.youtube.com/watch?v=ogjo5RYSwQc)
+- [Implementation 2](https://www.youtube.com/watch?v=HVnZGw_ygwI)
+- [Implementation 3](https://www.youtube.com/watch?v=6JIsoEd0gyc)
+- [Inference](https://www.youtube.com/watch?v=mUuudJuaFCQ)
+
+Links:
+
+- [mxagar/generative_ai_book/chapter-8-diffusion-models](https://github.com/mxagar/generative_ai_book?tab=readme-ov-file#chapter-8-diffusion-models)
+- [hojonathanho/diffusion](https://hojonathanho.github.io/diffusion/)
+
+In the **diffusion phase** we add noise to the image with a scheluder, i.e., we increase the noise value from minimum to maximum following a curve:
+
+    q(x_t | x_(t-1)) = N(sqrt(1-beta_t)*x_(t-1), beta_t*I)
+    variance: beta_t in [0.0001, 0.02]
+    mean: sqrt(1-beta_t)*x_(t-1)
+
+The noise signal is a normal distirbution with mean and variance parametrized by `beta_t`. The simplest scheduler is the linear.
+
+![Noise Scheduling](./assets/noise_scheduling.jpg)
+
+We see that in order to generate a value of a pixel at time `t`, we need its value at time `t-1`, which requires sequential processing. To avoide that, instead of working with `beta_t`, which accounts for the variance in small steps, we reparametrize the noise addition to work with `alpha_bar_t`:
+
+    alpha_bar_t = prod(1-beta_t; 0:t)
+
+Since the product of normal distribution sis a normal distribution, we get
+
+    alpha_bar_t = prod(1-beta_t; 0:t)
+    q(x_t | x_0) = N(sqrt(alpha_bar_t)*x_0, (1-alpha_bar_t)*I)
+
+This reparametrization allows to jump from 0 to any timestep without the need of sequential transformations from `t-1 -> t`.
+
+In the **denoising phase**, we add noise to an image and then we try to predict the noise map we added. To that end, we compute the *mean squared error* (MSE) between the noise added `e` and the noise predicted `e_theta`.
+
+However, since we are working with distributions subject to stochastic variation (i.e., randomness), we specifically want to compute the expectation of the MSE: `E(MSE)`. In other words: a noise map generated at a moment is a sampling in a distribution, and if we repeat its generation, it won't be the same; thus, we would like to average acorss many samplings, i.e., we compute the mean or expectation associated with the error.
+
+> In practice, we approximate the expectation by averaging the simple Mean Squared Error loss over a mini-batch of many images `x_0`​ where we take a random time step `t` for each image. For this to work well, it is better to use a relatively large batch size (for a more realistic distribution). We can see here that the reparametrization we did earlier, allowing us to generate an image at any time step `t` directly instead of sequentially, is crucial for the whole idea to work.
+
+![DDPM Loss Function](./assets/ddpm_loss_function.jpg)
+
+But which is the DDPM model? It's a UNet:
+
+- Same input/output size
+- Skip connections
+- Extended with attention and cross-attention, for conditioning
+- In addition to the image, the UNet receives also the time `t` as input; thus, the weights are all the same no matter the step `t`, since the time `t` is an input.
+
+![DDPM UNet](./assets/ddpm_unet.jpg)
+
+In order to work with the value of `t` we need to expand it to a vector. In other words, we construct a temporal embedding. The approach followed is very similar to the one in transformers, where the initial paper encoded position embeddings using sinusoidal functions.
+
+Let's say we want an embedding of size 256; applying trigonometric functions we can create a vector of that size that maps any scalar `t in R` to `v in R^256`, as shown in the image. Then, those vectors are passed to a linear layer with learnable weights and an activation function; the output is the final temporal embedding.
+
+The following image shows 4 embedding vectors for the values or `t = 0`, `t = 100`, `t = 350` and `t = 500`.
+
+![Temporal Embeddings](./assets/temporal_embeddings.jpg)
+
+Here is a summary of the complete DDPM approach:
+
 ![Diffusion Models](./assets/diffusion_models.jpg)
+
+Here are some notes on the code:
+
+```python
+# Number of diffusion steps. This is called T in the formulas
+n_steps = 512
+# Linear noise schedule: betas
+beta = linspace(start, end, n_steps)
+
+# Precompute some quantities for the reparametrization
+# These are not scalars, but vectors which contain 512 values
+# on for each time step
+alpha = 1. - beta
+alpha_bar = cumprod(alpha, axis=0)
+sqrt_alpha_bar = sqrt(alpha_bar)
+sqrt_one_minus_alpha_bar = sqrt(1. - alpha_bar)
+
+# Model
+model = UNet()
+optimizer = Adam(model.parameters(), lr=0.001)
+
+for batch, _ in dataloader:
+    ## ... Move batch to GPU, reset optimizers, etc.
+    
+    # Pick (mini-)batch size
+    bs = batch.shape[0]
+    # Random time steps, one for each image in the
+    # mini-batch
+    # It is important to pick several time stamp
+    # We want to compute the _expectaction_ of the MSE
+    # so the sampling across different time steps is essential
+    t = torch.randint(0, T, (bs,)).long()
+    
+    # Generate noise and add it to the images
+    # (forward pass)
+    # Torch can generate normally distributed number in N(0,1)
+    # so we need to shift them to N(sqrt(alpha_bar_t)*x_0, (1-alpha_bat_t)*I):
+    # N(sqrt(alpha_bar_t)*x_0, (1-alpha_bat_t)*I) = 
+    # sqrt(alpha_bar_t)*x_0 + sqrt(1-alpha_bat_t) * N(0,1)
+    noise = torch.randn_like(batch, device=device)
+    x_noisy = (
+        sqrt_alpha_bar[t].view(bs, 1, 1, 1) * batch + 
+        sqrt_one_minus_alpha_bar[t].view(bs, 1, 1, 1) * noise
+    )
+    
+    # Predict the noise using the model
+    # NOTE how the model receives in input the noisy
+    # image AND the time step t
+    noise_pred = model(x_noisy, t)
+    
+    # Approximate taking the expectation by averaging
+    # the MSE loss over the minibatch and the random
+    # time steps
+    # By selecting a sufficiently large batch size
+    # and by picking random time steps t
+    # we are approximating the process of computing the expectation
+    # of the MSE across all time steps
+    loss = F.mse_loss(noise, noise_pred)
+    
+    # Compute gradients and optimize the model weights
+    loss.backward()
+    optimizer.step()
+```
+
+### DDPM Inference
+
+
+
+### Exercise: Build a DDPM
+
+
+
+### Demo: HuggingFace Diffusers
 
 
 
