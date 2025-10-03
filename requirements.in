@@ -9,7 +9,7 @@ requests
 accelerate
 autopep8
 bertviz
-bitsandbytes
+bitsandbytes==0.48.1
 beautifulsoup4
 bert-score
 chromadb
@@ -17,6 +17,7 @@ datasets
 diffusers
 evaluate
 huggingface_hub
+imageio
 instructor
 joblib
 kaggle

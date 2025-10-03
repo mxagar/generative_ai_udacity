@@ -76,7 +76,7 @@ bertviz==1.4.1
     # via -r requirements.in
 bitarray==3.4.2
     # via colbert-ai
-bitsandbytes==0.42.0
+bitsandbytes==0.48.1
     # via -r requirements.in
 bleach[css]==6.2.0
     # via
@@ -290,6 +290,8 @@ idna==3.10
     #   kaggle
     #   requests
     #   yarl
+imageio==2.37.0
+    # via -r requirements.in
 importlib-metadata==8.7.0
     # via
     #   diffusers
@@ -622,6 +624,7 @@ numpy==2.2.6
     #   -r requirements.in
     #   accelerate
     #   bert-score
+    #   bitsandbytes
     #   chromadb
     #   contourpy
     #   datasets
@@ -629,6 +632,7 @@ numpy==2.2.6
     #   evaluate
     #   faiss-cpu
     #   fast-pytorch-kmeans
+    #   imageio
     #   langchain-chroma
     #   langchain-community
     #   llama-index-core
@@ -768,6 +772,7 @@ packaging==24.2
     # via
     #   accelerate
     #   bert-score
+    #   bitsandbytes
     #   build
     #   datasets
     #   evaluate
@@ -811,6 +816,7 @@ pexpect==4.9.0
 pillow==10.4.0
     # via
     #   diffusers
+    #   imageio
     #   langchain-nomic
     #   llama-index-core
     #   matplotlib
@@ -1051,7 +1057,6 @@ scikit-learn==1.7.0
     #   umap-learn
 scipy==1.15.3
     # via
-    #   bitsandbytes
     #   colbert-ai
     #   pynndescent
     #   scikit-learn
@@ -1153,6 +1158,7 @@ torch==2.7.1
     #   accelerate
     #   bert-score
     #   bertviz
+    #   bitsandbytes
     #   fast-pytorch-kmeans
     #   peft
     #   ragatouille
