@@ -1139,7 +1139,14 @@ Notebook: [`diffusion_exercise_1/ddpm.ipynb`](./lab/diffusion_exercise_1/ddpm.ip
 
 ### Demo: HuggingFace Diffusers
 
+Videos:
 
+- [Diffusers: Unconditional Generation](https://www.youtube.com/watch?v=Jnv2gLsmE5s)
+- [Diffusers: Text to Image](https://www.youtube.com/watch?v=BaOwlYmNIy4)
+- [Diffusers: Image to Image](https://www.youtube.com/watch?v=rAVu61L-1vE)
+- [Diffusers: Inpainting and Text to Video](https://www.youtube.com/watch?v=fK8cj2UZ3tQ)
+
+Notebook: 
 
 ## 6. Project: AI Photo Editing with Inpainting
 
