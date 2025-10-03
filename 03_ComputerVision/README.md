@@ -1135,7 +1135,15 @@ Videos:
 - [Exercise Solution Commented, Part 1](https://www.youtube.com/watch?v=VrC5pT11OO0)
 - [Exercise Solution Commented, Part 2](https://www.youtube.com/watch?v=slwRAvhQLPM)
 
-Notebook: [`diffusion_exercise_1/ddpm.ipynb`](./lab/diffusion_exercise_1/ddpm.ipynb)
+Notebook: [`diffusion_exercise_1/ddpm.ipynb`](./lab/diffusion_exercise_1/ddpm.ipynb). In the notebook, a DDPM model is trained to generate fake car images. I run the notebook locally using my RTX 3060. Key parts:
+
+- Dataset Setup: Uses Stanford Cars dataset (16,185 images) with custom CarImagesDataset class to load images from flat train/test folders, resizing to 64x64 pixels
+- Noise Scheduling: Implements linear beta schedule with 512 diffusion steps (`betas = torch.linspace(0.0001, 0.02, 512)`) and precomputes all required constants (alphas, cumulative products, square roots)
+- Forward Diffusion: Demonstrates adding noise to images at different timesteps using the reparametrization formula: `sqrt_alphas_cumprod[t] * image + sqrt_one_minus_alphas_cumprod[t] * noise`
+- UNet Model: Imports a custom UNet architecture with ~9.1M parameters (configurable to 55M) that takes noisy images and timesteps as input to predict noise maps
+- Training Loop: 10 epochs with cosine annealing + warmup, MSE loss between actual and predicted noise, exponential moving average tracking, generates sample images during training
+- Inference Algorithm: Implements DDPM sampling by starting from random noise and iteratively denoising over 512 timesteps using the trained model to predict noise at each step
+-  Results: Generates 64x64 car images after training, with visible car features (windshields, wheels) despite the small model size and short training time
 
 ### Demo: HuggingFace Diffusers
 
@@ -1146,7 +1154,18 @@ Videos:
 - [Diffusers: Image to Image](https://www.youtube.com/watch?v=rAVu61L-1vE)
 - [Diffusers: Inpainting and Text to Video](https://www.youtube.com/watch?v=fK8cj2UZ3tQ)
 
-Notebook: 
+Links:
+
+- [diffusers](https://huggingface.co/docs/diffusers/index)
+- [Stable Diffusion XL - Turbo: Maybe the solution to the impossible triangle?](https://stability.ai/news/stability-ai-sdxl-turbo)
+- [Playground V2](https://blog.playgroundai.com/playground-v2/)
+- [Kandinsky Model](https://github.com/ai-forever/Kandinsky-2)
+
+Notebook: [`diffusion_exercise_2/diffusers.ipynb`](./lab/diffusion_exercise_2/diffusers.ipynb)
+
+- `diffusers` and `pipelines` are used; a pipeline has some input preprocessing and output postprocessing wrapping the model call.
+
+
 
 ## 6. Project: AI Photo Editing with Inpainting
 
