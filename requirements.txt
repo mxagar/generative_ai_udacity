@@ -125,15 +125,7 @@ click==8.2.1
 colbert-ai==0.2.21
     # via ragatouille
 colorama==0.4.6
-    # via
-    #   build
-    #   click
-    #   griffe
-    #   ipython
-    #   loguru
-    #   pytest
-    #   tqdm
-    #   uvicorn
+    # via griffe
 coloredlogs==15.0.1
     # via onnxruntime
 comm==0.2.2
@@ -254,6 +246,8 @@ h11==0.16.0
     # via
     #   httpcore
     #   uvicorn
+hf-xet==1.1.10
+    # via huggingface-hub
 httpcore==1.0.9
     # via httpx
 httptools==0.6.4
@@ -423,7 +417,7 @@ kiwisolver==1.4.8
     # via matplotlib
 kubernetes==33.1.0
     # via chromadb
-langchain[all]==0.3.25
+langchain==0.3.25
     # via
     #   -r requirements.in
     #   langchain-community
@@ -652,12 +646,48 @@ numpy==2.2.6
     #   scipy
     #   seaborn
     #   tensorboard
-    #   torchtext
     #   torchvision
     #   transformers
     #   umap-learn
     #   voyager
     #   wordcloud
+nvidia-cublas-cu12==12.6.4.1
+    # via
+    #   nvidia-cudnn-cu12
+    #   nvidia-cusolver-cu12
+    #   torch
+nvidia-cuda-cupti-cu12==12.6.80
+    # via torch
+nvidia-cuda-nvrtc-cu12==12.6.77
+    # via torch
+nvidia-cuda-runtime-cu12==12.6.77
+    # via torch
+nvidia-cudnn-cu12==9.5.1.17
+    # via torch
+nvidia-cufft-cu12==11.3.0.4
+    # via torch
+nvidia-cufile-cu12==1.11.1.6
+    # via torch
+nvidia-curand-cu12==10.3.7.77
+    # via torch
+nvidia-cusolver-cu12==11.7.1.2
+    # via torch
+nvidia-cusparse-cu12==12.5.4.2
+    # via
+    #   nvidia-cusolver-cu12
+    #   torch
+nvidia-cusparselt-cu12==0.6.3
+    # via torch
+nvidia-nccl-cu12==2.26.2
+    # via torch
+nvidia-nvjitlink-cu12==12.6.85
+    # via
+    #   nvidia-cufft-cu12
+    #   nvidia-cusolver-cu12
+    #   nvidia-cusparse-cu12
+    #   torch
+nvidia-nvtx-cu12==12.6.77
+    # via torch
 oauthlib==3.2.2
     # via
     #   kubernetes
@@ -776,6 +806,8 @@ parso==0.8.4
     # via jedi
 peft==0.15.2
     # via -r requirements.in
+pexpect==4.9.0
+    # via ipython
 pillow==10.4.0
     # via
     #   diffusers
@@ -818,6 +850,10 @@ psutil==7.0.0
     #   accelerate
     #   ipykernel
     #   peft
+ptyprocess==0.7.0
+    # via
+    #   pexpect
+    #   terminado
 pure-eval==0.2.3
     # via stack-data
 pyarrow==20.0.0
@@ -880,8 +916,6 @@ pypika==0.48.9
     # via chromadb
 pyproject-hooks==1.2.0
     # via build
-pyreadline3==3.5.4
-    # via humanfriendly
 pytest==8.4.0
     # via -r requirements.in
 python-dateutil==2.9.0.post0
@@ -909,13 +943,6 @@ pytube==15.0.0
     # via -r requirements.in
 pytz==2025.2
     # via pandas
-pywin32==311
-    # via jupyter-core
-pywinpty==3.0.0
-    # via
-    #   jupyter-server
-    #   jupyter-server-terminals
-    #   terminado
 pyyaml==6.0.2
     # via
     #   accelerate
@@ -979,7 +1006,6 @@ requests==2.32.4
     #   requests-toolbelt
     #   tavily-python
     #   tiktoken
-    #   torchtext
     #   transformers
     #   wikipedia
     #   youtube-transcript-api
@@ -1124,7 +1150,6 @@ tomli==2.2.1
     #   pytest
 torch==2.7.1
     # via
-    #   -r requirements.in
     #   accelerate
     #   bert-score
     #   bertviz
@@ -1133,18 +1158,10 @@ torch==2.7.1
     #   ragatouille
     #   sentence-transformers
     #   timm
-    #   torchaudio
-    #   torchtext
     #   torchvision
     #   transformers
-torchaudio==2.7.1
-    # via -r requirements.in
-torchtext==0.18.0
-    # via -r requirements.in
 torchvision==0.22.1
-    # via
-    #   -r requirements.in
-    #   timm
+    # via timm
 tornado==6.5.1
     # via
     #   ipykernel
@@ -1172,7 +1189,6 @@ tqdm==4.67.1
     #   openai
     #   peft
     #   sentence-transformers
-    #   torchtext
     #   transformers
     #   umap-learn
 traitlets==5.14.3
@@ -1199,6 +1215,8 @@ transformers[torch]==4.51.3
     #   colbert-ai
     #   peft
     #   sentence-transformers
+triton==3.3.1
+    # via torch
 typer==0.16.0
     # via
     #   chromadb
@@ -1267,6 +1285,8 @@ urllib3==2.4.0
     #   types-requests
 uvicorn[standard]==0.34.3
     # via chromadb
+uvloop==0.21.0
+    # via uvicorn
 voyager==2.1.0
     # via ragatouille
 watchfiles==1.1.0
@@ -1296,8 +1316,6 @@ widgetsnbextension==4.0.14
     # via ipywidgets
 wikipedia==1.4.0
     # via -r requirements.in
-win32-setctime==1.2.0
-    # via loguru
 wordcloud==1.9.4
     # via -r requirements.in
 wrapt==1.17.2

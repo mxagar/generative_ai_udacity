@@ -52,16 +52,20 @@ A regular python environment with the usual data science packages should suffice
 conda env create -f conda.yaml
 conda activate genai
 
-# Dependencies
+# If you have CUDA, install CUDA support with the propper CUDA version, e.g. v12.1
+pip install torch torchvision torchaudio torchtext --index-url https://download.pytorch.org/whl/cu121
+# OTHERWISE, install CPU version
+pip install torch torchvision torchaudio torchtext
+# Compile rest of dependencies and install them
 pip-compile requirements.in
-pip-sync requirements.txt
+pip install -r requirements.txt
 
 # If we need a new dependency,
 # add it to requirements.in 
 # (WATCH OUT: try to follow alphabetical order)
 # And then:
 pip-compile requirements.in
-pip-sync requirements.txt
+pip install -r requirements.txt
 
 # When the repository is cloned, initialize and update the submodules 
 git clone https://github.com/mxagar/generative_ai_udacity

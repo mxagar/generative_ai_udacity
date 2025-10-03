@@ -21,7 +21,7 @@ instructor
 joblib
 kaggle
 kagglehub
-langchain[all]
+langchain
 langchain-openai
 langchain-community
 langchain-chroma
@@ -49,10 +49,6 @@ sentence-transformers
 setuptools
 tensorboard
 timm
-torch
-torchaudio
-torchtext
-torchvision
 tqdm
 transformers
 transformers[torch]
