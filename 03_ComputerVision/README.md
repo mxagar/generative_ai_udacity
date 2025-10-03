@@ -932,7 +932,6 @@ Videos:
 - [Implementation 1](https://www.youtube.com/watch?v=ogjo5RYSwQc)
 - [Implementation 2](https://www.youtube.com/watch?v=HVnZGw_ygwI)
 - [Implementation 3](https://www.youtube.com/watch?v=6JIsoEd0gyc)
-- [Inference](https://www.youtube.com/watch?v=mUuudJuaFCQ)
 
 Links:
 
@@ -1054,11 +1053,89 @@ for batch, _ in dataloader:
 
 ### DDPM Inference
 
+Video: [Inference](https://www.youtube.com/watch?v=mUuudJuaFCQ).
+
+The inference algorithm (aka. *Sampling*) is described in the paper:
+
+- Generate the latent from a normal distribution: `x_T = N(0,I)`
+- Loop over the time step backwards: `t = [T, ..., 1]`:
+  - Generate another random latent: `z = N(0,I)`
+  - Predict the noise map using the UNet: `e_theta(x_t, t)`
+  - `x_(t-1) = (1 / sqrt(alpha_t)) * (x_t - ((1-alpha_t)/sqrt(1-alpha_bar_t))*e_theta) + sigma_t * z`
+  - Note that we are adding noise: `sigma_t * z`
+    - `sigma_t^2 = ((1-alpha_bar_(t-1))/(1-alpha_bar_t)) * beta_t`
+    - `sigma_t` decreases with the time: we add more freedom to explore, i.e., focus on broad pictures initially, then to the details.
+  - Repeat `T` times, then return `x_0`
+
+Commented code:
+
+```python
+# Compute some quantities we need, contained
+# in the formulas reported above
+# sqrt(1-alpha_bar_t)
+# Note that it's a vector with all the t steps, not a scalar
+sqrt_one_minus_alpha_bar = sqrt(1. - alpha_bar)
+alpha_bar_t_minus_1 = F.pad(
+    alpha_bar[:-1], 
+    (1, 0), 
+    value=1.0
+)
+# This is called sigma_t in the formulas
+posterior_variance = (
+    beta * (1.0 - alpha_bar_t_minus_1) / 
+    (1.0 - alpha_bar)
+)
+# Batch size. For example, generate 8
+# fake images simultaneously
+bs = 8
+# Generate the random initialization
+# (remember, an image filled with random
+# values is the start of the reverse process)
+x = randn((bs, 3, IMG_SIZE, IMG_SIZE))
+# We loop "backward in time": [T, ..., 0]
+for ts in range(0, T)[::-1]:
+
+    # This is the noise z that we will add back
+    # into the denoised image (except if we are
+    # at the very last iteration)
+    noise = randn_like(x) if ts > 0 else 0
+
+    # For each image in the batch we consider
+    # the time step ts.
+    # This creates a 1D tensor of shape (bs,)
+    # all filled with value ts
+    t = full((bs,), ts).long()
+
+    # This is the formula for the denoising
+    # t is a tensor of size (bs,),
+    # i.e., we are picking the timestep t for all
+    # images in the batch
+    x = (
+        sqrt_one_over_alpha[t].view(bs, 1, 1, 1) * 
+        (
+         # Remember: alpha[t] = 1 - beta[t]
+         x - beta[t].view(bs, 1, 1, 1)
+         / 
+         sqrt_one_minus_alpha_bar[t].view(bs, 1, 1, 1) * 
+         model(x, t)
+    ) + sqrt(posterior_variance[t].view(bs, 1, 1, 1)) * 
+        noise
+# Cut every value below -1 or above 1
+# (this is needed for the conversion back to RGB
+# image to work well)
+# Later the [-1,1] range will be mapped to [0,255]
+generated_image = torch.clamp(x, -1, 1)
+```
 
 
 ### Exercise: Build a DDPM
 
+Videos:
 
+- [Exercise Solution Commented, Part 1](https://www.youtube.com/watch?v=VrC5pT11OO0)
+- [Exercise Solution Commented, Part 2](https://www.youtube.com/watch?v=slwRAvhQLPM)
+
+Notebook: [`diffusion_exercise_1/ddpm.ipynb`](./lab/diffusion_exercise_1/ddpm.ipynb)
 
 ### Demo: HuggingFace Diffusers
 
