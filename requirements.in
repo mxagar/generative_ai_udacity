@@ -19,6 +19,8 @@ evaluate
 huggingface_hub
 instructor
 joblib
+kaggle
+kagglehub
 langchain[all]
 langchain-openai
 langchain-community

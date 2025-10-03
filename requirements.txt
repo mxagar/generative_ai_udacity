@@ -79,7 +79,9 @@ bitarray==3.4.2
 bitsandbytes==0.42.0
     # via -r requirements.in
 bleach[css]==6.2.0
-    # via nbconvert
+    # via
+    #   kaggle
+    #   nbconvert
 blinker==1.9.0
     # via flask
 boto3==1.39.4
@@ -98,13 +100,16 @@ certifi==2025.6.15
     # via
     #   httpcore
     #   httpx
+    #   kaggle
     #   kubernetes
     #   llama-cloud
     #   requests
 cffi==1.17.1
     # via argon2-cffi-bindings
 charset-normalizer==3.4.2
-    # via requests
+    # via
+    #   kaggle
+    #   requests
 chromadb==1.0.12
     # via
     #   -r requirements.in
@@ -288,6 +293,7 @@ idna==3.10
     #   anyio
     #   httpx
     #   jsonschema
+    #   kaggle
     #   requests
     #   yarl
 importlib-metadata==8.7.0
@@ -409,6 +415,10 @@ jupyterlab-server==2.27.3
     #   notebook
 jupyterlab-widgets==3.0.15
     # via ipywidgets
+kaggle==1.7.4.5
+    # via -r requirements.in
+kagglehub==0.3.13
+    # via -r requirements.in
 kiwisolver==1.4.8
     # via matplotlib
 kubernetes==33.1.0
@@ -738,6 +748,7 @@ packaging==24.2
     #   jupyter-server
     #   jupyterlab
     #   jupyterlab-server
+    #   kagglehub
     #   langchain-core
     #   langchainhub
     #   langsmith
@@ -797,6 +808,7 @@ propcache==0.3.2
 protobuf==5.29.5
     # via
     #   googleapis-common-protos
+    #   kaggle
     #   onnx
     #   onnxruntime
     #   opentelemetry-proto
@@ -877,6 +889,7 @@ python-dateutil==2.9.0.post0
     #   arrow
     #   botocore
     #   jupyter-client
+    #   kaggle
     #   kubernetes
     #   matplotlib
     #   pandas
@@ -890,6 +903,8 @@ python-dotenv==1.1.0
     #   uvicorn
 python-json-logger==3.3.0
     # via jupyter-events
+python-slugify==8.0.4
+    # via kaggle
 pytube==15.0.0
     # via -r requirements.in
 pytz==2025.2
@@ -908,6 +923,7 @@ pyyaml==6.0.2
     #   datasets
     #   huggingface-hub
     #   jupyter-events
+    #   kagglehub
     #   kubernetes
     #   langchain
     #   langchain-community
@@ -949,6 +965,8 @@ requests==2.32.4
     #   huggingface-hub
     #   instructor
     #   jupyterlab-server
+    #   kaggle
+    #   kagglehub
     #   kubernetes
     #   langchain
     #   langchain-community
@@ -1027,6 +1045,7 @@ shellingham==1.5.4
     # via typer
 six==1.17.0
     # via
+    #   kaggle
     #   kubernetes
     #   posthog
     #   python-dateutil
@@ -1076,6 +1095,10 @@ terminado==0.18.1
     # via
     #   jupyter-server
     #   jupyter-server-terminals
+text-unidecode==1.3
+    # via
+    #   kaggle
+    #   python-slugify
 threadpoolctl==3.6.0
     # via scikit-learn
 tiktoken==0.9.0
@@ -1141,6 +1164,8 @@ tqdm==4.67.1
     #   evaluate
     #   gpt4all
     #   huggingface-hub
+    #   kaggle
+    #   kagglehub
     #   llama-index-core
     #   nltk
     #   nomic
@@ -1236,6 +1261,7 @@ uri-template==1.3.0
 urllib3==2.4.0
     # via
     #   botocore
+    #   kaggle
     #   kubernetes
     #   requests
     #   types-requests
@@ -1252,6 +1278,7 @@ webcolors==24.11.1
 webencodings==0.5.1
     # via
     #   bleach
+    #   kaggle
     #   tinycss2
 websocket-client==1.8.0
     # via
