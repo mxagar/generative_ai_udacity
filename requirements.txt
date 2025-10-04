@@ -290,8 +290,10 @@ idna==3.10
     #   kaggle
     #   requests
     #   yarl
-imageio==2.37.0
+imageio[ffmpeg]==2.37.0
     # via -r requirements.in
+imageio-ffmpeg==0.6.0
+    # via imageio
 importlib-metadata==8.7.0
     # via
     #   diffusers
@@ -854,6 +856,7 @@ protobuf==5.29.5
 psutil==7.0.0
     # via
     #   accelerate
+    #   imageio
     #   ipykernel
     #   peft
 ptyprocess==0.7.0

@@ -17,7 +17,7 @@ datasets
 diffusers
 evaluate
 huggingface_hub
-imageio
+imageio[ffmpeg]
 instructor
 joblib
 kaggle
