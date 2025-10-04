@@ -1163,8 +1163,21 @@ Links:
 
 Notebook: [`diffusion_exercise_2/diffusers.ipynb`](./lab/diffusion_exercise_2/diffusers.ipynb)
 
+- HuggingFace overview: models, datasets, spaces.
+- We do need a GPU with at least 12 GB or RAM; I used my NVIDIA RTX 3060; in the Udacity space, a Tesla T4 is offered.
+  - RTX 3060: 12 GB, faster, for gaming
+  - Tesla T4: 16 GB, for data centers
+- We need to set seeds; the same seed produces the same output, so they are important for reproducibility.
 - `diffusers` and `pipelines` are used; a pipeline has some input preprocessing and output postprocessing wrapping the model call.
-
+- Models tested:
+  - Unconditional image generation: `google/ddpm-celebahq-256`, celebrity image generation
+  - Conditional image generation: text to image:
+    - `stabilityai/sdxl-turbo`: Stable Diffusion version which is able to generate images in very few diffusion steps, so it's much faster! The imposible triangle is becoming possible. 
+    - `playgroundai/playground-v2-1024px-aesthetic`: less photorealistic, more artistic/aesthetic.
+  - Conditional image generation: image to image but with a conditioning text prompt: `kandinsky-community/kandinsky-2-2`: we generate first a sketch with Stable Diffusion XL turbo and then pass it to the Kandisnky model, which works very well.
+  - Conditional image generation: inpainting: image to image but with a conditioning mask and a text prompt`kandinsky-community/kandinsky-2-2-decoder-inpaint`.
+  - Conditional video generation: text to video: `damo-vilab/text-to-video-ms-1.7b`.
+  - Conditional video generation: image t o video: `stabilityai/stable-video-diffusion-img2vid-xt` 
 
 
 ## 6. Project: AI Photo Editing with Inpainting
