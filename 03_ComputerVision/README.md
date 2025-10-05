@@ -1182,5 +1182,22 @@ Notebook: [`diffusion_exercise_2/diffusers.ipynb`](./lab/diffusion_exercise_2/di
 
 ## 6. Project: AI Photo Editing with Inpainting
 
-TBD.
+Project link: [mxagar/diffusion-examples/inpainting_app](https://github.com/mxagar/diffusion-examples/tree/main/inpainting_app)
+
+Summary:
+
+- Components: SAM, text2img inpainting diffucion model, Gradio.
+- An image is processed, selecting one object/background in it (SAM), and using a text2img inpainting diffucion model the object/background is changed.
+- GUI with Gradio.
+- [App usage example](https://www.youtube.com/watch?v=UG0YdPsSHsY).
+
+Rubric / Criteria:
+
+- Correctly load and use SAM in all code clocks to complete.
+- Correctly loand and use `AutoPipelineForInpainting`.
+- A panel with 3 images should be visible:
+  - Original car
+  - Mask of the car
+  - Background substituted by Mars
+- Interactive app correctly used: screeshots of examples provided.
 

@@ -22,7 +22,7 @@ Additionally, it is necessary to submit and pass some projects to get the certif
 
 - Project 1: Apply Lightweight Fine-Tuning to a Foundation Model: [mxagar/llm_peft_fine_tuning_example](https://github.com/mxagar/llm_peft_fine_tuning_example).
 - Project 2: Build Your Own Custom Chatbot: [mxagar/rag-app-examples/qa-rag](https://github.com/mxagar/rag-app-examples/tree/main/qa-rag).
-- Project 3: AI Photo Editing with Inpainting - TBD.
+- Project 3: AI Photo Editing with Inpainting: [mxagar/diffusion-examples/inpainting_app](https://github.com/mxagar/diffusion-examples/tree/main/inpainting_app).
 - Project 4: Personalized Real Estate Agent - TBD.
 
 Finally, also check some of my personal guides on related tools:
@@ -52,7 +52,7 @@ A regular python environment with the usual data science packages should suffice
 conda env create -f conda.yaml
 conda activate genai
 
-# If you have CUDA, install CUDA support with the propper CUDA version, e.g. v12.1
+# If you have CUDA, install CUDA support with the propper CUDA version, e.g. v12.1 (doesn't need to match 13.0)
 pip install torch torchvision torchaudio torchtext --index-url https://download.pytorch.org/whl/cu121
 # OTHERWISE, install CPU version
 pip install torch torchvision torchaudio torchtext
