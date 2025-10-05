@@ -16,6 +16,7 @@ chromadb
 datasets
 diffusers
 evaluate
+gradio
 huggingface_hub
 imageio[ffmpeg]
 instructor

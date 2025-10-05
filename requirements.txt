@@ -11,6 +11,8 @@ accelerate==1.7.0
     #   -r requirements.in
     #   peft
     #   transformers
+aiofiles==24.1.0
+    # via gradio
 aiohappyeyeballs==2.6.1
     # via aiohttp
 aiohttp==3.12.13
@@ -27,6 +29,7 @@ annotated-types==0.7.0
     # via pydantic
 anyio==4.9.0
     # via
+    #   gradio
     #   httpx
     #   jupyter-server
     #   openai
@@ -90,6 +93,8 @@ botocore==1.39.4
     # via
     #   boto3
     #   s3transfer
+brotli==1.1.0
+    # via gradio
 build==1.2.2.post1
     # via chromadb
 cachetools==5.5.2
@@ -190,9 +195,13 @@ faiss-cpu==1.11.0
 fast-pytorch-kmeans==0.2.2
     # via ragatouille
 fastapi==0.115.9
-    # via chromadb
+    # via
+    #   chromadb
+    #   gradio
 fastjsonschema==2.21.1
     # via nbformat
+ffmpy==0.6.1
+    # via gradio
 filelock==3.18.0
     # via
     #   datasets
@@ -218,6 +227,7 @@ fsspec[http]==2025.3.0
     # via
     #   datasets
     #   evaluate
+    #   gradio-client
     #   huggingface-hub
     #   llama-index-core
     #   torch
@@ -233,10 +243,16 @@ googleapis-common-protos==1.70.0
     # via opentelemetry-exporter-otlp-proto-grpc
 gpt4all==2.8.2
     # via nomic
+gradio==5.38.2
+    # via -r requirements.in
+gradio-client==1.11.0
+    # via gradio
 greenlet==3.2.3
     # via sqlalchemy
 griffe==1.7.3
     # via banks
+groovy==0.1.2
+    # via gradio
 grpcio==1.73.0
     # via
     #   chromadb
@@ -255,6 +271,8 @@ httptools==0.6.4
 httpx==0.28.1
     # via
     #   chromadb
+    #   gradio
+    #   gradio-client
     #   jupyterlab
     #   langchain-mistralai
     #   langgraph-sdk
@@ -263,6 +281,7 @@ httpx==0.28.1
     #   llama-index-core
     #   ollama
     #   openai
+    #   safehttpx
     #   tavily-python
 httpx-sse==0.4.0
     # via
@@ -275,6 +294,8 @@ huggingface-hub==0.33.0
     #   datasets
     #   diffusers
     #   evaluate
+    #   gradio
+    #   gradio-client
     #   peft
     #   sentence-transformers
     #   timm
@@ -329,6 +350,7 @@ jinja2==3.1.6
     # via
     #   banks
     #   flask
+    #   gradio
     #   instructor
     #   jupyter-server
     #   jupyterlab
@@ -547,6 +569,7 @@ markdown-it-py==3.0.0
 markupsafe==3.0.2
     # via
     #   flask
+    #   gradio
     #   jinja2
     #   nbconvert
     #   werkzeug
@@ -634,6 +657,7 @@ numpy==2.2.6
     #   evaluate
     #   faiss-cpu
     #   fast-pytorch-kmeans
+    #   gradio
     #   imageio
     #   langchain-chroma
     #   langchain-community
@@ -762,6 +786,7 @@ opentelemetry-util-http==0.55b1
 orjson==3.10.18
     # via
     #   chromadb
+    #   gradio
     #   langgraph-sdk
     #   langsmith
 ormsgpack==1.10.0
@@ -779,6 +804,8 @@ packaging==24.2
     #   datasets
     #   evaluate
     #   faiss-cpu
+    #   gradio
+    #   gradio-client
     #   huggingface-hub
     #   ipykernel
     #   jupyter-events
@@ -804,6 +831,7 @@ pandas==2.2.3
     #   bert-score
     #   datasets
     #   evaluate
+    #   gradio
     #   llama-index-readers-file
     #   nomic
     #   seaborn
@@ -818,6 +846,7 @@ pexpect==4.9.0
 pillow==10.4.0
     # via
     #   diffusers
+    #   gradio
     #   imageio
     #   langchain-nomic
     #   llama-index-core
@@ -885,6 +914,7 @@ pydantic==2.11.7
     #   banks
     #   chromadb
     #   fastapi
+    #   gradio
     #   instructor
     #   langchain
     #   langchain-core
@@ -904,6 +934,8 @@ pydantic-core==2.33.2
     #   pydantic
 pydantic-settings==2.9.1
     # via langchain-community
+pydub==0.25.1
+    # via gradio
 pygments==2.19.1
     # via
     #   ipython
@@ -946,6 +978,8 @@ python-dotenv==1.1.0
     #   uvicorn
 python-json-logger==3.3.0
     # via jupyter-events
+python-multipart==0.0.20
+    # via gradio
 python-slugify==8.0.4
     # via kaggle
 pytube==15.0.0
@@ -957,6 +991,7 @@ pyyaml==6.0.2
     #   accelerate
     #   chromadb
     #   datasets
+    #   gradio
     #   huggingface-hub
     #   jupyter-events
     #   kagglehub
@@ -1042,8 +1077,12 @@ rpds-py==0.25.1
     #   referencing
 rsa==4.9.1
     # via google-auth
+ruff==0.13.3
+    # via gradio
 s3transfer==0.13.0
     # via boto3
+safehttpx==0.1.6
+    # via gradio
 safetensors==0.5.3
     # via
     #   -r requirements.in
@@ -1067,6 +1106,8 @@ scipy==1.15.3
     #   umap-learn
 seaborn==0.13.2
     # via -r requirements.in
+semantic-version==2.10.0
+    # via gradio
 send2trash==1.8.3
     # via jupyter-server
 sentence-transformers==4.1.0
@@ -1103,7 +1144,9 @@ srsly==2.5.1
 stack-data==0.6.3
     # via ipython
 starlette==0.45.3
-    # via fastapi
+    # via
+    #   fastapi
+    #   gradio
 striprtf==0.0.26
     # via llama-index-readers-file
 sympy==1.14.0
@@ -1156,6 +1199,8 @@ tomli==2.2.1
     #   build
     #   jupyterlab
     #   pytest
+tomlkit==0.13.3
+    # via gradio
 torch==2.7.1
     # via
     #   accelerate
@@ -1229,6 +1274,7 @@ triton==3.3.1
 typer==0.16.0
     # via
     #   chromadb
+    #   gradio
     #   instructor
 types-python-dateutil==2.9.0.20250516
     # via arrow
@@ -1245,6 +1291,8 @@ typing-extensions==4.14.0
     #   exceptiongroup
     #   fastapi
     #   gpt4all
+    #   gradio
+    #   gradio-client
     #   huggingface-hub
     #   ipython
     #   langchain-core
@@ -1293,7 +1341,9 @@ urllib3==2.4.0
     #   requests
     #   types-requests
 uvicorn[standard]==0.34.3
-    # via chromadb
+    # via
+    #   chromadb
+    #   gradio
 uvloop==0.21.0
     # via uvicorn
 voyager==2.1.0
@@ -1314,7 +1364,9 @@ websocket-client==1.8.0
     #   jupyter-server
     #   kubernetes
 websockets==15.0.1
-    # via uvicorn
+    # via
+    #   gradio-client
+    #   uvicorn
 werkzeug==3.1.3
     # via
     #   flask
