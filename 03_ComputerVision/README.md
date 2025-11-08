@@ -16,6 +16,40 @@ No guarantees.
 
 Overview of Contents:
 
+- [Udacity Generative AI Nanodegree: Computer Vision and Generative AI](#udacity-generative-ai-nanodegree-computer-vision-and-generative-ai)
+  - [1. Introduction to Image Generation](#1-introduction-to-image-generation)
+    - [Exercise: Generate an Image with Stable Diffusion](#exercise-generate-an-image-with-stable-diffusion)
+      - [Setup](#setup)
+    - [First Stage: Fixing the Random Seed](#first-stage-fixing-the-random-seed)
+    - [Second Stage: Add Details](#second-stage-add-details)
+    - [Third Stage: Styles](#third-stage-styles)
+    - [Fourth Stage: Negative Prompts](#fourth-stage-negative-prompts)
+    - [Fifth Stage: "magic" Words](#fifth-stage-magic-words)
+    - [Sixth Stage: Parameters](#sixth-stage-parameters)
+    - [Bonus Stage: Inpaint](#bonus-stage-inpaint)
+    - [Other Examples, Links](#other-examples-links)
+  - [2. Computer Vision Fundamentals](#2-computer-vision-fundamentals)
+  - [3. Image Generation and GANs](#3-image-generation-and-gans)
+    - [Generative Adversarial Networks (GANs)](#generative-adversarial-networks-gans)
+      - [Exercise: Training a GAN](#exercise-training-a-gan)
+      - [Training Difficulty](#training-difficulty)
+      - [Exercise: Style GAN](#exercise-style-gan)
+  - [4. Transformer-Based Computer Vision Models](#4-transformer-based-computer-vision-models)
+    - [Conditioned Generation and Multi-Modality](#conditioned-generation-and-multi-modality)
+    - [DALL-E: Text to Image Generation](#dall-e-text-to-image-generation)
+    - [DINO v2: General Purpose Image Embeddings](#dino-v2-general-purpose-image-embeddings)
+    - [SAM (Segment Anything Model): Zero-Shot Image Segmentation](#sam-segment-anything-model-zero-shot-image-segmentation)
+    - [DETR: Object Detection](#detr-object-detection)
+  - [5. Diffusion Models](#5-diffusion-models)
+    - [Conditioning](#conditioning)
+    - [Latent Diffusion Models](#latent-diffusion-models)
+    - [DDPM Theory and Implementation](#ddpm-theory-and-implementation)
+    - [DDPM Inference](#ddpm-inference)
+    - [Exercise: Build a DDPM](#exercise-build-a-ddpm)
+    - [Demo: HuggingFace Diffusers](#demo-huggingface-diffusers)
+  - [6. Project: AI Photo Editing with Inpainting](#6-project-ai-photo-editing-with-inpainting)
+
+
 ## 1. Introduction to Image Generation
 
 Introductory concepts:
