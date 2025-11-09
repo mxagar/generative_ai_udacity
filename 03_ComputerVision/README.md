@@ -1161,6 +1161,10 @@ for ts in range(0, T)[::-1]:
 generated_image = torch.clamp(x, -1, 1)
 ```
 
+![Reverse Diffusion: Noise](assets/reverse_diffusion_noise.png)
+
+![Reverse Diffusion: Code](assets/reverse_diffusion_algo_code.png) 
+
 
 ### Exercise: Build a DDPM
 
