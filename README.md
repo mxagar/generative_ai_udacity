@@ -7,23 +7,33 @@ The Nanodegree asssumes basic data analysis skills with data science python libr
 1. Generative AI Fundamentals: [`01_Fundamentals_GenAI`](./01_Fundamentals_GenAI/README.md).
     - Foundation Models
     - Fine-Tuning
-2. Large Language Models (LLMs) & Text Generation: [`02_LLMs`](./02_LLMs/README.md).
+2. Large Language Models (LLMs) & Retrieval-Augmented Generation (RAG): [`02_LLMs`](./02_LLMs/README.md).
     - Transformers and LLMs
     - Retrieval Augmented Generation (RAG) Chatbots
-3. Computer Vision and Generative AI: [`03_ComputerVision`](./03_ComputerVision/README.md).
+    - Vector Databases
+3. OLD: Computer Vision and Generative AI: [`03_ComputerVision`](./03_ComputerVision/README.md).
     - Generative Adversarial Networks (GANs)
     - Vision Transformers
     - Diffusion Models
-4. Building Generative AI Solutions: [`04_BuildingSolutions`](./04_BuildingSolutions/README.md).
-    - Vector Databases
-    - LangChain and Agents
+3. NEW: Multimodal AI Applications: [`03_MultimodalSolutions`](./03_MultimodalSolutions/README.md).
+    - Image
+    - Audio
+    - Video
+    - Gradio
+    - Pydantic AI
+    - Scaling
 
 Additionally, it is necessary to submit and pass some projects to get the certification:
 
-- Project 1: Apply Lightweight Fine-Tuning to a Foundation Model: [mxagar/llm_peft_fine_tuning_example](https://github.com/mxagar/llm_peft_fine_tuning_example).
-- Project 2: Build Your Own Custom Chatbot: [mxagar/rag-app-examples/qa-rag](https://github.com/mxagar/rag-app-examples/tree/main/qa-rag).
-- Project 3: AI Photo Editing with Inpainting: [mxagar/diffusion-examples/inpainting_app](https://github.com/mxagar/diffusion-examples/tree/main/inpainting_app).
-- Project 4: Personalized Real Estate Agent - TBD.
+- Project 1:
+    - Apply Lightweight Fine-Tuning to a Foundation Model: [mxagar/llm_peft_fine_tuning_example](https://github.com/mxagar/llm_peft_fine_tuning_example).
+    - Fine-tune an LLM to teach it to count: TBD :construction:
+- Project 2:
+    - Build Your Own Custom Chatbot: [mxagar/rag-app-examples/qa-rag](https://github.com/mxagar/rag-app-examples/tree/main/qa-rag).
+    - Build a NASA Intelligence Chat System Using RAG: TBD :construction:
+- Project 3:
+    - AI Photo Editing with Inpainting: [mxagar/diffusion-examples/inpainting_app](https://github.com/mxagar/diffusion-examples/tree/main/inpainting_app).
+    - Multimodal customer service: TBD :construction:
 
 Finally, also check some of my personal guides on related tools:
 
