@@ -11,10 +11,11 @@ The Nanodegree asssumes basic data analysis skills with data science python libr
     - Transformers and LLMs
     - Retrieval Augmented Generation (RAG) Chatbots
     - Vector Databases
-3. OLD: Computer Vision and Generative AI: [`03_ComputerVision`](./03_ComputerVision/README.md).
+3. (OLD) Computer Vision and Generative AI: [`03_ComputerVision`](./03_ComputerVision/README.md).
     - Generative Adversarial Networks (GANs)
     - Vision Transformers
     - Diffusion Models
+<!--
 3. NEW: Multimodal AI Applications: [`03_MultimodalSolutions`](./03_MultimodalSolutions/README.md).
     - Image
     - Audio
@@ -22,18 +23,19 @@ The Nanodegree asssumes basic data analysis skills with data science python libr
     - Gradio
     - Pydantic AI
     - Scaling
+-->
 
 Additionally, it is necessary to submit and pass some projects to get the certification:
 
 - Project 1:
     - Apply Lightweight Fine-Tuning to a Foundation Model: [mxagar/llm_peft_fine_tuning_example](https://github.com/mxagar/llm_peft_fine_tuning_example).
-    - Fine-tune an LLM to teach it to count: TBD :construction:
+    <!-- - Fine-tune an LLM to teach it to count: TBD :construction: -->
 - Project 2:
     - Build Your Own Custom Chatbot: [mxagar/rag-app-examples/qa-rag](https://github.com/mxagar/rag-app-examples/tree/main/qa-rag).
-    - Build a NASA Intelligence Chat System Using RAG: TBD :construction:
+    <!-- - Build a NASA Intelligence Chat System Using RAG: TBD :construction: -->
 - Project 3:
     - AI Photo Editing with Inpainting: [mxagar/diffusion-examples/inpainting_app](https://github.com/mxagar/diffusion-examples/tree/main/inpainting_app).
-    - Multimodal customer service: TBD :construction:
+    <!-- - Multimodal customer service: TBD :construction: -->
 
 Finally, also check some of my personal guides on related tools:
 
